@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-4.1.xsd
+       http://www.springframework.org/schema/mvc
+       http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+    
+    <bean id = "User" class = "P3212.ANFBackend.EntityClasses.User" autowire="byName"/>
+    
+    <bean id = "Stats" class = "P3212.ANFBackend.EntityClasses.Stats"/>
+    
+    <bean id = "Appearance" class = "P3212.ANFBackend.EntityClasses.Appearance"/>
+    
+    <bean id = "Boss" class = "P3212.ANFBackend.EntityClasses.Boss"/>
+    
+    <bean id = "Character" class = "P3212.ANFBackend.EntityClasses.Character"/>
+    
+    <bean id = "NinjaAnimal" class = "P3212.ANFBackend.EntityClasses.NinjaAnimal"/>
+    
+    <bean id = "NinjaAnimalRace" class = "P3212.ANFBackend.EntityClasses.NinjaAnimalRace"/>
+    
+    <bean id = "Spell" class = "P3212.ANFBackend.EntityClasses.Spell"/>
+    
+    <bean id = "SpellHandling" class = "P3212.ANFBackend.EntityClasses.SpellHandling"/>
+    
+    <bean id = "UserInFight" class = "P3212.ANFBackend.EntityClasses.UserInFight"/>
+    
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.postgresql.Driver"/>
+        <property name="url" value="jdbc:postgresql://127.0.0.1:1488/studs"/>
+        <property name="username" value=""/> <!-- Insert url, password, username here -->
+        <property name="password" value=""/>
+    </bean>
+    
+    <bean id="UserJDBC" class="P3212.ANFBackend.UserJDBCImplementation">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    
+    <bean id="StatsJDBC" class = "P3212.ANFBackend.StatsJDBCImplementation">
+        <property name="dataSource" ref = "dataSource"/>
+    </bean>
+    
+    <bean id="AppearanceJDBC" class = "P3212.ANFBackend.AppearanceJDBCImplementation">
+        <property name="dataSource" ref = "dataSource"/>
+    </bean>
+    
+    <bean id="BossJDBC" class = "P3212.ANFBackend.BossJDBCImplementation">
+        <property name="dataSource" ref = "dataSource"/>
+    </bean>
+    
+    <bean id="CharacterJDBC" class = "P3212.ANFBackend.CharacterJDBCImplementation">
+        <property name="dataSource" ref = "dataSource"/>
+    </bean>
+    
+    <bean id="NinjaAnimalJDBC" class = "P3212.ANFBackend.NinjaAnimalJDBCImplementation">
+        <property name="dataSource" ref = "dataSource"/>
+    </bean>
+    
+    <bean id="SpellJDBC" class = "P3212.ANFBackend.SpellJDBCImplementation">
+        <property name="dataSource" ref = "dataSource"/>
+    </bean>
+    
+    <bean id="SpellHandlingJDBC" class = "P3212.ANFBackend.SpellHandlingJDBCImplementation">
+        <property name="dataSource" ref = "dataSource"/>
+    </bean>
+    
+    <bean id="UserInFightJDBC" class = "P3212.ANFBackend.UserInFightJDBCImplementation">
+        <property name="dataSource" ref = "dataSource"/>
+    </bean>
+    
+</beans>

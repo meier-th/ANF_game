@@ -1,0 +1,39 @@
+buildscript {
+	ext {
+		springBootVersion = '2.0.5.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'application'
+mainClassName = "P3212.ANFBackend.AnfBackendApplication"
+group = 'P3212'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+}
+
+
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter')
+        compile group: 'postgresql', name: 'postgresql', version: '9.1-901.jdbc4'
+        compile group: 'org.springframework', name: 'spring-jdbc', version: '5.0.9.RELEASE'
+        compile group: 'org.springframework', name: 'spring-jdbc', version: '5.0.9.RELEASE'
+        compile group: 'org.springframework', name: 'spring-orm', version: '5.0.9.RELEASE'
+        compile group: 'org.springframework', name: 'spring-core', version: '5.0.9.RELEASE'
+        compile group: 'org.springframework', name: 'spring-beans', version: '5.0.9.RELEASE'
+        compile group: 'org.springframework', name: 'spring-web', version: '5.0.9.RELEASE'
+        compile group: 'org.springframework', name: 'spring-webmvc', version: '5.0.9.RELEASE'
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+}
