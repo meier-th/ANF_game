@@ -1,10 +1,10 @@
 package Repositories;
 
-import EntityClasses.User;
 import org.springframework.data.repository.CrudRepository;
+import EntityClasses.Character;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserRepository extends CrudRepository<User, String>{
+public interface CharacterRepository extends CrudRepository<Character, Integer>{
     
 }
