@@ -8,7 +8,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication//(scanBasePackageClasses = {Services.UserService.class, Repositories.UserRepository.class, EntityClasses.User.class})
-@EnableAutoConfiguration(exclude={DataSourceAutoConfiguration.class})
 @ComponentScan(basePackages = {"Services", "Repositories", "EntityClasses"})
 @EnableJpaRepositories("Repositories")
 public class Application {

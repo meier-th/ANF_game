@@ -1,10 +1,12 @@
 package EntityClasses;
 
+import javax.persistence.Entity;
 import java.time.LocalDate;
 
 /**
      * Used to operate on fight history data
      */
+@Entity
 public class UserInFight {
     
     public static enum Result {

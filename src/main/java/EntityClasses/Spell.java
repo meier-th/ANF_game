@@ -1,42 +1,50 @@
 package EntityClasses;
 
+import org.springframework.data.annotation.Id;
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 /**
  * Represents Technique entity
  * Used to operate on spells
  */
+@Entity
+@Table(name = "Techniques")
 public class Spell {
-    
+
     /**
      * The base damage of a spell
      * negative damage = heal
      */
     private int baseDamage;
-    
+
     /**
      * Identifier
      */
+    @Id
     private int id;
-    
+
     /**
      * additional damage acquired on each level
      */
     private int damagePerLevel;
-    
+
     /**
      * The base chakra consumption of a spell
      */
     private int baseChakraConsumption;
-    
+
     /**
      * additional chalra consumption acquired on each level
      */
     private int chakraConsumptionPerLevel;
-    
+
     /**
      * Name of a spell
      */
     private String name;
-    
+
     /**
      * Description of a spell
      */
@@ -44,7 +52,7 @@ public class Spell {
 
     /**
      * Getter
-     *{@link Spell#baseDamage} 
+     * {@link Spell#baseDamage}
      */
     public int getBaseDamage() {
         return baseDamage;
@@ -52,7 +60,7 @@ public class Spell {
 
     /**
      * Setter
-     *{@link Spell#baseDamage} 
+     * {@link Spell#baseDamage}
      */
     public void setBaseDamage(int baseDamage) {
         this.baseDamage = baseDamage;
@@ -60,7 +68,7 @@ public class Spell {
 
     /**
      * Getter
-     * {@link Spell#id} 
+     * {@link Spell#id}
      */
     public int getId() {
         return id;
@@ -68,15 +76,15 @@ public class Spell {
 
     /**
      * Setter
-     * {@link Spell#id} 
+     * {@link Spell#id}
      */
     public void setId(int id) {
         this.id = id;
     }
-    
+
     /**
      * Getter
-     *{@link Spell#damagePerLevel} 
+     * {@link Spell#damagePerLevel}
      */
     public int getDamagePerLevel() {
         return damagePerLevel;
@@ -84,7 +92,7 @@ public class Spell {
 
     /**
      * Setter
-     *{@link Spell#damagePerLevel} 
+     * {@link Spell#damagePerLevel}
      */
     public void setDamagePerLevel(int damagePerLevel) {
         this.damagePerLevel = damagePerLevel;
@@ -92,7 +100,7 @@ public class Spell {
 
     /**
      * Getter
-     *{@link Spell#name} 
+     * {@link Spell#name}
      */
     public String getName() {
         return name;
@@ -100,7 +108,7 @@ public class Spell {
 
     /**
      * Setter
-     *{@link Spell#name} 
+     * {@link Spell#name}
      */
     public void setName(String name) {
         this.name = name;
@@ -108,7 +116,7 @@ public class Spell {
 
     /**
      * Getter
-     *{@link Spell#description} 
+     * {@link Spell#description}
      */
     public String getDescription() {
         return description;
@@ -116,7 +124,7 @@ public class Spell {
 
     /**
      * Setter
-     *{@link Spell#description} 
+     * {@link Spell#description}
      */
     public void setDescription(String description) {
         this.description = description;
@@ -124,7 +132,7 @@ public class Spell {
 
     /**
      * Getter
-     *{@link Spell#baseChakraConsumption} 
+     * {@link Spell#baseChakraConsumption}
      */
     public int getBaseChakraConsumption() {
         return baseChakraConsumption;
@@ -132,7 +140,7 @@ public class Spell {
 
     /**
      * Setter
-     *{@link Spell#baseChakraConsumption} 
+     * {@link Spell#baseChakraConsumption}
      */
     public void setBaseChakraConsumption(int baseChakraConsumption) {
         this.baseChakraConsumption = baseChakraConsumption;
@@ -140,7 +148,7 @@ public class Spell {
 
     /**
      * Getter
-     *{@link Spell#chakraConsumptionPerLevel} 
+     * {@link Spell#chakraConsumptionPerLevel}
      */
     public int getChakraConsumptionPerLevel() {
         return chakraConsumptionPerLevel;
@@ -148,24 +156,26 @@ public class Spell {
 
     /**
      * Setter
-     *{@link Spell#chakraConsumptionPerLevel} 
+     * {@link Spell#chakraConsumptionPerLevel}
      */
     public void setChakraConsumptionPerLevel(int chakraConsumptionPerLevel) {
         this.chakraConsumptionPerLevel = chakraConsumptionPerLevel;
     }
-    
+
     /**
      * Default constructor
      * Used for dependency injection
      */
-    public Spell(){}
-    
+    public Spell() {
+    }
+
     /**
      * To be used when retrieved from database
+     *
      * @param name
      * @param description
      * @param baseDamage
-     * @param lvldmg 
+     * @param lvldmg
      */
     public Spell(String name, String description, int baseDamage, int lvldmg) {
         this.name = name;
@@ -173,5 +183,5 @@ public class Spell {
         this.description = description;
         this.damagePerLevel = lvldmg;
     }
-    
+
 }

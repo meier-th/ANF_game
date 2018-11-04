@@ -1,57 +1,63 @@
 package EntityClasses;
 
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 /**
  * Represents Features entity
  * Used to operate on in-game characters appearances
  */
+@Entity
+@Table(name = "Features")
 public class Appearance {
-    
-    public static enum Gender{
+
+    public static enum Gender {
         MALE,
         FEMALE;
     }
-    
+
     public static enum SkinColour {
         WHITE,
         LATIN,
         DARK,
         BLACK;
     }
-    
+
     public static enum HairColour {
         YELLOW,
         BROWN,
         BLACK;
     }
-    
+
     public static enum ClothesColour {
         GREEN,
         RED,
         BLUE;
     }
-    
+
     /**
      * Gender of character
      * Responsible for model
      */
     private Gender gender;
-    
+
     /**
      * Skin colour of a character
      */
     private SkinColour skinColour;
-    
+
     /**
      * Hair colour of a character
      */
     private HairColour hairColour;
-    
+
     /**
      * Clothes colour of a character
      */
     private ClothesColour clothesColour;
 
-    
+
     /**
      * Getter
      * {@link Appearance#gender}
@@ -115,7 +121,6 @@ public class Appearance {
     public void setClothesColour(ClothesColour clothesColour) {
         this.clothesColour = clothesColour;
     }
-    
-    
-    
+
+
 }

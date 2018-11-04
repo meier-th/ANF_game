@@ -1,9 +1,15 @@
 package EntityClasses;
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 /**
-     * Represents Stats entity. Used to operate on users' statistic data.
-     */
+ * Represents Stats entity. Used to operate on users' statistic data.
+ */
+@Entity
+@Table(name = "Statistics")
 public class Stats {
-    
+
     /**
      * Rating of a user
      */
@@ -23,99 +29,111 @@ public class Stats {
     /**
      * Number of fights during which user died
      * Death occurs when a character died in battle against AI, but his team won
-     */ 
+     */
     private int deaths;
-    
+
     /**
      * Default constructor, to be used for dependency injection
      */
-    public Stats(){}
-    
+    public Stats() {
+    }
+
     /**
-         * To be used when retrieved from database
-         * @param r Rating value
-         * @param f Number of fights
-         * @param w Number of wins
-         * @param l Number of losses
-         * @param d Number of deaths
-         */
-    public Stats (int r, int f, int w, int l, int d) {
+     * To be used when retrieved from database
+     *
+     * @param r Rating value
+     * @param f Number of fights
+     * @param w Number of wins
+     * @param l Number of losses
+     * @param d Number of deaths
+     */
+    public Stats(int r, int f, int w, int l, int d) {
         this.deaths = d;
         this.fights = f;
         this.losses = l;
         this.rating = r;
         this.wins = w;
     }
-    
-    /**Setter
+
+    /**
+     * Setter
      * {@link Stats#rating}
      */
-    public void setRating (int rating ) {
-        this.rating =rating;
+    public void setRating(int rating) {
+        this.rating = rating;
     }
-    
-    /**Setter
+
+    /**
+     * Setter
      * {@link Stats#fights}
      */
-    public void setFights (int fights) {
+    public void setFights(int fights) {
         this.fights = fights;
     }
-    
-     /**Setter
+
+    /**
+     * Setter
      * {@link Stats#ratingwins}
      */
-    public void setWins (int wins) {
-        this.wins =wins;
+    public void setWins(int wins) {
+        this.wins = wins;
     }
-    
-    /**Setter
+
+    /**
+     * Setter
      * {@link Stats#losses}
      */
-    public void setLosses (int losses) {
-        this.losses =losses;
+    public void setLosses(int losses) {
+        this.losses = losses;
     }
-    
-    /**Setter
+
+    /**
+     * Setter
      * {@link Stats#deaths}
      */
-    public void setDeaths (int deaths) {
-        this.deaths =deaths;
+    public void setDeaths(int deaths) {
+        this.deaths = deaths;
     }
-    
-    /**Getter
+
+    /**
+     * Getter
      * {@link Stats#rating}
      */
-    public int getRating () {
+    public int getRating() {
         return this.rating;
     }
-    
-    /**Getter
+
+    /**
+     * Getter
      * {@link Stats#fights}
      */
-    public int getFights () {
+    public int getFights() {
         return this.fights;
     }
-    
-    /**Getter
+
+    /**
+     * Getter
      * {@link Stats#wins}
      */
-    public int getWins () {
+    public int getWins() {
         return this.wins;
     }
-    
-    /**Getter
+
+    /**
+     * Getter
      * {@link Stats#losses}
      */
-    public int getLosses () {
+    public int getLosses() {
         return this.losses;
     }
-    
-    /**Getter
+
+    /**
+     * Getter
      * {@link Stats#deaths}
      */
-    public int getDeaths () {
+    public int getDeaths() {
         return this.deaths;
     }
-    
-    
+
+
 }

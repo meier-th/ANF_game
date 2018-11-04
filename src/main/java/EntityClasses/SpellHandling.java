@@ -1,5 +1,6 @@
 package EntityClasses;
 
+import javax.persistence.Entity;
 import java.util.ArrayList;
 
 /**
@@ -7,6 +8,7 @@ import java.util.ArrayList;
  * Used to operate on character's spells abilities
  * 
  */
+@Entity
 public class SpellHandling {
     
     /**

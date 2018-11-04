@@ -1,14 +1,22 @@
 package EntityClasses;
 
+import org.springframework.data.annotation.Id;
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 /**
  * Represents Bidju entity
  * Used to operate on AI bosses data
  */
+@Entity
+@Table(name = "Bidju")
 public class Boss implements Creature {
     
     /**
      * Identifier
      */
+    @Id
     private int id;
     
     /**

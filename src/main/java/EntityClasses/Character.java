@@ -1,11 +1,17 @@
 package EntityClasses;
 
+import org.springframework.data.annotation.Id;
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.time.LocalDate;
 
 /**
  * Represents Person entity
  * Used to operate on in-game character's properties
  */
+@Entity
+@Table(name = "Persons")
 public class Character implements Creature {
 
     /**
@@ -16,6 +22,7 @@ public class Character implements Creature {
     /**
      * Identifier
      */
+    @Id
     private int id;
     /**
      * The maximum amount of chakra (mana)

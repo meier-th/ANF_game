@@ -1,13 +1,21 @@
 package EntityClasses;
 
+import org.springframework.data.annotation.Id;
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 /**
  * Represents NinjaAnimal entity
  * Used to operate on ninja animals
  */
+@Entity
+@Table(name = "Ninja_animals")
 public class NinjaAnimal {
     /**
      * id of the animal
      */
+    @Id
     private int id;
     /**
      * Name of the ninja animal

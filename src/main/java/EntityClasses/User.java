@@ -3,11 +3,12 @@ package EntityClasses;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import org.springframework.beans.factory.annotation.Autowired;
-    /**
+import org.springframework.data.annotation.Id;
+
+/**
      * Represents User entity. Used to operate on users' registration data 
      */
 
