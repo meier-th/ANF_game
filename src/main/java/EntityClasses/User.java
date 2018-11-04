@@ -6,7 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.annotation.Id;
+import javax.persistence.Id;
 
 /**
      * Represents User entity. Used to operate on users' registration data 
@@ -41,9 +41,9 @@ public class User implements Serializable {
     /**
      * User's stats object
      */
-    @Transient
-    @Autowired
-    private Stats stats; //Dependency injected with Autowire by name
+    //@Transient
+    //@Autowired
+    //private Stats stats; //Dependency injected with Autowire by name
     
     /**
      * Default constructor, to be used for dependency injection
@@ -107,16 +107,16 @@ public class User implements Serializable {
     /**Setter
      * {@link User#stats}
      */
-    public void setStats(Stats st) {
-        this.stats = st;
-    }
+    //public void setStats(Stats st) {
+    //    this.stats = st;
+    //}
     
     /**Setter
      * {@link User#stats}
      */
-    public Stats getStats() {
-        return this.stats;
-    }
+    //public Stats getStats() {
+    //    return this.stats;
+   // }
 
     /**
      * Getter

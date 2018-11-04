@@ -15,6 +15,11 @@ public class Controller {
         return "It works";
     }
     
+    @RequestMapping("/")
+    public String reet() {
+        return "start page";
+    }
+    
     @Autowired
     private UserService userService;
     
