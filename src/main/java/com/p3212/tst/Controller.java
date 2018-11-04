@@ -28,7 +28,7 @@ public class Controller {
     }
     
     @RequestMapping("/users")
-    public List<User> getAllUsers() {
+    public Iterable<User> getAllUsers() {
         return userService.getAllUsers();
     }
     

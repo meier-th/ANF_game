@@ -32,4 +32,7 @@ public class PrivateMessage {
      */
     @Column(name = "receiver")
     User receiver;
+
+    @Column(name = "isRead")
+    boolean isRead;
 }
