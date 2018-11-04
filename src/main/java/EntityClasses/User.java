@@ -2,11 +2,11 @@ package EntityClasses;
 
 import java.io.Serializable;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import org.springframework.beans.factory.annotation.Autowired;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 
 /**
      * Represents User entity. Used to operate on users' registration data 
@@ -25,7 +25,9 @@ public class User implements Serializable {
     /**
      * User's in-game character
      */
-    @Transient
+    
+    @OneToOne
+    @JoinColumn(name = "character_id")
     private Character character;
     
     /**

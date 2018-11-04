@@ -1,43 +1,40 @@
 package Services;
 
-import EntityClasses.Character;
 import Repositories.CharacterRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import EntityClasses.Character;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class CharacterService {
-
     @Autowired
-    CharacterRepository characterRepository;
-
+    CharacterRepository charRepository;
+    
     public List<Character> getAllCharacters() {
         List<Character> lst = new ArrayList<Character>();
-        Iterator<Character> iterator = characterRepository.findAll().iterator();
+        Iterator<Character> iterator = charRepository.findAll().iterator();
         while (iterator.hasNext()) {
             lst.add(iterator.next());
         }
         return lst;
     }
-
-    public void addCharacter(Character character) {
-        characterRepository.save(character);
+    
+    public void addCharacter(Character usr) {
+        charRepository.save(usr);
     }
-
+    
     public Character getCharacter(int id) {
-        return characterRepository.findById(id).get();
+        return charRepository.findById(id).get();
     }
-
-    public void updateCharacter(String login, Character character) {
-        characterRepository.save(character);
+    
+    public void updateCharacter(int id, Character usr) {
+        charRepository.save(usr);
     }
-
+    
     public void removeCharacter(int id) {
-        characterRepository.deleteById(id);
+        charRepository.deleteById(id);
     }
-
 }

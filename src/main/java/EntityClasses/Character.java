@@ -1,23 +1,24 @@
 package EntityClasses;
 
-import org.springframework.data.annotation.Id;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import java.time.LocalDate;
 
 /**
  * Represents Person entity
  * Used to operate on in-game character's properties
  */
 @Entity
-@Table(name = "Persons")
+@Table(name = "persons")
 public class Character implements Creature {
 
     /**
      * The date of creating a character
      */
-    private LocalDate creationDate;
+    private Date creationDate;
     
     /**
      * Identifier
@@ -32,13 +33,23 @@ public class Character implements Creature {
     /**
      * The race of ninja animal that character is able to summon
      */
-    private NinjaAnimalRace animalRace;
+    //private NinjaAnimalRace animalRace;
 
+    @OneToOne(mappedBy = "character")
+    @JsonIgnore
+    private User user;
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
     /**
      * Appearance object for this character
      */
-    private Appearance appearance;
+    //private Appearance appearance;
 
     /**
      * The maximum amount of HP
@@ -61,7 +72,7 @@ public class Character implements Creature {
      * Getter
      * {@link Character#creationDate}
      */
-    public LocalDate getCreationDate() {
+    public Date getCreationDate() {
         return creationDate;
     }
 
@@ -69,7 +80,7 @@ public class Character implements Creature {
      * Setter
      * {@link Character#creationDate}
      */
-    public void setCreationDate(LocalDate creationDate) {
+    public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
     }
 
@@ -93,17 +104,17 @@ public class Character implements Creature {
      * Getter
      * {@link Character#animalRace}
      */
-    public NinjaAnimalRace getAnimalRace() {
+/*    public NinjaAnimalRace getAnimalRace() {
         return animalRace;
-    }
+    }*/
 
     /**
      * Setter
      * {@link Character#animalRace}
      */
-    public void setAnimalRace(NinjaAnimalRace animalRace) {
+    /*public void setAnimalRace(NinjaAnimalRace animalRace) {
         this.animalRace = animalRace;
-    }
+    }*/
 
     /**
      * Getter
@@ -126,17 +137,17 @@ public class Character implements Creature {
      * Getter
      * {@link Character#appearance}
      */
-    public Appearance getAppearance() {
+    /*public Appearance getAppearance() {
         return appearance;
     }
-
+*/
     /**
      * Setter
      * {@link Character#appearance}
      */
-    public void setAppearance(Appearance appearance) {
+    /*public void setAppearance(Appearance appearance) {
         this.appearance = appearance;
-    }
+    }*/
 
     /**
      * Getter
@@ -201,7 +212,7 @@ public class Character implements Creature {
      * @param damage     - physical damahe value
      * @param chakra     - amount of chakra
      */
-    public Character(LocalDate date, float resistance, int hp, int damage, int chakra) {
+    public Character(Date date, float resistance, int hp, int damage, int chakra) {
         this.creationDate = date;
         this.resistance = resistance;
         this.maxHP = hp;
