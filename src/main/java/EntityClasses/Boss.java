@@ -1,8 +1,9 @@
 package EntityClasses;
 
-import org.springframework.data.annotation.Id;
+import javax.persistence.Id;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Table;
 
 /**
@@ -11,12 +12,13 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "Bidju")
-public class Boss implements Creature {
+public class Boss {
     
     /**
      * Identifier
      */
     @Id
+    @GeneratedValue
     private int id;
     
     /**

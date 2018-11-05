@@ -1,7 +1,12 @@
 package EntityClasses;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.Entity;
 import java.util.ArrayList;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 /**
  * Represents USERS_OF_TECHNIQUES entity
@@ -14,12 +19,24 @@ public class SpellHandling {
     /**
      * Character
      */
-    private Character character;
+    
+    @Id
+    @GeneratedValue
+    private int id;
+    
+    
+    @ManyToOne
+    @JoinColumn(name="character")
+    @JsonIgnore
+    private Character characterHandler;
     
     /**
      * Spell
      */
-    private Spell spell;
+    
+    @ManyToOne
+    @JoinColumn(name="spell")
+    private Spell spellUse;
     
     /**
      * Level of the spell
@@ -36,7 +53,7 @@ public class SpellHandling {
      * {@link SpellHandling#character} 
      */
     public Character getCharacter() {
-        return character;
+        return characterHandler;
     }
 
     /**
@@ -44,7 +61,7 @@ public class SpellHandling {
      * {@link SpellHandling#character} 
      */
     public void setCharacter(Character character) {
-        this.character = character;
+        this.characterHandler = character;
     }
 
     /**
@@ -52,7 +69,7 @@ public class SpellHandling {
      * {@link SpellHandling#spell} 
      */
     public Spell getSpell() {
-        return spell;
+        return spellUse;
     }
 
     /**
@@ -60,7 +77,7 @@ public class SpellHandling {
      * {@link SpellHandling#spell} 
      */
     public void setSpell(Spell spell) {
-        this.spell = spell;
+        this.spellUse = spell;
     }
 
     /**
@@ -92,9 +109,33 @@ public class SpellHandling {
      * @param level 
      */
     public SpellHandling(Character character, Spell spell, int level){ 
-        this.character = character;
-        this.spell = spell;
+        this.characterHandler = character;
+        this.spellUse = spell;
         this.spellLevel = level;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Character getCharacterHandler() {
+        return characterHandler;
+    }
+
+    public void setCharacterHandler(Character characterHandler) {
+        this.characterHandler = characterHandler;
+    }
+
+    public Spell getSpellUse() {
+        return spellUse;
+    }
+
+    public void setSpellUse(Spell spellUse) {
+        this.spellUse = spellUse;
     }
     
 }

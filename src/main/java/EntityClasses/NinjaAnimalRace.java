@@ -1,11 +1,10 @@
 package EntityClasses;
 
-import org.springframework.data.annotation.Id;
+import javax.persistence.Id;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import java.util.HashMap;
-import java.util.Map;
+import javax.persistence.GeneratedValue;
 
 /**
  * Represents NinjaAnimalRaces entity
@@ -13,30 +12,16 @@ import java.util.Map;
  */
 @Entity
 @Table(name = "Ninja_animal_races")
-public enum NinjaAnimalRace {
-    CHISTI(1),
-    VILKOY(2),
-    GOVNO(3);
+public class NinjaAnimalRace {
+    static enum races {
+    CHISTI,
+    VILKOY,
+    GOVNO;
+    }
     @Id
+    @GeneratedValue
     private int id;
-
-    private NinjaAnimalRace(int id) {
-        this.id = id;
-    }
-
-    private static Map map = new HashMap<Integer, NinjaAnimalRace>();
-
-    static {
-        for (NinjaAnimalRace pageType : NinjaAnimalRace.values()) {
-            map.put(pageType.id, pageType);
-        }
-    }
-
-    public static NinjaAnimalRace valueOf(int pageType) {
-        return (NinjaAnimalRace) map.get(pageType);
-    }
-
-    public int getId() {
-        return id;
-    }
+    
+    private races raceName;
+    
 }

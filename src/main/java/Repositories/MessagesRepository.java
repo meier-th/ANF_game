@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface MessagesRepository extends CrudRepository<PrivateMessage, Integer> {
-
-    @Query("update PrivateMessages p set isRead = true where p.id = :id")
+    @Query("update PrivateMessage p set isRead = true where p.id = :id")
     void setRead(@Param("id") int id);
 }

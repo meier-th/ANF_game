@@ -2,9 +2,13 @@ package EntityClasses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Date;
+import java.util.List;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -14,23 +18,53 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "persons")
-public class Character implements Creature {
+public class Character {
 
     /**
      * The date of creating a character
      */
     private Date creationDate;
     
+    @ManyToOne
+    @JoinColumn(name="animal_race")
+    private NinjaAnimalRace animalRace;
+
+    public NinjaAnimalRace getAnimalRace() {
+        return animalRace;
+    }
+
+    public void setAnimalRace(NinjaAnimalRace animalRace) {
+        this.animalRace = animalRace;
+    }
+    @OneToMany(mappedBy="characterHandler")
+    private List<SpellHandling> spellsKnown;
+
+    public List<SpellHandling> getSpellsKnown() {
+        return spellsKnown;
+    }
+
+    public void setSpellsKnown(List<SpellHandling> spellsKnown) {
+        this.spellsKnown = spellsKnown;
+    }
     /**
      * Identifier
      */
     @Id
+    @GeneratedValue
     private int id;
     /**
      * The maximum amount of chakra (mana)
      */
     private int maxChakraAmount;
 
+    @OneToMany(mappedBy="firstFighter")
+    @JsonIgnore
+    private List<FightPVP>pvpFightsAsFirst;
+    
+    @OneToMany(mappedBy="secondFighter")
+    @JsonIgnore
+    private List<FightPVP>pvpFightsAsSecond;
+    
     /**
      * The race of ninja animal that character is able to summon
      */
@@ -40,6 +74,20 @@ public class Character implements Creature {
     @JsonIgnore
     private User user;
 
+    @OneToMany(mappedBy="fighter")
+    private List<FightVsAI>fights;
+
+    public List<FightVsAI> getFights() {
+        return fights;
+    }
+
+    public void setFights(List<FightVsAI> fights) {
+        this.fights = fights;
+    }
+    
+    /**
+     * Appearance object for this character
+     */
     @OneToOne
     @JoinColumn(name="appearance_id")
     private Appearance appearance;
@@ -59,10 +107,6 @@ public class Character implements Creature {
     public void setUser(User user) {
         this.user = user;
     }
-    /**
-     * Appearance object for this character
-     */
-    //private Appearance appearance;
 
     /**
      * The maximum amount of HP

@@ -6,21 +6,24 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import javax.persistence.GeneratedValue;
 
 @Entity
-@Table(name = "Friends")
+@Table(name = "friends")
 public class Friends {
 
     @Id
+    @GeneratedValue
+    private int id;
+    
     @ManyToOne
     @JoinColumn(name="user1")
-    @JsonIgnore
+    //@JsonIgnore
     User user1;
 
-    @Id
+    
     @ManyToOne
     @JoinColumn(name="user2")
-    @JsonIgnore
+    //@JsonIgnore
     User user2;
 }

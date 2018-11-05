@@ -1,8 +1,11 @@
 package EntityClasses;
 
-import org.springframework.data.annotation.Id;
+import javax.persistence.Id;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
@@ -16,6 +19,7 @@ public class NinjaAnimal {
      * id of the animal
      */
     @Id
+    @GeneratedValue
     private int id;
     /**
      * Name of the ninja animal
@@ -40,6 +44,8 @@ public class NinjaAnimal {
     /**
      * Race of the animal
      */
+    @ManyToOne
+    @JoinColumn(name="race")
     private NinjaAnimalRace race;
 
     public int getId() {

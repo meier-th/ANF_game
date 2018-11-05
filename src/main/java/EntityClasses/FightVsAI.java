@@ -1,13 +1,20 @@
 package EntityClasses;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.Entity;
-import java.time.LocalDate;
+import java.util.Date;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
      * Used to operate on fight history data
      */
 @Entity
-public class UserInFight {
+@Table(name="ai_fights")
+public class FightVsAI {
     
     public static enum Result {
         WON,
@@ -18,7 +25,12 @@ public class UserInFight {
     /**
      * Date of a fight
      */
-    private LocalDate date;
+    
+    @Id
+    @GeneratedValue
+    private int id;
+    
+    private Date date;
     
     /**
      * The rating change for user
@@ -29,32 +41,42 @@ public class UserInFight {
      * Opponent
      * Either a character or an AI boss
      */
-    private Creature rival;
+    
+    @ManyToOne
+    @JoinColumn(name="boss")
+    private Boss rival;
     
     /**
      * Result - won, lost, died
      */
     private Result result;
-
+    
+    
+    @ManyToOne
+    @JoinColumn(name="fighter")
+    @JsonIgnore
+    private Character fighter;
+    
+    
     /**
      * Getter
-     * {@link UserInFight#date} 
+     * {@link FightVsAI#date} 
      */
-    public LocalDate getDate() {
+    public Date getDate() {
         return date;
     }
 
     /**
      * Setter
-     * {@link UserInFight#date} 
+     * {@link FightVsAI#date} 
      */
-    public void setDate(LocalDate date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 
     /**
      * Getter
-     * {@link UserInFight#ratingChange} 
+     * {@link FightVsAI#ratingChange} 
      */
     public int getRatingChange() {
         return ratingChange;
@@ -62,7 +84,7 @@ public class UserInFight {
 
     /**
      * Setter
-     * {@link UserInFight#ratingChange} 
+     * {@link FightVsAI#ratingChange} 
      */
     public void setRatingChange(int ratingChange) {
         this.ratingChange = ratingChange;
@@ -70,23 +92,23 @@ public class UserInFight {
 
     /**
      * Getter
-     * {@link UserInFight#rival} 
+     * {@link FightVsAI#rival} 
      */
-    public Creature getRival() {
+    public Boss getRival() {
         return rival;
     }
 
     /**
      * Setter
-     * {@link UserInFight#rival} 
+     * {@link FightVsAI#rival} 
      */
-    public void setRival(Creature rival) {
+    public void setRival(Boss rival) {
         this.rival = rival;
     }
 
     /**
      * Getter
-     * {@link UserInFight#result} 
+     * {@link FightVsAI#result} 
      */
     public Result getResult() {
         return result;
@@ -94,7 +116,7 @@ public class UserInFight {
 
     /**
      * Setter
-     * {@link UserInFight#result} 
+     * {@link FightVsAI#result} 
      */
     public void setResult(Result result) {
         this.result = result;
@@ -104,7 +126,7 @@ public class UserInFight {
      * Default constructor
      * Used for dependency injection
      */
-    public UserInFight(){}
+    public FightVsAI(){}
     
     /**
      * To be used when retrieved from database
@@ -113,11 +135,27 @@ public class UserInFight {
      * @param result
      * @param ratingChange 
      */
-    public UserInFight(LocalDate date, Creature rival, Result result, int ratingChange) {
+    public FightVsAI(Date date, Boss rival, Result result, int ratingChange) {
         this.date = date;
         this.rival = rival;
         this.result = result;
         this.ratingChange = ratingChange;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Character getFighter() {
+        return fighter;
+    }
+
+    public void setFighter(Character fighter) {
+        this.fighter = fighter;
     }
     
 }

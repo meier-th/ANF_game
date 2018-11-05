@@ -1,20 +1,25 @@
 package EntityClasses;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "Friend_Request")
+@Table(name = "friend_request")
 public class FriendsRequest {
 
     @Id
+    @GeneratedValue
     int id;
 
-    @Column(name = "requestingUser")
+    @ManyToOne
+    @JoinColumn(name = "requestingUser")
     User requestingUser;
 
-    @Column(name = "friendUser")
+    @ManyToOne
+    @JoinColumn(name = "friendUser")
     User friendUser;
 }

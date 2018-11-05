@@ -1,10 +1,10 @@
 package EntityClasses;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
@@ -46,10 +46,28 @@ public class User implements Serializable {
      * User's stats object
      */
     
+    @OneToMany(mappedBy="sender")
+    @JsonIgnore
+    private List<PrivateMessage> outgoingMessages;
+    
+    @OneToMany(mappedBy="receiver")
+    @JsonIgnore
+    private List<PrivateMessage> incomingMessages;
+    
     @OneToMany(mappedBy="user1")
+    @JsonIgnore
     private List<Friends>friends1;
     
+    @OneToMany(mappedBy="friendUser")
+    @JsonIgnore
+    private List<FriendsRequest> friendRequestsIn;
+    
+    @OneToMany(mappedBy="requestingUser")
+    @JsonIgnore
+    private List<FriendsRequest> friendRequestOut;
+    
     @OneToMany(mappedBy="user2")
+    @JsonIgnore
     private List<Friends>friends2;
     
     public List<Friends> getFriends1() {
@@ -95,6 +113,22 @@ public class User implements Serializable {
         this.login = login;
         this.password = password;
         this.email = email;
+    }
+
+    public List<FriendsRequest> getFriendRequestsIn() {
+        return friendRequestsIn;
+    }
+
+    public void setFriendRequestsIn(List<FriendsRequest> friendRequestsIn) {
+        this.friendRequestsIn = friendRequestsIn;
+    }
+
+    public List<FriendsRequest> getFriendRequestOut() {
+        return friendRequestOut;
+    }
+
+    public void setFriendRequestOut(List<FriendsRequest> friendRequestOut) {
+        this.friendRequestOut = friendRequestOut;
     }
     
     /**Getter

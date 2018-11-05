@@ -6,6 +6,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import javax.persistence.GeneratedValue;
 
 /**
  * Represents Stats entity. Used to operate on users' statistic data.
@@ -14,22 +15,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Table(name = "Statistics")
 public class Stats {
 
-    /**
-     * Rating of a user
-     */
+    
 	@Id
-	private String login;
+        @GeneratedValue
+	private int id;
 	
 	@OneToOne(mappedBy="stats")
 	@JsonIgnore
 	private User user;
-    public String getLogin() {
-		return login;
-	}
-
-	public void setLogin(String login) {
-		this.login = login;
-	}
 
 	private int rating;
     /**

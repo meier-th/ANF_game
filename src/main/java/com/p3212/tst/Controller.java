@@ -1,12 +1,11 @@
 package com.p3212.tst;
 
-import EntityClasses.User;
 import EntityClasses.Appearance;
+import EntityClasses.User;
 import EntityClasses.Character;
 import Services.AppearanceService;
 import Services.CharacterService;
 import Services.UserService;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -36,24 +35,19 @@ public class Controller {
     
     @RequestMapping("/users")
     public List<User> getAllUsers() {
-    	Iterable<User> iterable = userService.getAllUsers();
-    	List<User> toRet = new ArrayList<User>();
-    	Iterator<User> iter = iterable.iterator();
-    	while (iter.hasNext()) {
-    		toRet.add(iter.next());
-    	}
-        return toRet;
+        return userService.getAllUsers();
     }
     
-    @RequestMapping("/appearances") 
+    @RequestMapping("/appearances")
     public List<Appearance> getAllAppearances() {
-    	Iterator<Appearance> iter = appService.getAllAppearances().iterator();
-    	List<Appearance> toRet = new ArrayList<Appearance>();
-    	while (iter.hasNext()) {
-    		toRet.add(iter.next());
-    	}
-    	return toRet;
+        Iterator<Appearance> iter = appService.getAllAppearances().iterator();
+        List<Appearance> toRet = new ArrayList<Appearance>();
+        while (iter.hasNext()) {
+            toRet.add(iter.next());
+        }
+        return toRet;
     }
+
     
     @RequestMapping("/persons")
     public List<Character> getAllCharacters() {
