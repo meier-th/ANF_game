@@ -1,7 +1,11 @@
 package EntityClasses;
 
 import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Represents Stats entity. Used to operate on users' statistic data.
@@ -13,7 +17,21 @@ public class Stats {
     /**
      * Rating of a user
      */
-    private int rating;
+	@Id
+	private String login;
+	
+	@OneToOne(mappedBy="stats")
+	@JsonIgnore
+	private User user;
+    public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+	private int rating;
     /**
      * Number of fights user took part in
      */

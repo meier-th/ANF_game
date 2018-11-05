@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -39,7 +40,19 @@ public class Character implements Creature {
     @JsonIgnore
     private User user;
 
-    public User getUser() {
+    @OneToOne
+    @JoinColumn(name="appearance_id")
+    private Appearance appearance;
+    
+    public Appearance getAppearance() {
+		return appearance;
+	}
+
+	public void setAppearance(Appearance appearance) {
+		this.appearance = appearance;
+	}
+
+	public User getUser() {
         return user;
     }
 

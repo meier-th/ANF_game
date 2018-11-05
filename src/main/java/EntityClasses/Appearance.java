@@ -2,8 +2,13 @@ package EntityClasses;
 
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Represents Features entity
@@ -43,21 +48,29 @@ public class Appearance {
      * Gender of character
      * Responsible for model
      */
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
     /**
      * Skin colour of a character
      */
+    @Enumerated(EnumType.STRING)
     private SkinColour skinColour;
 
     /**
      * Hair colour of a character
      */
+    @Enumerated(EnumType.STRING)
     private HairColour hairColour;
 
+    @OneToOne(mappedBy="appearance")
+    @JsonIgnore
+    private Character charact;
+    
     /**
      * Clothes colour of a character
      */
+    @Enumerated(EnumType.STRING)
     private ClothesColour clothesColour;
 
 

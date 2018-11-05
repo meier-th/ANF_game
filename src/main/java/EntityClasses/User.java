@@ -1,11 +1,13 @@
 package EntityClasses;
 
+import java.util.List;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 /**
@@ -43,11 +45,42 @@ public class User implements Serializable {
     /**
      * User's stats object
      */
-    //@Transient
-    //@Autowired
-    //private Stats stats; //Dependency injected with Autowire by name
     
-    /**
+    @OneToMany(mappedBy="user1")
+    private List<Friends>friends1;
+    
+    @OneToMany(mappedBy="user2")
+    private List<Friends>friends2;
+    
+    public List<Friends> getFriends1() {
+		return friends1;
+	}
+
+	public void setFriends1(List<Friends> friends1) {
+		this.friends1 = friends1;
+	}
+
+	public List<Friends> getFriends2() {
+		return friends2;
+	}
+
+	public void setFriends2(List<Friends> friends2) {
+		this.friends2 = friends2;
+	}
+
+	@OneToOne
+    @JoinColumn(name="stats_id")
+    private Stats stats; //Dependency injected with Autowire by name
+    
+    public Stats getStats() {
+		return stats;
+	}
+
+	public void setStats(Stats stats) {
+		this.stats = stats;
+	}
+
+	/**
      * Default constructor, to be used for dependency injection
      */
     public User(){}
