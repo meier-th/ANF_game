@@ -1,5 +1,6 @@
 package EntityClasses;
 
+import java.io.Serializable;
 import javax.persistence.Id;
 
 import javax.persistence.Entity;
@@ -12,7 +13,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "Bidju")
-public class Boss {
+public class Boss implements Serializable {
     
     /**
      * Identifier

@@ -1,5 +1,6 @@
 package EntityClasses;
 
+import java.io.Serializable;
 import javax.persistence.Id;
 
 import javax.persistence.Entity;
@@ -12,7 +13,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "Techniques")
-public class Spell {
+public class Spell implements Serializable {
 
     /**
      * The base damage of a spell

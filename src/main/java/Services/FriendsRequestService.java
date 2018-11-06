@@ -30,7 +30,7 @@ public class FriendsRequestService {
      *
      * @param id id of the request
      */
-    void removeRequest(int id) {
+    /*void removeRequest(int id) {
         repository.deleteById(id);
-    }
+    }*/
 }

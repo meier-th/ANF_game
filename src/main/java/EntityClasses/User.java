@@ -46,27 +46,27 @@ public class User implements Serializable {
      * User's stats object
      */
     
-    @OneToMany(mappedBy="sender")
+    @OneToMany(mappedBy="message_id.sender")
     @JsonIgnore
     private List<PrivateMessage> outgoingMessages;
     
-    @OneToMany(mappedBy="receiver")
+    @OneToMany(mappedBy="message_id.receiver")
     @JsonIgnore
     private List<PrivateMessage> incomingMessages;
     
-    @OneToMany(mappedBy="user1")
+    @OneToMany(mappedBy="friends_id.user1")
     @JsonIgnore
     private List<Friends>friends1;
     
-    @OneToMany(mappedBy="friendUser")
+    @OneToMany(mappedBy="request_id.friendUser")
     @JsonIgnore
     private List<FriendsRequest> friendRequestsIn;
     
-    @OneToMany(mappedBy="requestingUser")
+    @OneToMany(mappedBy="request_id.requestingUser")
     @JsonIgnore
     private List<FriendsRequest> friendRequestOut;
     
-    @OneToMany(mappedBy="user2")
+    @OneToMany(mappedBy="friends_id.user2")
     @JsonIgnore
     private List<Friends>friends2;
     

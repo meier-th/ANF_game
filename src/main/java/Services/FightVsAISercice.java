@@ -1,5 +1,6 @@
 package Services;
 
+import EntityClasses.AIFightCompositeKey;
 import EntityClasses.FightVsAI;
 import Repositories.FightVsAIRepository;
 import java.util.List;
@@ -15,11 +16,11 @@ public class FightVsAISercice {
         repository.save(fight);
     }
     
-    List<FightVsAI> getByUserId(int id) {
+    /*List<FightVsAI> getByUserId(AIFightCompositeKey id) {
         return repository.getAIFightsByUser(id);
-    }
+    }*/
     
-    FightVsAI getFight(int id) {
+    FightVsAI getFight(AIFightCompositeKey id) {
         return repository.findById(id).get();
     }
 }

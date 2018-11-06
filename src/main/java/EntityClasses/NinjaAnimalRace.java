@@ -3,8 +3,9 @@ package EntityClasses;
 import javax.persistence.Id;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Table;
-import javax.persistence.GeneratedValue;
 
 /**
  * Represents NinjaAnimalRaces entity
@@ -19,9 +20,7 @@ public class NinjaAnimalRace {
     GOVNO;
     }
     @Id
-    @GeneratedValue
-    private int id;
-    
+    @Enumerated(EnumType.STRING)
     private races raceName;
     
 }

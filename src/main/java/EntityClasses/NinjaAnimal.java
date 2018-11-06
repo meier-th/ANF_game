@@ -3,7 +3,6 @@ package EntityClasses;
 import javax.persistence.Id;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -15,15 +14,11 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "Ninja_animals")
 public class NinjaAnimal {
-    /**
-     * id of the animal
-     */
-    @Id
-    @GeneratedValue
-    private int id;
+
     /**
      * Name of the ninja animal
      */
+    @Id
     private String name;
 
     /**
@@ -47,14 +42,6 @@ public class NinjaAnimal {
     @ManyToOne
     @JoinColumn(name="race")
     private NinjaAnimalRace race;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 
     /**
      * Getter
@@ -153,8 +140,7 @@ public class NinjaAnimal {
      * @param hp       hit points of the animal
      * @param reqlevel required level to summon the animal
      */
-    public NinjaAnimal(int id, String name, NinjaAnimalRace race, int damage, int hp, int reqlevel) {
-        this.id = id;
+    public NinjaAnimal(String name, NinjaAnimalRace race, int damage, int hp, int reqlevel) {
         this.damage = damage;
         this.hp = hp;
         this.name = name;

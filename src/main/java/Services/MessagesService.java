@@ -1,5 +1,6 @@
 package Services;
 
+import EntityClasses.MessageCompositeKey;
 import EntityClasses.PrivateMessage;
 import Repositories.MessagesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,15 +15,15 @@ public class MessagesService {
         repository.save(message);
     }
 
-    PrivateMessage getMessage(int id) {
+    PrivateMessage getMessage(MessageCompositeKey id) {
         return repository.findById(id).get();
     }
 
-    void removeMessage(int id) {
+    void removeMessage(MessageCompositeKey id) {
         repository.deleteById(id);
     }
 
-    void setRead(int id) {
-        repository.setRead(id);
+    void setRead(String sender, String receiver, String text) {
+        repository.setRead(sender, receiver, text);
     }
 }

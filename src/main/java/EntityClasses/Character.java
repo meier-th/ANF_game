@@ -1,6 +1,7 @@
 package EntityClasses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
@@ -18,7 +19,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "persons")
-public class Character {
+public class Character implements Serializable {
 
     /**
      * The date of creating a character
@@ -36,7 +37,7 @@ public class Character {
     public void setAnimalRace(NinjaAnimalRace animalRace) {
         this.animalRace = animalRace;
     }
-    @OneToMany(mappedBy="characterHandler")
+    @OneToMany(mappedBy="handlingId.characterHandler")
     private List<SpellHandling> spellsKnown;
 
     public List<SpellHandling> getSpellsKnown() {
@@ -57,11 +58,11 @@ public class Character {
      */
     private int maxChakraAmount;
 
-    @OneToMany(mappedBy="firstFighter")
+    @OneToMany(mappedBy="pvpId.firstFighter")
     @JsonIgnore
     private List<FightPVP>pvpFightsAsFirst;
     
-    @OneToMany(mappedBy="secondFighter")
+    @OneToMany(mappedBy="pvpId.secondFighter")
     @JsonIgnore
     private List<FightPVP>pvpFightsAsSecond;
     
@@ -74,7 +75,7 @@ public class Character {
     @JsonIgnore
     private User user;
 
-    @OneToMany(mappedBy="fighter")
+    @OneToMany(mappedBy="aiId.fighter")
     private List<FightVsAI>fights;
 
     public List<FightVsAI> getFights() {
