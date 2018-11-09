@@ -9,5 +9,5 @@ import javax.persistence.Table;
 public class FriendsRequest {
 
     @EmbeddedId
-    FriendRequestCompositeKey request_id;
+    public FriendRequestCompositeKey request_id;
 }

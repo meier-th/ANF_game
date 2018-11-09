@@ -86,9 +86,9 @@ public class User implements Serializable {
 		this.friends2 = friends2;
 	}
 
-	@OneToOne
+    @OneToOne
     @JoinColumn(name="stats_id")
-    private Stats stats; //Dependency injected with Autowire by name
+    private Stats stats; 
     
     public Stats getStats() {
 		return stats;
@@ -103,12 +103,6 @@ public class User implements Serializable {
      */
     public User(){}
     
-    /**
-     * To be used when retrieved from database
-     * @param login user's login
-     * @param email user's email
-     * @param password user's password
-     */
     public User(String login, String email, String password) {
         this.login = login;
         this.password = password;

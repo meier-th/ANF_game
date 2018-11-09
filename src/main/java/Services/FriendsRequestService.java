@@ -1,7 +1,11 @@
 package Services;
 
+import EntityClasses.FriendRequestCompositeKey;
 import EntityClasses.FriendsRequest;
+import EntityClasses.User;
 import Repositories.FriendsRequestRepository;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +34,28 @@ public class FriendsRequestService {
      *
      * @param id id of the request
      */
-    /*void removeRequest(int id) {
+    void removeRequest(FriendRequestCompositeKey id) {
         repository.deleteById(id);
-    }*/
+    }
+    
+    ArrayList<User> requestingUsers(User user) {
+        String name = user.getLogin();
+        List<FriendsRequest> requests = repository.getIncomingRequests(name);
+        ArrayList<User>requesters = new ArrayList<User>();
+        for (FriendsRequest req : requests) {
+            requesters.add(req.request_id.getRequestingUser());
+        }
+        return requesters;
+    }
+    
+    ArrayList<User> requestedUsers(User user) {
+        String name = user.getLogin();
+        List<FriendsRequest> requests = repository.getOutgoingRequests(name);
+        ArrayList<User>requesters = new ArrayList<User>();
+        for (FriendsRequest req : requests) {
+            requesters.add(req.request_id.getFriendUser());
+        }
+        return requesters;
+    }
+    
 }

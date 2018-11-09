@@ -6,6 +6,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 
 /**
@@ -22,7 +23,7 @@ public class Stats {
 	
 	@OneToOne(mappedBy="stats")
 	@JsonIgnore
-	private User user;
+	public User user;
 
 	private int rating;
     /**
@@ -42,7 +43,22 @@ public class Stats {
      * Death occurs when a character died in battle against AI, but his team won
      */
     private int deaths;
-
+    
+    /**
+     * Level
+     */
+    @Column(name="lvl")
+    int level;
+    
+    /**
+     * Experience
+     */
+    int experience;
+    
+    /**
+     * Number of available upgrade points
+     */
+    int upgradePoints;
     /**
      * Default constructor, to be used for dependency injection
      */
@@ -90,6 +106,48 @@ public class Stats {
         this.wins = wins;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public int getExperience() {
+        return experience;
+    }
+
+    public void setExperience(int experience) {
+        this.experience = experience;
+    }
+
+    public int getUpgradePoints() {
+        return upgradePoints;
+    }
+
+    public void setUpgradePoints(int upgradePoints) {
+        this.upgradePoints = upgradePoints;
+    }
+
+    
+    
     /**
      * Setter
      * {@link Stats#losses}

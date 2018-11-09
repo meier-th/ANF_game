@@ -47,10 +47,9 @@ public class AppearanceService {
     /**
      * Update an appearance
      *
-     * @param id         id of the appearance
      * @param appearance Appearance object to save
      */
-    public void updateAppearance(int id, Appearance appearance) {
+    public void updateAppearance(Appearance appearance) {
         appearanceRepository.save(appearance); //TODO do we really need save
     }
 

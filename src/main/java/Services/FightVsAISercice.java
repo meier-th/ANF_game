@@ -4,6 +4,7 @@ import EntityClasses.AIFightCompositeKey;
 import EntityClasses.FightVsAI;
 import Repositories.FightVsAIRepository;
 import java.util.List;
+import EntityClasses.Character;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +17,10 @@ public class FightVsAISercice {
         repository.save(fight);
     }
     
-    /*List<FightVsAI> getByUserId(AIFightCompositeKey id) {
+    List<FightVsAI> getByFighterId(Character ch) {
+        int id = ch.getId();
         return repository.getAIFightsByUser(id);
-    }*/
+    }
     
     FightVsAI getFight(AIFightCompositeKey id) {
         return repository.findById(id).get();

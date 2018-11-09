@@ -14,7 +14,7 @@ public class BossService {
         bossRepository.save(boss);
     }
 
-    Boss getBoss(int id) {
-        return bossRepository.findById(id);
+    Boss getBoss(String id) {
+        return bossRepository.findById(id).get();
     }
 }

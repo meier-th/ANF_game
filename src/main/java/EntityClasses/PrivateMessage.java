@@ -19,5 +19,5 @@ public class PrivateMessage {
     
     
     
-    private boolean idRead;
+    boolean isRead;
 }

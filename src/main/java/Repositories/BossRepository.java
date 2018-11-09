@@ -1,12 +1,8 @@
 package Repositories;
 
 import EntityClasses.Boss;
-import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.CrudRepository;
 
 @org.springframework.stereotype.Repository
-public interface BossRepository extends Repository<Boss, Integer> {
-
-    Boss save(Boss newOne);
-
-    Boss findById(int id);
+public interface BossRepository extends CrudRepository<Boss, String> {
 }

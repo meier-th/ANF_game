@@ -27,4 +27,23 @@ public class FriendRequestCompositeKey implements Serializable {
     public int hashCode() {
         return Objects.hash(friendUser, requestingUser);
     }
+
+    public User getFriendUser() {
+        return friendUser;
+    }
+
+    public void setFriendUser(User friendUser) {
+        this.friendUser = friendUser;
+    }
+
+    public User getRequestingUser() {
+        return requestingUser;
+    }
+
+    public void setRequestingUser(User requestingUser) {
+        this.requestingUser = requestingUser;
+    }
+    
+    
+    
 }

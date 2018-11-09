@@ -30,7 +30,7 @@ public class CharacterService {
         return charRepository.findById(id).get();
     }
     
-    public void updateCharacter(int id, Character usr) {
+    public void updateCharacter(Character usr) {
         charRepository.save(usr);
     }
     

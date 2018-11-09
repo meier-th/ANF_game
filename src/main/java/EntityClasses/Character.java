@@ -12,6 +12,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  * Represents Person entity
@@ -24,6 +26,7 @@ public class Character implements Serializable {
     /**
      * The date of creating a character
      */
+    @Temporal(TemporalType.TIMESTAMP)
     private Date creationDate;
     
     @ManyToOne
@@ -65,11 +68,6 @@ public class Character implements Serializable {
     @OneToMany(mappedBy="pvpId.secondFighter")
     @JsonIgnore
     private List<FightPVP>pvpFightsAsSecond;
-    
-    /**
-     * The race of ninja animal that character is able to summon
-     */
-    //private NinjaAnimalRace animalRace;
 
     @OneToOne(mappedBy = "character")
     @JsonIgnore
@@ -160,22 +158,6 @@ public class Character implements Serializable {
 
     /**
      * Getter
-     * {@link Character#animalRace}
-     */
-/*    public NinjaAnimalRace getAnimalRace() {
-        return animalRace;
-    }*/
-
-    /**
-     * Setter
-     * {@link Character#animalRace}
-     */
-    /*public void setAnimalRace(NinjaAnimalRace animalRace) {
-        this.animalRace = animalRace;
-    }*/
-
-    /**
-     * Getter
      * {@link Character#id}
      */
     public int getId() {
@@ -190,22 +172,21 @@ public class Character implements Serializable {
         this.id = id;
     }
 
-    
-    /**
-     * Getter
-     * {@link Character#appearance}
-     */
-    /*public Appearance getAppearance() {
-        return appearance;
+    public List<FightPVP> getPvpFightsAsFirst() {
+        return pvpFightsAsFirst;
     }
-*/
-    /**
-     * Setter
-     * {@link Character#appearance}
-     */
-    /*public void setAppearance(Appearance appearance) {
-        this.appearance = appearance;
-    }*/
+
+    public void setPvpFightsAsFirst(List<FightPVP> pvpFightsAsFirst) {
+        this.pvpFightsAsFirst = pvpFightsAsFirst;
+    }
+
+    public List<FightPVP> getPvpFightsAsSecond() {
+        return pvpFightsAsSecond;
+    }
+
+    public void setPvpFightsAsSecond(List<FightPVP> pvpFightsAsSecond) {
+        this.pvpFightsAsSecond = pvpFightsAsSecond;
+    }
 
     /**
      * Getter
@@ -262,8 +243,6 @@ public class Character implements Serializable {
     }
 
     /**
-     * To be used when retrieved from database
-     *
      * @param date       - creation date
      * @param resistance - resistance float value
      * @param hp         - max hp value

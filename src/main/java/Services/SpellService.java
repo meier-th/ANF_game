@@ -22,8 +22,8 @@ public class SpellService {
         return repository.findById(id).get();
     }
 
-    void update(int id, Spell spell) {
-        repository.save(spell); //TODO guess what
+    void update(Spell spell) {
+        repository.save(spell);
     }
 
     void removeSpell(int id) {

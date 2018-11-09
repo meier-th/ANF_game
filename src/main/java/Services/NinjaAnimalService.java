@@ -1,6 +1,7 @@
 package Services;
 
 import EntityClasses.NinjaAnimal;
+import EntityClasses.NinjaAnimalRace;
 import Repositories.NinjaAnimalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,11 @@ public class NinjaAnimalService {
      * @param animal A new one to add
      */
 
+    List<NinjaAnimal>getRaceAnimals(NinjaAnimalRace race) {
+        String rc = race.toString();
+        return repository.getRaceAnimals(rc);
+    }
+    
     void addAnimal(NinjaAnimal animal) {
         repository.save(animal);
     }
@@ -37,7 +43,7 @@ public class NinjaAnimalService {
      * @return Requested NinjaAnimal
      */
 
-    NinjaAnimal get(int id) {
+    NinjaAnimal get(String id) {
         return repository.findById(id).get();
     }
 
@@ -55,7 +61,7 @@ public class NinjaAnimalService {
      *
      * @param id Id to be deleted
      */
-    void removeAnimal(int id) {
+    void removeAnimal(String id) {
         repository.deleteById(id);
     }
 
@@ -66,7 +72,7 @@ public class NinjaAnimalService {
      * @param animal NinjaAnimal object to be saved in db
      */
     void updateAnimal(int id, NinjaAnimal animal) {
-        repository.save(animal); //TODO do we really need save?
+        repository.save(animal);
     }
 
 }

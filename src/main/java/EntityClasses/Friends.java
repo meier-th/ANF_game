@@ -11,5 +11,5 @@ import javax.persistence.Table;
 public class Friends implements Serializable {
 
     @EmbeddedId
-    FriendsCompositeKey friends_id;
+    public FriendsCompositeKey friends_id;
 }

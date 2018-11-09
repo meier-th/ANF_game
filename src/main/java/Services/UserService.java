@@ -31,7 +31,7 @@ public class UserService {
         return userRepository.findById(login).get();
     }
     
-    public void updateUser(String login, User usr) {
+    public void updateUser(User usr) {
         userRepository.save(usr);
     }
     
