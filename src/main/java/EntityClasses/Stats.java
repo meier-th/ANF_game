@@ -16,14 +16,23 @@ import javax.persistence.GeneratedValue;
 @Table(name = "Statistics")
 public class Stats {
 
-    
-	@Id
-        @GeneratedValue
-	private int id;
-	
-	@OneToOne(mappedBy="stats")
-	@JsonIgnore
-	public User user;
+    /**
+     * Rating of a user
+     */
+    @Id
+    private String login;
+
+    @OneToOne(mappedBy = "stats")
+    @JsonIgnore
+    private User user;
+
+    public String getLogin() {
+        return login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
 
 	private int rating;
     /**
@@ -43,18 +52,18 @@ public class Stats {
      * Death occurs when a character died in battle against AI, but his team won
      */
     private int deaths;
-    
+
     /**
      * Level
      */
     @Column(name="lvl")
     int level;
-    
+
     /**
      * Experience
      */
     int experience;
-    
+
     /**
      * Number of available upgrade points
      */
@@ -106,13 +115,6 @@ public class Stats {
         this.wins = wins;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public User getUser() {
         return user;
@@ -146,8 +148,8 @@ public class Stats {
         this.upgradePoints = upgradePoints;
     }
 
-    
-    
+
+
     /**
      * Setter
      * {@link Stats#losses}
@@ -204,5 +206,14 @@ public class Stats {
         return this.deaths;
     }
 
-
+    @Override
+    public String toString() {
+        return "Stats:" +
+                "Username: " + login +
+                ", rating=" + rating +
+                ", fights=" + fights +
+                ", wins=" + wins +
+                ", losses=" + losses +
+                ", deaths=" + deaths;
+    }
 }
