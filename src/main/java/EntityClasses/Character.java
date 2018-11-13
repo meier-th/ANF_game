@@ -21,14 +21,15 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(name = "persons")
-public class Character implements Serializable {
+public class Character implements Serializable, Creature {
 
     /**
      * The date of creating a character
      */
     @Temporal(TemporalType.TIMESTAMP)
     private Date creationDate;
-    
+
+
     @ManyToOne
     @JoinColumn(name="animal_race")
     private NinjaAnimalRace animalRace;
@@ -257,5 +258,9 @@ public class Character implements Serializable {
         this.maxChakraAmount = chakra;
     }
 
+    @Override
+    public void acceptDamage(int damage) {
+
+    }
 }
 

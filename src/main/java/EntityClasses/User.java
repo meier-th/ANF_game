@@ -1,6 +1,7 @@
 package EntityClasses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.List;
 import java.io.Serializable;
 import javax.persistence.Entity;
@@ -12,102 +13,102 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 /**
-     * Represents User entity. Used to operate on users' registration data 
-     */
+ * Represents User entity. Used to operate on users' registration data
+ */
 
 @Entity
-@Table(name="users")
+@Table(name = "users")
 public class User implements Serializable {
-    
+
     /**
      * User's login
      */
     @Id
     private String login;
-    
+
     /**
      * User's in-game character
      */
-    
+
     @OneToOne
     @JoinColumn(name = "character_id")
     private Character character;
-    
+
     /**
      * User's email
      */
     private String email;
-    
+
     /**
      * User's password
      */
     private String password;
-    
+
     /**
      * User's stats object
      */
-    
-    @OneToMany(mappedBy="message_id.sender")
+
+    @OneToMany(mappedBy = "message_id.sender")
     @JsonIgnore
     private List<PrivateMessage> outgoingMessages;
 
-    @OneToMany(mappedBy="message_id.receiver")
+    @OneToMany(mappedBy = "message_id.receiver")
     @JsonIgnore
     private List<PrivateMessage> incomingMessages;
 
-    @OneToMany(mappedBy="friends_id.user1")
+    @OneToMany(mappedBy = "friends_id.user1")
     @JsonIgnore
-    private List<Friends>friends1;
+    private List<Friends> friends1;
 
-    @OneToMany(mappedBy="request_id.friendUser")
+    @OneToMany(mappedBy = "request_id.friendUser")
     @JsonIgnore
     private List<FriendsRequest> friendRequestsIn;
 
-    @OneToMany(mappedBy="request_id.requestingUser")
+    @OneToMany(mappedBy = "request_id.requestingUser")
     @JsonIgnore
     private List<FriendsRequest> friendRequestOut;
 
-    @OneToMany(mappedBy="friends_id.user2")
+    @OneToMany(mappedBy = "friends_id.user2")
     @JsonIgnore
-    private List<Friends>friends2;
-    
+    private List<Friends> friends2;
+
     public List<Friends> getFriends1() {
-		return friends1;
-	}
+        return friends1;
+    }
 
-	public void setFriends1(List<Friends> friends1) {
-		this.friends1 = friends1;
-	}
+    public void setFriends1(List<Friends> friends1) {
+        this.friends1 = friends1;
+    }
 
-	public List<Friends> getFriends2() {
-		return friends2;
-	}
+    public List<Friends> getFriends2() {
+        return friends2;
+    }
 
-	public void setFriends2(List<Friends> friends2) {
-		this.friends2 = friends2;
-	}
+    public void setFriends2(List<Friends> friends2) {
+        this.friends2 = friends2;
+    }
 
     @OneToOne
-    @JoinColumn(name="stats_id")
+    @JoinColumn(name = "stats_id")
     private Stats stats;
-    
+
     public Stats getStats() {
-		return stats;
-	}
+        return stats;
+    }
 
-	public void setStats(Stats stats) {
-		this.stats = stats;
-	}
+    public void setStats(Stats stats) {
+        this.stats = stats;
+    }
 
-	/**
+    /**
      * Default constructor, to be used for dependency injection
      */
-    public User(){}
-    
-    public User(String login, String email, String password) {
+    public User() {
+    }
+
+    public User(String login, String password) {
         this.login = login;
         this.password = password;
-        this.email = email;
     }
 
     public List<FriendsRequest> getFriendRequestsIn() {
@@ -126,73 +127,79 @@ public class User implements Serializable {
         this.friendRequestOut = friendRequestOut;
     }
 
-    /**Getter
+    /**
+     * Getter
      * {@link User#login}
      */
-    public String getUsername(){
+    public String getUsername() {
         return this.login;
     }
-    
-    /**Getter
+
+    /**
+     * Getter
      * {@link User#email}
      */
     public String getEmail() {
         return this.email;
     }
-    
-    /**Getter
+
+    /**
+     * Getter
      * {@link User#password}
      */
     public String getPassword() {
         return this.password;
     }
-    
-    /**Setter
+
+    /**
+     * Setter
      * {@link User#login}
      */
-    public void setUsername(String login){
+    public void setUsername(String login) {
         this.login = login;
     }
-    
-    /**Setter
+
+    /**
+     * Setter
      * {@link User#email}
      */
     public void setEmail(String email) {
         this.email = email;
     }
-    
-    /**Setter
+
+    /**
+     * Setter
      * {@link User#password}
      */
     public void setPassword(String password) {
         this.password = password;
     }
-    
+
     /**Setter
      * {@link User#stats}
      */
     //public void setStats(Stats st) {
     //    this.stats = st;
     //}
-    
+
     /**Setter
      * {@link User#stats}
      */
     //public Stats getStats() {
     //    return this.stats;
-   // }
+    // }
 
     /**
      * Getter
-     * {@link User#login} 
+     * {@link User#login}
      */
     public String getLogin() {
         return login;
     }
-    
+
     /**
      * Setter
-     * {@link User#login} 
+     * {@link User#login}
      */
     public void setLogin(String login) {
         this.login = login;
@@ -200,20 +207,19 @@ public class User implements Serializable {
 
     /**
      * Getter
-     * {@link User#character} 
-     */    
+     * {@link User#character}
+     */
     public Character getCharacter() {
         return character;
     }
 
     /**
      * Setter
-     * {@link User#character} 
-     */    
+     * {@link User#character}
+     */
     public void setCharacter(Character character) {
         this.character = character;
     }
-    
-    
-    
+
+
 }

@@ -34,8 +34,11 @@ public class UserService {
      * @param usr new user
      */
 
-    public void addUser(User usr) {
-        userRepository.save(usr);
+    public boolean addUser(User usr) {
+        if (!userRepository.existsById(usr.getLogin())) {
+            userRepository.save(usr);
+            return true;
+        } else return false;
     }
 
     /**
