@@ -1,10 +1,8 @@
 package EntityClasses;
 
-import java.io.Serializable;
 import javax.persistence.Id;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Table;
 
 /**
@@ -13,14 +11,17 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "Bidju")
-public class Boss implements Serializable {
+public class Boss implements Creature {
     
-    
+    /**
+     * Identifier
+     */
+    @Id
+    private int id;
     
     /**
      * Name of the boss
      */
-    @Id
     private String name;
     
     /**
@@ -32,6 +33,22 @@ public class Boss implements Serializable {
      * Maximum mount of chakra (mana)
      */
     private int maxChakraAmount;
+    
+    /**
+     * Getter
+     * {@link Boss#id}
+     */
+    public int getId() {
+        return id;
+    }
+    
+    /**
+     * Setter
+     * {@link Boss#id}
+     */
+    public void setId(int id) {
+        this.id = id;
+    }
     
     /**
      * Getter
@@ -89,11 +106,13 @@ public class Boss implements Serializable {
     
     /**
      * To be used when retrieved from database
+     * @param id - identifier
      * @param name - name
      * @param tails - number of tails
      * @param chakra - amount of chakra
      */
-    public Boss (String name, int tails, int chakra) {
+    public Boss (int id, String name, int tails, int chakra) {
+        this.id = id;
         this.name = name;
         this.maxChakraAmount = chakra;
         this.numberOfTails = tails;

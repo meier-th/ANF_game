@@ -4,29 +4,28 @@ import EntityClasses.Stats;
 import Repositories.StatsRepository;
 import com.rabbitmq.jms.admin.RMQConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import javax.jms.*;
-import java.util.List;
 import java.util.Optional;
 
+@Service
 public class BotListener {
     @Autowired
-    static StatsRepository stats;
+    StatsRepository stats;
 
-    public static void setUp() {
+    {
         RMQConnectionFactory factory = new RMQConnectionFactory();
         factory.setHost("localhost");
-        Connection con = null;
+        Connection con;
         final Session session;
         final MessageConsumer consumer;
-        Message message;
         final MessageProducer producer;
         try {
             con = factory.createConnection();
             session = con.createSession(false, Session.AUTO_ACKNOWLEDGE);
             consumer = session.createConsumer(session.createQueue("bot"));
             con.start();
-            message = consumer.receive();
             producer = session.createProducer(session.createQueue("botResponse"));
             Thread listener = new Thread() {
                 @Override
@@ -56,20 +55,21 @@ public class BotListener {
         }
     }
 
-    private static String fetchData(String msg) {
+    private String fetchData(String msg) {
         String[] param = msg.split(" ");
         switch (param[0]) {
             case "stats": {
                 Optional<Stats> stat = stats.findById(param[1]);
                 if (stat.isPresent()) return stat.get().toString();
-                else return "The user doesn't exist";
+                return "The user doesn't exist";
             }
             case "top": {
-                Iterable<Stats> list = stats.findTop100ByRating();
+                Iterable<Stats> list = stats.findFirstByRating(10);
                 StringBuilder result = new StringBuilder();
                 for (Stats stat : list) {
                     result.append(stat.getLogin()).append(": rating = ").append(stat.getRating());
                 }
+                if (result.length() == 0) return "No top here)0";
                 return result.toString();
             }
         }

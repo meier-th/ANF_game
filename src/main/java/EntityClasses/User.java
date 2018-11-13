@@ -5,6 +5,7 @@ import java.util.List;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
@@ -49,23 +50,23 @@ public class User implements Serializable {
     @OneToMany(mappedBy="message_id.sender")
     @JsonIgnore
     private List<PrivateMessage> outgoingMessages;
-    
+
     @OneToMany(mappedBy="message_id.receiver")
     @JsonIgnore
     private List<PrivateMessage> incomingMessages;
-    
+
     @OneToMany(mappedBy="friends_id.user1")
     @JsonIgnore
     private List<Friends>friends1;
-    
+
     @OneToMany(mappedBy="request_id.friendUser")
     @JsonIgnore
     private List<FriendsRequest> friendRequestsIn;
-    
+
     @OneToMany(mappedBy="request_id.requestingUser")
     @JsonIgnore
     private List<FriendsRequest> friendRequestOut;
-    
+
     @OneToMany(mappedBy="friends_id.user2")
     @JsonIgnore
     private List<Friends>friends2;
@@ -88,7 +89,7 @@ public class User implements Serializable {
 
     @OneToOne
     @JoinColumn(name="stats_id")
-    private Stats stats; 
+    private Stats stats;
     
     public Stats getStats() {
 		return stats;
@@ -124,7 +125,7 @@ public class User implements Serializable {
     public void setFriendRequestOut(List<FriendsRequest> friendRequestOut) {
         this.friendRequestOut = friendRequestOut;
     }
-    
+
     /**Getter
      * {@link User#login}
      */

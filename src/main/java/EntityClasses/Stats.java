@@ -208,12 +208,11 @@ public class Stats {
 
     @Override
     public String toString() {
-        return "Stats:" +
-                "Username: " + login +
-                ", rating=" + rating +
-                ", fights=" + fights +
-                ", wins=" + wins +
-                ", losses=" + losses +
-                ", deaths=" + deaths;
+        return "Username: " + login +
+                ",\n  rating=" + rating +
+                ",\n  fights=" + fights +
+                ",\n  wins=" + wins +
+                ",\n  losses=" + losses +
+                ",\n  deaths=" + deaths;
     }
 }

@@ -6,6 +6,8 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents NinjaAnimalRaces entity
@@ -22,5 +24,5 @@ public class NinjaAnimalRace {
     @Id
     @Enumerated(EnumType.STRING)
     private races raceName;
-    
+
 }
