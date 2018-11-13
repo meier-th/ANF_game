@@ -9,11 +9,11 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface StatsRepository extends CrudRepository<Stats, Integer> {
+public interface StatsRepository extends CrudRepository<Stats, String> {
     @Query("Select s from Stats s order by s.rating DESC")
     Page<Stats>getTopStats(Pageable pg);
 
-    @Query("update Stats s set s.level = s.level + 1, s.upgradePoints = s.upgradePoints + 3 where s.id = :i")
-    void levelUp(@Param("i") int id);
+    @Query("update Stats s set s.level = s.level + 1, s.upgradePoints = s.upgradePoints + 3 where s.login = :i")
+    void levelUp(@Param("i") String id);
 
 }

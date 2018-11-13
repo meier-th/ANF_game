@@ -64,7 +64,7 @@ public class BotListener {
                 return "The user doesn't exist";
             }
             case "top": {
-                Iterable<Stats> list = stats.findFirstByRating(10);
+                Iterable<Stats> list = null; //TODO here should be request for stats
                 StringBuilder result = new StringBuilder();
                 for (Stats stat : list) {
                     result.append(stat.getLogin()).append(": rating = ").append(stat.getRating());
