@@ -10,8 +10,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FriendsRepository extends CrudRepository<Friends, FriendsCompositeKey> {
-    
+
     @Query("select f from Friends f where f.friends_id.user1 = :user or f.friends_id.user2 = :user")
     List<Friends>getUsersFriends(@Param("user") String username);
-    
+
 }
