@@ -1,4 +1,4 @@
-package EntityClasses;
+package com.p3212.EntityClasses;
 
 /**
  * Represents an attack with damage and consumed chakra. Made to easily send response

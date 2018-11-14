@@ -1,25 +1,20 @@
-package EntityClasses;
-
-import javax.persistence.GeneratedValue;
-import javax.persistence.Transient;
+package com.p3212.EntityClasses;
 
 /**
  * Represents statistics during a fight
  */
 
 public class Fight {
-    @Transient
-    transient private int fighter1HP;
-    @Transient
-    transient private int fighter2HP;
-    @Transient
-    transient private int fighter1Chakra;
-    @Transient
-    transient private int fighter2Chakra;
+    
+    private int fighter1HP;
 
-    @Transient
-    @GeneratedValue()
-    transient int id;
+    private int fighter2HP;
+
+    private int fighter1Chakra;
+
+    private int fighter2Chakra;
+
+    int id;
 
     public void setFighter1HP(int fighter1HP) {
         this.fighter1HP = fighter1HP;

@@ -12,14 +12,14 @@ import javax.persistence.TemporalType;
 @Embeddable
 public class PVPFightCompositeKey implements Serializable {
     @ManyToOne
-    @JoinColumn(name = "firstFighter")
+    @JoinColumn(name="firstFighter")
     private Character firstFighter;
-
+    
     @ManyToOne
-    @JoinColumn(name = "secondFighter")
+    @JoinColumn(name="secondFighter")
     private Character secondFighter;
-
-    @Column(name = "fight_date")
+    
+    @Column(name="fight_date")
     @Temporal(TemporalType.TIMESTAMP)
     private Date fightDate;
 
@@ -52,7 +52,7 @@ public class PVPFightCompositeKey implements Serializable {
         }
         return true;
     }
-
+    
     public Character getFirstFighter() {
         return firstFighter;
     }
@@ -68,4 +68,5 @@ public class PVPFightCompositeKey implements Serializable {
     public void setSecondFighter(Character secondFighter) {
         this.secondFighter = secondFighter;
     }
+    
 }

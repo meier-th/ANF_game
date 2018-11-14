@@ -81,8 +81,7 @@ public class Stats {
      * @param l Number of losses
      * @param d Number of deaths
      */
-    public Stats(int id, int r, int f, int w, int l, int d) {
-        this.id = id;
+    public Stats(int r, int f, int w, int l, int d) {
         this.deaths = d;
         this.fights = f;
         this.losses = l;
