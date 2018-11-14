@@ -20,18 +20,15 @@ public class Stats {
      * Rating of a user
      */
     @Id
-    private String login;
+    @GeneratedValue
+    private int id;
 
-    @OneToOne(mappedBy = "stats")
+    @OneToOne(mappedBy="stats")
     @JsonIgnore
     private User user;
 
     public String getLogin() {
-        return login;
-    }
-
-    public void setLogin(String login) {
-        this.login = login;
+        return user.getLogin();
     }
 
 	private int rating;
@@ -77,13 +74,15 @@ public class Stats {
     /**
      * To be used when retrieved from database
      *
+     * @param  id id
      * @param r Rating value
      * @param f Number of fights
      * @param w Number of wins
      * @param l Number of losses
      * @param d Number of deaths
      */
-    public Stats(int r, int f, int w, int l, int d) {
+    public Stats(int id, int r, int f, int w, int l, int d) {
+        this.id = id;
         this.deaths = d;
         this.fights = f;
         this.losses = l;
@@ -148,7 +147,15 @@ public class Stats {
         this.upgradePoints = upgradePoints;
     }
 
+    public int getId() {
+        return id;
+    }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    
 
     /**
      * Setter
@@ -208,7 +215,7 @@ public class Stats {
 
     @Override
     public String toString() {
-        return "Username: " + login +
+        return "Username: " + user.getLogin() +
                 ",\n  rating=" + rating +
                 ",\n  fights=" + fights +
                 ",\n  wins=" + wins +
