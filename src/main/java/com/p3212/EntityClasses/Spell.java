@@ -187,4 +187,10 @@ public class Spell implements Serializable {
         this.damagePerLevel = lvldmg;
     }
 
+    public Attack performAttack(User attacker, Creature aim) {
+        int damage = (baseDamage + attacker.getStats().getLevel()) *
+                Float.floatToIntBits((damagePerLevel) * (1 - aim.getResistance()));
+        int chakra = baseChakraConsumption - attacker.getStats().getLevel() * chakraConsumptionPerLevel;
+        return new Attack(damage, chakra);
+    }
 }
