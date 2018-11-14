@@ -6,6 +6,17 @@ package com.p3212.EntityClasses;
 
 public class Fight {
     
+    public Fight() {
+        synchronized(Fight.class) {
+            number++;
+        }
+        this.id = number;
+    }
+    
+    private final int id;
+    
+    private static volatile int number;
+    
     private int fighter1HP;
 
     private int fighter2HP;
@@ -14,7 +25,7 @@ public class Fight {
 
     private int fighter2Chakra;
 
-    int id;
+
 
     public void setFighter1HP(int fighter1HP) {
         this.fighter1HP = fighter1HP;
@@ -33,7 +44,7 @@ public class Fight {
     }
 
     public int getFighter1HP() {
-        return fighter2HP;
+        return fighter1HP;
     }
 
     public int getFighter2HP() {
@@ -52,4 +63,15 @@ public class Fight {
     public int getId() {
         return id;
     }
+
+    public static int getNumber() {
+        return number;
+    }
+
+    public static void setNumber(int number) {
+        Fight.number = number;
+    }
+    
+    
+    
 }
