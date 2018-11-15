@@ -155,24 +155,10 @@ public class User implements Serializable {
     }
 
     /**Getter
-     * {@link User#login}
-     */
-    public String getUsername(){
-        return this.login;
-    }
-    
-    /**Getter
      * {@link User#password}
      */
     public String getPassword() {
         return this.password;
-    }
-    
-    /**Setter
-     * {@link User#login}
-     */
-    public void setUsername(String login){
-        this.login = login;
     }
 
     
@@ -182,20 +168,6 @@ public class User implements Serializable {
     public void setPassword(String password) {
         this.password = password;
     }
-    
-    /**Setter
-     * {@link User#stats}
-     */
-    //public void setStats(Stats st) {
-    //    this.stats = st;
-    //}
-    
-    /**Setter
-     * {@link User#stats}
-     */
-    //public Stats getStats() {
-    //    return this.stats;
-   // }
 
     /**
      * Getter

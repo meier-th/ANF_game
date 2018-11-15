@@ -23,23 +23,16 @@ public class StatsService {
         repository.save(stats);
     }
 
-    void removeStats(String id) {
+    void removeStats(int id) {
         repository.deleteById(id);
     }
     
     void levelUp(User us) {
         Stats stts = us.getStats();
-        String id = stts.getLogin();
+        int id = stts.getId();
         repository.levelUp(id);
     }
     
-    ArrayList<User> getTopUsers(int number) {
-        ArrayList<User> users = new ArrayList<User>();
-        Page<Stats> stts = repository.getTopStats(new PageRequest(0, number));
-        for (Stats st : stts){
-            users.add(st.getUser());
-        }
-        return users;
-    }
+    
     
 }

@@ -28,8 +28,7 @@ public class Character implements Serializable, Creature {
      */
     @Temporal(TemporalType.TIMESTAMP)
     private Date creationDate;
-
-
+    
     @ManyToOne
     @JoinColumn(name="animal_race")
     private NinjaAnimalRace animalRace;
@@ -260,7 +259,8 @@ public class Character implements Serializable, Creature {
 
     @Override
     public void acceptDamage(int damage) {
-
+        
     }
+
 }
 

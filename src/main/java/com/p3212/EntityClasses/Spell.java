@@ -193,4 +193,5 @@ public class Spell implements Serializable {
         int chakra = baseChakraConsumption - attacker.getStats().getLevel() * chakraConsumptionPerLevel;
         return new Attack(damage, chakra);
     }
+    
 }

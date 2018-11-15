@@ -1,10 +1,12 @@
 package com.p3212.tst;
 
 import com.p3212.EntityClasses.*;
+import com.p3212.EntityClasses.Character;
 import com.p3212.Services.AppearanceService;
 import com.p3212.Services.CharacterService;
 import com.p3212.Services.SpellService;
 import com.p3212.Services.UserService;
+import com.p3212.main.BotListener;
 
 import java.util.*;
 
@@ -69,8 +71,8 @@ public class Controller {
 
     @PostMapping("/signUp")
     public String signUp(@RequestParam(name = "login") String login, @RequestParam(name = "password") String password) {
-        userService.saveUser(new User(login, password), false);
-        return "User successfully created" + "User already exists";
+        userService.saveUser(new User(login, password), false); //? "User successfully created" : "User already exists";
+        return "It returns void!! We'll decide on it later";
     }
 
     @PostMapping("/signIn")

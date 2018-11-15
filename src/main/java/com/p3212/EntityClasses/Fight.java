@@ -1,4 +1,4 @@
-package com.p3212.EntityClasses;
+package EntityClasses;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Transient;
@@ -8,18 +8,27 @@ import javax.persistence.Transient;
  */
 
 public class Fight {
-    @Transient
-    transient private int fighter1HP;
-    @Transient
-    transient private int fighter2HP;
-    @Transient
-    transient private int fighter1Chakra;
-    @Transient
-    transient private int fighter2Chakra;
 
-    @Transient
-    @GeneratedValue()
-    transient int id;
+    public Fight() {
+        synchronized(Fight.class) {
+            number++;
+        }
+        this.id = number;
+    }
+
+    private final int id;
+
+    private static volatile int number;
+
+    private int fighter1HP;
+
+    private int fighter2HP;
+
+    private int fighter1Chakra;
+
+    private int fighter2Chakra;
+
+
 
     public void setFighter1HP(int fighter1HP) {
         this.fighter1HP = fighter1HP;
@@ -38,7 +47,7 @@ public class Fight {
     }
 
     public int getFighter1HP() {
-        return fighter2HP;
+        return fighter1HP;
     }
 
     public int getFighter2HP() {
@@ -57,4 +66,15 @@ public class Fight {
     public int getId() {
         return id;
     }
+
+    public static int getNumber() {
+        return number;
+    }
+
+    public static void setNumber(int number) {
+        Fight.number = number;
+    }
+
+
+
 }
