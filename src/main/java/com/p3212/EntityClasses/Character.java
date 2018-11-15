@@ -1,6 +1,7 @@
 package com.p3212.EntityClasses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -21,16 +22,16 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(name = "persons")
-public class Character implements Serializable, Creature {
+public class Character extends Creature implements Serializable {
 
     /**
      * The date of creating a character
      */
     @Temporal(TemporalType.TIMESTAMP)
     private Date creationDate;
-    
+
     @ManyToOne
-    @JoinColumn(name="animal_race")
+    @JoinColumn(name = "animal_race")
     private NinjaAnimalRace animalRace;
 
     public NinjaAnimalRace getAnimalRace() {
@@ -40,7 +41,8 @@ public class Character implements Serializable, Creature {
     public void setAnimalRace(NinjaAnimalRace animalRace) {
         this.animalRace = animalRace;
     }
-    @OneToMany(mappedBy="handlingId.characterHandler")
+
+    @OneToMany(mappedBy = "handlingId.characterHandler")
     private List<SpellHandling> spellsKnown;
 
     public List<SpellHandling> getSpellsKnown() {
@@ -50,6 +52,7 @@ public class Character implements Serializable, Creature {
     public void setSpellsKnown(List<SpellHandling> spellsKnown) {
         this.spellsKnown = spellsKnown;
     }
+
     /**
      * Identifier
      */
@@ -61,20 +64,20 @@ public class Character implements Serializable, Creature {
      */
     private int maxChakraAmount;
 
-    @OneToMany(mappedBy="pvpId.firstFighter")
+    @OneToMany(mappedBy = "pvpId.firstFighter")
     @JsonIgnore
-    private List<FightPVP>pvpFightsAsFirst;
-    
-    @OneToMany(mappedBy="pvpId.secondFighter")
+    private List<FightPVP> pvpFightsAsFirst;
+
+    @OneToMany(mappedBy = "pvpId.secondFighter")
     @JsonIgnore
-    private List<FightPVP>pvpFightsAsSecond;
+    private List<FightPVP> pvpFightsAsSecond;
 
     @OneToOne(mappedBy = "character")
     @JsonIgnore
     private User user;
 
-    @OneToMany(mappedBy="aiId.fighter")
-    private List<FightVsAI>fights;
+    @OneToMany(mappedBy = "aiId.fighter")
+    private List<FightVsAI> fights;
 
     public List<FightVsAI> getFights() {
         return fights;
@@ -83,23 +86,23 @@ public class Character implements Serializable, Creature {
     public void setFights(List<FightVsAI> fights) {
         this.fights = fights;
     }
-    
+
     /**
      * Appearance object for this character
      */
     @OneToOne
-    @JoinColumn(name="appearance_id")
+    @JoinColumn(name = "appearance_id")
     private Appearance appearance;
-    
+
     public Appearance getAppearance() {
-		return appearance;
-	}
+        return appearance;
+    }
 
-	public void setAppearance(Appearance appearance) {
-		this.appearance = appearance;
-	}
+    public void setAppearance(Appearance appearance) {
+        this.appearance = appearance;
+    }
 
-	public User getUser() {
+    public User getUser() {
         return user;
     }
 
@@ -221,14 +224,6 @@ public class Character implements Serializable, Creature {
     }
 
     /**
-     * Getter
-     * {@link Character#resistance}
-     */
-    public float getResistance() {
-        return resistance;
-    }
-
-    /**
      * Setter
      * {@link Character#resistance}
      */
@@ -259,8 +254,21 @@ public class Character implements Serializable, Creature {
 
     @Override
     public void acceptDamage(int damage) {
-        
+        currentHP -= damage;
     }
 
+    /**
+     * Getter
+     * {@link Character#resistance}
+     */
+    @Override
+    public float getResistance() {
+        return resistance;
+    }
+
+    @Override
+    public int getLevel() {
+        return user.getStats().getLevel();
+    }
 }
 

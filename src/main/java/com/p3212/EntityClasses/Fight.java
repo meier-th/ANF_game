@@ -1,7 +1,10 @@
-package EntityClasses;
+package com.p3212.EntityClasses;
+
+import javafx.util.Pair;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Transient;
+import java.util.ArrayList;
 
 /**
  * Represents statistics during a fight
@@ -10,9 +13,10 @@ import javax.persistence.Transient;
 public class Fight {
 
     public Fight() {
-        synchronized(Fight.class) {
+        synchronized (Fight.class) {
             number++;
         }
+        fighters = new ArrayList<>();
         this.id = number;
     }
 
@@ -20,47 +24,14 @@ public class Fight {
 
     private static volatile int number;
 
-    private int fighter1HP;
+    private ArrayList<Pair<Integer, Creature>> fighters; //Pair of side and fighter
 
-    private int fighter2HP;
-
-    private int fighter1Chakra;
-
-    private int fighter2Chakra;
-
-
-
-    public void setFighter1HP(int fighter1HP) {
-        this.fighter1HP = fighter1HP;
+    public void addFighter(Creature fighter, int side) {
+        fighters.add(new Pair<>(side, fighter));
     }
 
-    public void setFighter2HP(int fighter2HP) {
-        this.fighter2HP = fighter2HP;
-    }
-
-    public void setFighter1Chakra(int fighter1Chakra) {
-        this.fighter1Chakra = fighter1Chakra;
-    }
-
-    public void setFighter2Chakra(int fighter2Chakra) {
-        this.fighter2Chakra = fighter2Chakra;
-    }
-
-    public int getFighter1HP() {
-        return fighter1HP;
-    }
-
-    public int getFighter2HP() {
-        return fighter2HP;
-    }
-
-    public int getFighter1Chakra() {
-        return fighter1Chakra;
-    }
-
-
-    public int getFighter2Chakra() {
-        return fighter2Chakra;
+    public ArrayList<Pair<Integer, Creature>> getFighters() {
+        return fighters;
     }
 
     public int getId() {
@@ -74,7 +45,6 @@ public class Fight {
     public static void setNumber(int number) {
         Fight.number = number;
     }
-
 
 
 }

@@ -9,7 +9,7 @@ import javax.persistence.Table;
      */
 @Entity
 @Table(name="ai_fights")
-public class FightVsAI {
+public class FightVsAI extends Fight {
     
     @EmbeddedId
     AIFightCompositeKey aiId;

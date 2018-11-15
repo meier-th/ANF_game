@@ -12,26 +12,25 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "Bidju")
-public class Boss implements Serializable {
-    
-    
-    
+public class Boss extends Creature implements Serializable {
+
+
     /**
      * Name of the boss
      */
     @Id
     private String name;
-    
+
     /**
      * Number of tails. Responsible for damage, hp
      */
     private int numberOfTails;
-    
+
     /**
      * Maximum mount of chakra (mana)
      */
     private int maxChakraAmount;
-    
+
     /**
      * Getter
      * {@link Boss#name}
@@ -39,7 +38,7 @@ public class Boss implements Serializable {
     public String getName() {
         return name;
     }
-    
+
     /**
      * Setter
      * {@link Boss#name}
@@ -47,7 +46,7 @@ public class Boss implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-    
+
     /**
      * Getter
      * {@link Boss#numberOfTails}
@@ -55,7 +54,7 @@ public class Boss implements Serializable {
     public int getNumberOfTails() {
         return numberOfTails;
     }
-    
+
     /**
      * Setter
      * {@link Boss#numberOfTails}
@@ -63,7 +62,7 @@ public class Boss implements Serializable {
     public void setNumberOfTails(int numberOfTails) {
         this.numberOfTails = numberOfTails;
     }
-    
+
     /**
      * Getter
      * {@link Boss#maxChakraAmount}
@@ -79,22 +78,39 @@ public class Boss implements Serializable {
     public void setMaxChakraAmount(int maxChakraAmount) {
         this.maxChakraAmount = maxChakraAmount;
     }
-    
-    
+
+
     /**
      * Default constructor for dependency injection
      */
-    public Boss(){}
-    
+    public Boss() {
+    }
+
     /**
      * To be used when retrieved from database
-     * @param name - name
-     * @param tails - number of tails
+     *
+     * @param name   - name
+     * @param tails  - number of tails
      * @param chakra - amount of chakra
      */
-    public Boss (String name, int tails, int chakra) {
+    public Boss(String name, int tails, int chakra) {
         this.name = name;
         this.maxChakraAmount = chakra;
         this.numberOfTails = tails;
+    }
+
+    @Override
+    public void acceptDamage(int damage) {
+        currentHP -= damage;
+    }
+
+    @Override
+    public float getResistance() {
+        return 0.4f;
+    }
+
+    @Override
+    public int getLevel() {
+        return numberOfTails;
     }
 }

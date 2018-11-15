@@ -6,7 +6,7 @@ package com.p3212.EntityClasses;
 public class Attack {
     private int damage;
     private int chakra;
-    private boolean deadly;
+    private boolean deadly = false;
 
     public Attack(int damage, int chakra) {
         this.damage = damage;
