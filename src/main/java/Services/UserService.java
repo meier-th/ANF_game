@@ -1,7 +1,7 @@
 package Services;
 
-import EntityClasses.User;
-import Repositories.UserRepository;
+import com.p3212.EntityClasses.User;
+import com.p3212.Repositories.UserRepository;
 
 import java.util.ArrayList;
 import java.util.Iterator;

@@ -1,4 +1,4 @@
-package EntityClasses;
+package com.p3212.EntityClasses;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Transient;

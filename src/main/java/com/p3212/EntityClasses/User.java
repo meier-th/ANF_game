@@ -1,4 +1,4 @@
-package EntityClasses;
+package com.p3212.EntityClasses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
@@ -133,10 +133,9 @@ public class User implements Serializable {
      */
     public User(){}
     
-    public User(String login, String email, String password) {
+    public User(String login, String password) {
         this.login = login;
         this.password = password;
-        this.email = email;
     }
 
     public List<FriendsRequest> getFriendRequestsIn() {
@@ -163,13 +162,6 @@ public class User implements Serializable {
     }
     
     /**Getter
-     * {@link User#email}
-     */
-    public String getEmail() {
-        return this.email;
-    }
-    
-    /**Getter
      * {@link User#password}
      */
     public String getPassword() {
@@ -182,13 +174,7 @@ public class User implements Serializable {
     public void setUsername(String login){
         this.login = login;
     }
-    
-    /**Setter
-     * {@link User#email}
-     */
-    public void setEmail(String email) {
-        this.email = email;
-    }
+
     
     /**Setter
      * {@link User#password}

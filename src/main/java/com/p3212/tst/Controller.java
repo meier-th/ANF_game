@@ -1,14 +1,15 @@
 package com.p3212.tst;
 
-import EntityClasses.*;
-import EntityClasses.Character;
-import Services.AppearanceService;
-import Services.CharacterService;
-import Services.SpellService;
-import Services.UserService;
+import com.p3212.EntityClasses.*;
+import com.p3212.Services.AppearanceService;
+import com.p3212.Services.CharacterService;
+import com.p3212.Services.SpellService;
+import com.p3212.Services.UserService;
 
 import java.util.*;
 
+import com.p3212.EntityClasses.Character;
+import com.p3212.main.BotListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -68,7 +69,8 @@ public class Controller {
 
     @PostMapping("/signUp")
     public String signUp(@RequestParam(name = "login") String login, @RequestParam(name = "password") String password) {
-        return userService.addUser(new User(login, password)) ? "User successfully created" : "User already exists";
+        userService.saveUser(new User(login, password), false);
+        return "User successfully created" + "User already exists";
     }
 
     @PostMapping("/signIn")
