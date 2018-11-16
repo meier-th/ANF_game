@@ -6,6 +6,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 
@@ -23,7 +24,7 @@ public class Stats {
     @GeneratedValue
     private int id;
 
-    @OneToOne(mappedBy="stats")
+    @OneToOne(mappedBy = "stats")
     @JsonIgnore
     private User user;
 
@@ -31,7 +32,7 @@ public class Stats {
         return user.getLogin();
     }
 
-	private int rating;
+    private int rating;
     /**
      * Number of fights user took part in
      */
@@ -53,18 +54,19 @@ public class Stats {
     /**
      * Level
      */
-    @Column(name="lvl")
-    int level;
+    @Column(name = "lvl")
+    private int level;
 
     /**
      * Experience
      */
-    int experience;
+    private int experience;
 
     /**
      * Number of available upgrade points
      */
-    int upgradePoints;
+    private int upgradePoints;
+
     /**
      * Default constructor, to be used for dependency injection
      */
@@ -74,7 +76,6 @@ public class Stats {
     /**
      * To be used when retrieved from database
      *
-     * @param  id id
      * @param r Rating value
      * @param f Number of fights
      * @param w Number of wins
@@ -88,7 +89,7 @@ public class Stats {
         this.rating = r;
         this.wins = w;
     }
-    
+
     public Stats(int rating, int fights, int wins, int losses, int deaths, int experience, int level, int points) {
         this.deaths = deaths;
         this.fights = fights;
@@ -99,6 +100,7 @@ public class Stats {
         this.level = level;
         this.upgradePoints = points;
     }
+
     /**
      * Setter
      * {@link Stats#rating}
@@ -164,7 +166,6 @@ public class Stats {
         this.id = id;
     }
 
-    
 
     /**
      * Setter
@@ -220,6 +221,10 @@ public class Stats {
      */
     public int getDeaths() {
         return this.deaths;
+    }
+
+    public void changeRating(int change) {
+        rating += change;
     }
 
     @Override

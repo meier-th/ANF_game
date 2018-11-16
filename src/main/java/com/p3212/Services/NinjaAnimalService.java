@@ -24,15 +24,15 @@ public class NinjaAnimalService {
     /**
      * Adds new animal to database
      *
-     * @param animal A new one to add
+     * @param race race to get
      */
 
-    List<NinjaAnimal>getRaceAnimals(NinjaAnimalRace race) {
+    public List<NinjaAnimal> getRaceAnimals(NinjaAnimalRace race) {
         String rc = race.toString();
         return repository.getRaceAnimals(rc);
     }
-    
-    void addAnimal(NinjaAnimal animal) {
+
+    public void addAnimal(NinjaAnimal animal) {
         repository.save(animal);
     }
 
@@ -43,7 +43,7 @@ public class NinjaAnimalService {
      * @return Requested NinjaAnimal
      */
 
-    NinjaAnimal get(String id) {
+    public NinjaAnimal get(String id) {
         return repository.findById(id).get();
     }
 
@@ -52,7 +52,7 @@ public class NinjaAnimalService {
      *
      * @return Iterable with all NinjaAnimals
      */
-    Iterable<NinjaAnimal> list() {
+    public Iterable<NinjaAnimal> list() {
         return repository.findAll();
     }
 
@@ -61,7 +61,7 @@ public class NinjaAnimalService {
      *
      * @param id Id to be deleted
      */
-    void removeAnimal(String id) {
+    public void removeAnimal(String id) {
         repository.deleteById(id);
     }
 
@@ -71,7 +71,7 @@ public class NinjaAnimalService {
      * @param id     animal id
      * @param animal NinjaAnimal object to be saved in db
      */
-    void updateAnimal(int id, NinjaAnimal animal) {
+    public void updateAnimal(int id, NinjaAnimal animal) {
         repository.save(animal);
     }
 
