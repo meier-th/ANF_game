@@ -88,7 +88,17 @@ public class Stats {
         this.rating = r;
         this.wins = w;
     }
-
+    
+    public Stats(int rating, int fights, int wins, int losses, int deaths, int experience, int level, int points) {
+        this.deaths = deaths;
+        this.fights = fights;
+        this.losses = losses;
+        this.rating = rating;
+        this.wins = wins;
+        this.experience = experience;
+        this.level = level;
+        this.upgradePoints = points;
+    }
     /**
      * Setter
      * {@link Stats#rating}

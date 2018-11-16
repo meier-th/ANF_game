@@ -1,8 +1,18 @@
 package com.p3212.configuration;
 
-import com.p3212.EntityClasses.*;
+import com.p3212.EntityClasses.Attack;
+import com.p3212.EntityClasses.Boss;
+import com.p3212.EntityClasses.Fight;
 import com.p3212.EntityClasses.Character;
-import com.p3212.Services.*;
+import com.p3212.EntityClasses.Creature;
+import com.p3212.EntityClasses.FightPVP;
+import com.p3212.EntityClasses.FightVsAI;
+import com.p3212.EntityClasses.Spell;
+import com.p3212.Services.BossService;
+import com.p3212.Services.FightVsAIService;
+import com.p3212.Services.PVPFightsService;
+import com.p3212.Services.SpellService;
+import com.p3212.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

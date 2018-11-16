@@ -16,6 +16,11 @@ public class FriendRequestCompositeKey implements Serializable {
     @JoinColumn(name="requesting_user")
     User requestingUser;
     
+    public FriendRequestCompositeKey (User sender, User receiver) {
+        this.friendUser = receiver;
+        this.requestingUser = sender;
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (o == this) return true;

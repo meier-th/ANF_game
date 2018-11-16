@@ -14,7 +14,7 @@ public class CharacterService {
     CharacterRepository charRepository;
     
     public List<Character> getAllCharacters() {
-        List<Character> lst = new ArrayList<Character>();
+        List<Character> lst = new ArrayList<>();
         Iterator<Character> iterator = charRepository.findAll().iterator();
         while (iterator.hasNext()) {
             lst.add(iterator.next());
@@ -28,10 +28,6 @@ public class CharacterService {
     
     public Character getCharacter(int id) {
         return charRepository.findById(id).get();
-    }
-    
-    public void updateCharacter(Character usr) {
-        charRepository.save(usr);
     }
     
     public void removeCharacter(int id) {

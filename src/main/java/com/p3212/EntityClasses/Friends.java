@@ -12,4 +12,15 @@ public class Friends implements Serializable {
 
     @EmbeddedId
     public FriendsCompositeKey friends_id;
+    
+    public Friends(FriendsCompositeKey key) {
+        this.friends_id = key;
+    }
+
+    public FriendsCompositeKey getFriends_id() {
+        return friends_id;
+    }
+    
+    
+    
 }

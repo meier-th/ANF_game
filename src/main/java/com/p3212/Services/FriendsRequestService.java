@@ -25,7 +25,7 @@ public class FriendsRequestService {
      *
      * @param request A @link{FriendsRequest} object to add
      */
-    void addRequest(FriendsRequest request) {
+    public void addRequest(FriendsRequest request) {
         repository.save(request);
     }
 
@@ -34,27 +34,27 @@ public class FriendsRequestService {
      *
      * @param id id of the request
      */
-    void removeRequest(FriendRequestCompositeKey id) {
+    public void removeRequest(FriendRequestCompositeKey id) {
         repository.deleteById(id);
     }
     
-    ArrayList<User> requestingUsers(User user) {
+    public ArrayList<User> requestingUsers(User user) {
         String name = user.getLogin();
         List<FriendsRequest> requests = repository.getIncomingRequests(name);
-        ArrayList<User>requesters = new ArrayList<User>();
-        for (FriendsRequest req : requests) {
+        ArrayList<User>requesters = new ArrayList<>();
+        requests.forEach((req) -> {
             requesters.add(req.request_id.getRequestingUser());
-        }
+        });
         return requesters;
     }
     
-    ArrayList<User> requestedUsers(User user) {
+    public ArrayList<User> requestedUsers(User user) {
         String name = user.getLogin();
         List<FriendsRequest> requests = repository.getOutgoingRequests(name);
-        ArrayList<User>requesters = new ArrayList<User>();
-        for (FriendsRequest req : requests) {
+        ArrayList<User>requesters = new ArrayList<>();
+        requests.forEach((req) -> {
             requesters.add(req.request_id.getFriendUser());
-        }
+        });
         return requesters;
     }
     
