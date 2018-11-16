@@ -119,7 +119,7 @@ public class Stats {
 
     /**
      * Setter
-     * {@link Stats#ratingwins}
+     * {@link Stats#wins}
      */
     public void setWins(int wins) {
         this.wins = wins;
