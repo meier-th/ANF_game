@@ -41,8 +41,8 @@ public class Attack {
     public String toString() {
         return "{\n" +
                 "\"damage\": " + damage +
-                "\n\"chakra\": " + chakra +
-                "\n\"deadly\": " + deadly +
+                ",\n\"chakra\": " + chakra +
+                ",\n\"deadly\": " + deadly +
                 "\n}";
     }
 }

@@ -144,14 +144,6 @@ public class Character extends Creature implements Serializable {
     }
 
     /**
-     * Getter
-     * {@link Character#maxChakraAmount}
-     */
-    public int getMaxChakraAmount() {
-        return maxChakraAmount;
-    }
-
-    /**
      * Setter
      * {@link Character#maxChakraAmount}
      */
@@ -191,13 +183,6 @@ public class Character extends Creature implements Serializable {
         this.pvpFightsAsSecond = pvpFightsAsSecond;
     }
 
-    /**
-     * Getter
-     * {@link Character#maxHP}
-     */
-    public int getMaxHP() {
-        return maxHP;
-    }
 
     /**
      * Setter
@@ -269,6 +254,16 @@ public class Character extends Creature implements Serializable {
     @Override
     public int getLevel() {
         return user.getStats().getLevel();
+    }
+
+    @Override
+    public int getMaxHp() {
+        return maxHP;
+    }
+
+    @Override
+    public int getMaxChakra() {
+        return maxChakraAmount;
     }
 }
 

@@ -10,11 +10,11 @@ public class BossService {
     @Autowired
     BossRepository bossRepository;
 
-    void addBoss(Boss boss) {
+    public void addBoss(Boss boss) {
         bossRepository.save(boss);
     }
 
-    Boss getBoss(String id) {
+    public Boss getBoss(int id) {
         return bossRepository.findById(id).get();
     }
 }

@@ -188,7 +188,7 @@ public class Spell implements Serializable {
     }
 
     public Attack performAttack(int level, float resistance) {
-        int damage = baseDamage + level * Float.floatToIntBits((damagePerLevel) * (1 - resistance));
+        int damage = (int) ((baseDamage + level * damagePerLevel) * (1 - resistance));
         int chakra = baseChakraConsumption - level * chakraConsumptionPerLevel;
         return new Attack(damage, chakra);
     }

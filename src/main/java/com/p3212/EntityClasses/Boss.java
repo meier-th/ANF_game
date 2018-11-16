@@ -113,4 +113,14 @@ public class Boss extends Creature implements Serializable {
     public int getLevel() {
         return numberOfTails;
     }
+
+    @Override
+    public int getMaxHp() {
+        return numberOfTails * 1000;
+    }
+
+    @Override
+    public int getMaxChakra() {
+        return numberOfTails * 1000;
+    }
 }

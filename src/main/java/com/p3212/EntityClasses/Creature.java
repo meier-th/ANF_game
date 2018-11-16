@@ -7,8 +7,12 @@ public abstract class Creature {
 
     public abstract int getLevel();
 
-    int currentHP;
-    int currentChakra;
+    public abstract int getMaxHp();
+
+    public abstract int getMaxChakra();
+
+    protected int currentHP;
+    protected int currentChakra;
 
     public int getCurrentHP() {
         return currentHP;
@@ -24,5 +28,10 @@ public abstract class Creature {
 
     public void setCurrentChakra(int currentChakra) {
         this.currentChakra = currentChakra;
+    }
+
+    public void prepareForFight() {
+        currentHP = getMaxHp();
+        currentChakra = getMaxChakra();
     }
 }

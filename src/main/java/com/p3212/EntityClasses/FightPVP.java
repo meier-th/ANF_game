@@ -3,10 +3,17 @@ package com.p3212.EntityClasses;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import java.util.Date;
+
 
 @Entity
 @Table(name = "pvp_fights")
 public class FightPVP extends Fight {
+
+    public FightPVP() {
+        pvpId = new PVPFightCompositeKey();
+        pvpId.setFightDate(new Date());
+    }
 
 
     @EmbeddedId
@@ -14,7 +21,7 @@ public class FightPVP extends Fight {
 
     private boolean firstWon;
 
-    private int ratingChange;
+    private int ratingChange = 0;
 
     public boolean isFirstWon() {
         return firstWon;

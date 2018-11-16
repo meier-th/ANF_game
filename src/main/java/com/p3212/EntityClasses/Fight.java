@@ -2,8 +2,6 @@ package com.p3212.EntityClasses;
 
 import javafx.util.Pair;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Transient;
 import java.util.ArrayList;
 
 /**
@@ -46,5 +44,8 @@ public class Fight {
         Fight.number = number;
     }
 
-
+    @Override
+    public String toString() {
+        return "{\n\"fightId\": " + id + "\n}";
+    }
 }
