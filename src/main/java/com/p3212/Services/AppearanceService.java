@@ -17,15 +17,6 @@ public class AppearanceService {
     AppearanceRepository appearanceRepository;
 
     /**
-     * Get all appearances
-     *
-     * @return Iterable with all appearances
-     */
-    public Iterable<Appearance> getAllAppearances() {
-        return appearanceRepository.findAll();
-    }
-
-    /**
      * Add a new appearance
      *
      * @param appearance Appearance object to save
@@ -42,15 +33,6 @@ public class AppearanceService {
      */
     public Appearance getUserAppearance(int id) {
         return appearanceRepository.findById(id).get();
-    }
-
-    /**
-     * Update an appearance
-     *
-     * @param appearance Appearance object to save
-     */
-    public void updateAppearance(Appearance appearance) {
-        appearanceRepository.save(appearance); //TODO do we really need save
     }
 
     /**

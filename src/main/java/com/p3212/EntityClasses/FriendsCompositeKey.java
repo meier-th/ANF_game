@@ -17,6 +17,11 @@ public class FriendsCompositeKey implements Serializable {
     @JoinColumn(name="user2")
     User user2;
     
+    public FriendsCompositeKey(User us1, User us2) {
+        this.user1 = us1;
+        this.user2 = us2;
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (o == this) return true;

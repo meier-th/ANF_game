@@ -20,8 +20,7 @@ public class MessageCompositeKey implements Serializable {
     @JoinColumn(name="sender")
     User sender;
     
-    @Column(name="message")
-    String message;
+    
     
     @Column(name= "sending_time")
     @Temporal(TemporalType.TIMESTAMP)
@@ -37,5 +36,23 @@ public class MessageCompositeKey implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(receiver, sender);
+    }
+
+    public Date getSendingDate() {
+        return sendingDate;
+    }
+    
+    
+    
+    public MessageCompositeKey(User sender, User receiver) {
+        this.receiver = receiver;
+        this.sender = sender;
+        this.sendingDate = new Date();
+    }
+    
+    public MessageCompositeKey(User sender, User receiver, Date date) {
+        this.receiver = receiver;
+        this.sender = sender;
+        this.sendingDate = date;
     }
 }

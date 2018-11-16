@@ -38,25 +38,17 @@ public class UserService {
         return lst;
     }
     
-    public void saveUser(User usr, boolean isAdmin) {
+    public void saveUser(User usr) {
         usr.setPassword(bCryptPasswordEncoder.encode(usr.getPassword()));
-        if (isAdmin) {
-            Role admRole = roleRepository.findById("ADMIN").get();
+        
             Role usRole = roleRepository.findById("USER").get();
-            usr.setRoles(new HashSet<Role>(Arrays.asList(admRole, usRole)));
-        } else {
-            Role usRole = roleRepository.findById("USER").get();
-            usr.setRoles(new HashSet<Role>(Arrays.asList(usRole)));
-        }
+            usr.setRoles(new HashSet<>(Arrays.asList(usRole)));
+        
         userRepository.save(usr);
     }
     
     public User getUser(String login) {
         return userRepository.findById(login).orElse(null);
-    }
-    
-    public void updateUser(User usr) {
-        userRepository.save(usr);
     }
     
     public void removeUser(String login) {

@@ -140,5 +140,22 @@ public class Appearance {
         this.clothesColour = clothesColour;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Character getCharact() {
+        return charact;
+    }
+
+    public void setCharact(Character charact) {
+        this.charact = charact;
+    }
+
+    
 
 }

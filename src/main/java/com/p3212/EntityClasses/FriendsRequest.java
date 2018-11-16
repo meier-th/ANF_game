@@ -10,4 +10,9 @@ public class FriendsRequest {
 
     @EmbeddedId
     public FriendRequestCompositeKey request_id;
+    
+    public FriendsRequest (FriendRequestCompositeKey key) {
+        this.request_id = key;
+    }
+    
 }

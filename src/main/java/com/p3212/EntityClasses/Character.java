@@ -237,6 +237,14 @@ public class Character extends Creature implements Serializable {
         this.maxChakraAmount = chakra;
     }
 
+    public Character(float resistance, int hp, int damage, int chakra) {
+        this.creationDate = new Date();
+        this.resistance = resistance;
+        this.maxHP = hp;
+        this.physicalDamage = damage;
+        this.maxChakraAmount = chakra;
+    }
+    
     @Override
     public void acceptDamage(int damage) {
         currentHP -= damage;
