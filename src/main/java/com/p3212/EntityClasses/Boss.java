@@ -16,9 +16,14 @@ public class Boss extends Creature implements Serializable {
 
 
     /**
-     * Name of the boss
+     * id of the boss
      */
     @Id
+    private int id;
+
+    /**
+     * Name of the boss
+     */
     private String name;
 
     /**
@@ -97,6 +102,14 @@ public class Boss extends Creature implements Serializable {
         this.name = name;
         this.maxChakraAmount = chakra;
         this.numberOfTails = tails;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     @Override
