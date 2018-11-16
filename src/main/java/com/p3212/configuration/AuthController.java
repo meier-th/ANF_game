@@ -6,12 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.view.RedirectView;
 
 import javax.validation.Valid;
 
-@RestController("/auth")
+@RestController()
 public class AuthController {
     @Autowired
     private UserService userService;
@@ -56,8 +59,21 @@ public class AuthController {
         return modelAndView;
     }
 
-    @RequestMapping(value = "/vk", method = RequestMethod.GET)
-    public String registerVk() {
-        return "kek";
+    @RequestMapping(value = "/registerVk", method = RequestMethod.GET)
+    public RedirectView registerVk(RedirectAttributes attributes) {
+        attributes.addAttribute("client_id", "6751264");
+        attributes.addAttribute("redirect_uri", "http://localhost:8080/getVkCode");
+        attributes.addAttribute("display", "popup");
+        return new RedirectView("https://oauth.vk.com/authorize");
     }
+
+    @RequestMapping("/getVkCode")
+    public RedirectView getVkCode(@RequestParam(name = "code") String code, RedirectAttributes attributes) {
+        attributes.addAttribute("client_id", "6751264");
+        attributes.addAttribute("client_secret", "YqVhWS11S17pz670MHzG");
+        attributes.addAttribute("redirect_uri", "http://localhost:8080/getVkCode");
+        attributes.addAttribute("code", code);
+        return new RedirectView("https://oauth.vk.com/access_token");
+    }
+
 }
