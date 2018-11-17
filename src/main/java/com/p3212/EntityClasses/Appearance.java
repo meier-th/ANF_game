@@ -21,7 +21,6 @@ import javax.persistence.GenerationType;
 public class Appearance {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
     public static enum Gender {
         MALE,

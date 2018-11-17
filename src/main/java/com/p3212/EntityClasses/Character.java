@@ -64,7 +64,6 @@ public class Character extends Creature implements Serializable {
      * Identifier
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     /**
      * The maximum amount of chakra (mana)
