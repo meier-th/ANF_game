@@ -7,8 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 
 @RestController
 @RequestMapping("/fight")
@@ -31,17 +32,23 @@ public class FightController {
     NinjaAnimalService ninjaAnimalService;
 
     private HashMap<Integer, Fight> fights;
+    private HashSet<String> usersInFight;
 
     {
+        usersInFight = new HashSet<>();
         fights = new HashMap<>();
     }
 
     @RequestMapping("/startPvp")
     public String startPvp(@RequestParam(name = "fighter1") String fighter1Name, @RequestParam(name = "fighter2") String fighter2Name) {
+        if (usersInFight.contains(fighter1Name) || usersInFight.contains(fighter2Name))
+            return "{ \"code\": 7}";    // 7 - user is busy
         FightPVP fight = new FightPVP();
         Character fighter1 = userService.getUser(fighter1Name).getCharacter();
         Character fighter2 = userService.getUser(fighter2Name).getCharacter();
         if (fighter1 == null || fighter2 == null) return "{ \"code\": 3}"; //code 3 means fighter does't exist
+        usersInFight.add(fighter1Name);
+        usersInFight.add(fighter2Name);
         fighter1.prepareForFight();
         fighter2.prepareForFight();
         fight.addFighter(fighter1, 1);
@@ -53,6 +60,10 @@ public class FightController {
 
     @RequestMapping("/startPve")
     public String startPve(@RequestParam(name = "fighters") String[] fighters, @RequestParam(name = "bossId") int bossId) {
+        for (String fighter : fighters) {
+            if (usersInFight.contains(fighter)) return "{ \"code\": 7}";
+        }
+        if (usersInFight.contains(String.valueOf(bossId))) return "{ \"code\": 7}";
         FightVsAI fight = new FightVsAI();
         for (String fighterName : fighters) {
             Character fighter = userService.getUser(fighterName).getCharacter();
@@ -62,32 +73,54 @@ public class FightController {
         Boss boss = bossService.getBoss(bossId);
         boss.prepareForFight();
         fight.addFighter(boss, 2);
+        Collections.addAll(usersInFight, fighters);
+        usersInFight.add(String.valueOf(bossId));
         fights.put(fight.getId(), fight);
         return fight.toString();
     }
 
     @RequestMapping("/attack")
-    public String attack(@RequestParam(name = "attackerNumber") int attackerNumber,
-                         @RequestParam(name = "enemyNumber") int enemyNumber,
-                         @RequestParam(name = "fightId") int fightId,
-                         @RequestParam(name = "spellId") int spellId) {
+    public String attackHandler(@RequestParam(name = "enemyNumber") int enemyNumber,
+                                @RequestParam(name = "fightId") int fightId,
+                                @RequestParam(name = "spellId") int spellId) {
         Fight fight = fights.get(fightId);
         if (fight == null) return "{\n\"code\": 2\n}";              //code 2 means fight doesn't exist
-        attackerNumber--;
-        enemyNumber--;
-        Creature attacker = fight.getFighters().get(attackerNumber).getValue();
-        Creature enemy = fight.getFighters().get(enemyNumber).getValue();
-        //TODO maybe check belonging
+        Attack attack = attack(fight.getCurrentAttacker(), enemyNumber, fightId, spellId);
+        if (attack.getCode() != 0) return attack.toString();
+        fight.switchAttacker();
+        return attack.toString();
+    }
+
+    private Attack attack(int attackerNumber, int enemyNumber, int fightId, int spellId) {
+        Fight fight = fights.get(fightId);
+        Creature attacker;
+        Creature enemy;
+        Attack attack = new Attack();
+        if (fight.getFighters().get(--attackerNumber).getKey().equals(fight.getFighters().get(--enemyNumber).getKey())) {
+            attack.setCode(6); //6 means attack of a teammate
+            return attack;
+        }
+        try {
+            attacker = fight.getFighters().get(attackerNumber).getValue();
+            enemy = fight.getFighters().get(enemyNumber).getValue();
+        } catch (Exception ex) {
+            attack.setCode(5);               //code 5 means there's no fighters with that number
+            return attack;
+        }
         Spell spell = spellService.get(spellId);
-        Attack attack = spell.performAttack(attacker.getLevel(), enemy.getResistance());
-        if (attacker.getCurrentChakra() < attack.getChakra())
-            return "{\n\"code\": 1\n}";                             //code 1 means attacker doesn't have enough chakra
+        attack = spell.performAttack(attacker.getLevel(), enemy.getResistance());
+        if (attacker.getCurrentChakra() < attack.getChakra()) {
+            if (attacker instanceof NinjaAnimal)
+                fight.getFighters().remove(attackerNumber);         //animals disappear when no chakra
+            attack.setCode(1);
+            return attack;
+        }                         //code 1 means attacker doesn't have enough chakra
         enemy.acceptDamage(attack.getDamage());
         if (enemy.getCurrentHP() <= 0) {
             attack.setDeadly(true);
             if (enemy instanceof NinjaAnimal) {
-                fight.getFighters().remove(enemyNumber); //TODO I've kinda forgot smth
-                return attack.toString();
+                fight.getFighters().remove(enemyNumber);
+                return attack;
             }
             if (fight instanceof FightPVP) {
                 ((FightPVP) fight).setFighters((Character) attacker, (Character) enemy);
@@ -96,23 +129,22 @@ public class FightController {
                                 .getFighters()
                                 .get(enemyNumber)
                                 .getKey() == 1);
-                stopFight(fight);
+                stopFight(fightId);
                 ((Character) attacker).getUser().getStats().changeRating(((FightPVP) fight).getRatingChange());
                 ((Character) enemy).getUser().getStats().changeRating(-((FightPVP) fight).getRatingChange());
-                fights.remove(fightId);
             } else {
                 if (fight.getFighters().get(enemyNumber).getKey() == 1) {
                     fight.getFighters().remove(enemyNumber);
-                    if (fight.getFighters().size() < 2) stopFight(fight);               //ВСЕ SASNOOLEY
-                    return attack.toString();
+                    //TODO add xp to every fighter
+                    if (fight.getFighters().size() < 2) stopFight(fightId);               //ВСЕ SASNOOLEY
+                    return attack;
                 } else {
-                    stopFight(fight);                                               //И ЭТО БЛЯТЬ ПОБЕДА НАД БОССОМ!
-                    fights.remove(fightId);
-                    //TODO add rating to every fighter
+                    //TODO add xp to every fighter
+                    stopFight(fightId);                                               //И ЭТО БЛЯТЬ ПОБЕДА НАД БОССОМ!
                 }
             }
         }
-        return attack.toString();
+        return attack;
     }
 
     @RequestMapping("/summon")
@@ -131,9 +163,17 @@ public class FightController {
         return "{ \"summoned\": true }";
     }
 
-    private void stopFight(Fight fight) {
-        if (fight instanceof FightPVP) pvpFightsService.addFight(((FightPVP) fight));
+    private void stopFight(int fightId) {
+        Fight fight = fights.get(fightId);
+        if (fight instanceof FightPVP)
+            pvpFightsService.addFight(((FightPVP) fight));
         else fightVsAIService.addFight(((FightVsAI) fight));
+        fights.remove(fightId);
+        fight.getFighters().iterator().forEachRemaining(fighter -> {
+            if (fighter.getValue() instanceof Boss)
+                usersInFight.remove(String.valueOf(((Boss) fighter.getValue()).getId()));
+            else usersInFight.remove(((Character) fighter.getValue()).getUser().getLogin());
+        });
     }
 
 

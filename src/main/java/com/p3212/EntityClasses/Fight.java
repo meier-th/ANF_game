@@ -1,7 +1,5 @@
 package com.p3212.EntityClasses;
 
-
-
 import java.util.ArrayList;
 
 /**
@@ -21,6 +19,8 @@ public class Fight {
     private final int id;
 
     private static volatile int number;
+
+    private int currentAttacker = 0;
 
     private ArrayList<Pair<Integer, Creature>> fighters; //Pair of side and fighter
 
@@ -42,6 +42,14 @@ public class Fight {
 
     public static void setNumber(int number) {
         Fight.number = number;
+    }
+
+    public int getCurrentAttacker() {
+        return currentAttacker;
+    }
+
+    public void switchAttacker() {
+        currentAttacker = (currentAttacker + 1) % fighters.size();
     }
 
     @Override
