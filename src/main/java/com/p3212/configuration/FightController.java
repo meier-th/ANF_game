@@ -96,13 +96,13 @@ public class FightController {
         Creature attacker;
         Creature enemy;
         Attack attack = new Attack();
-        if (fight.getFighters().get(attackerNumber).getKey().equals(fight.getFighters().get(enemyNumber).getKey())) {
+        if (fight.getFighters().get(--attackerNumber).getKey().equals(fight.getFighters().get(--enemyNumber).getKey())) {
             attack.setCode(6); //6 means attack of a teammate
             return attack;
         }
         try {
             attacker = fight.getFighters().get(attackerNumber).getValue();
-            enemy = fight.getFighters().get(--enemyNumber).getValue();
+            enemy = fight.getFighters().get(enemyNumber).getValue();
         } catch (Exception ex) {
             attack.setCode(5);               //code 5 means there's no fighters with that number
             return attack;
