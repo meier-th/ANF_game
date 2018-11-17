@@ -1,6 +1,5 @@
 package com.p3212.EntityClasses;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Column;
@@ -18,7 +17,7 @@ public class AIFightCompositeKey implements Serializable {
      */
     @Column(name="fight_date")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date date;
+    private Date fight_date;
     
     /**
      * Opponent
@@ -27,19 +26,14 @@ public class AIFightCompositeKey implements Serializable {
     
     @ManyToOne
     @JoinColumn(name="boss")
-    private Boss rival;
+    private Boss boss;
     
-    @ManyToOne
-    @JoinColumn(name="fighter")
-    @JsonIgnore
-    private Character fighter;
 
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 67 * hash + (this.date != null ? this.date.hashCode() : 0);
-        hash = 67 * hash + (this.rival != null ? this.rival.hashCode() : 0);
-        hash = 67 * hash + (this.fighter != null ? this.fighter.hashCode() : 0);
+        hash = 67 * hash + (this.fight_date != null ? this.fight_date.hashCode() : 0);
+        hash = 67 * hash + (this.boss != null ? this.boss.hashCode() : 0);
         return hash;
     }
 
@@ -55,13 +49,10 @@ public class AIFightCompositeKey implements Serializable {
             return false;
         }
         final AIFightCompositeKey other = (AIFightCompositeKey) obj;
-        if (this.date != other.date && (this.date == null || !this.date.equals(other.date))) {
+        if (this.fight_date != other.fight_date && (this.fight_date == null || !this.fight_date.equals(other.fight_date))) {
             return false;
         }
-        if (this.rival != other.rival && (this.rival == null || !this.rival.equals(other.rival))) {
-            return false;
-        }
-        if (this.fighter != other.fighter && (this.fighter == null || !this.fighter.equals(other.fighter))) {
+        if (this.boss != other.boss && (this.boss == null || !this.boss.equals(other.boss))) {
             return false;
         }
         return true;
