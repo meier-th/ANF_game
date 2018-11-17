@@ -1,7 +1,5 @@
 package com.p3212.EntityClasses;
 
-
-
 import java.util.ArrayList;
 
 /**

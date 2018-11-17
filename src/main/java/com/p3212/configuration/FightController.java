@@ -7,8 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 
 @RestController
 @RequestMapping("/fight")
@@ -31,17 +32,23 @@ public class FightController {
     NinjaAnimalService ninjaAnimalService;
 
     private HashMap<Integer, Fight> fights;
+    private HashSet<String> usersInFight;
 
     {
+        usersInFight = new HashSet<>();
         fights = new HashMap<>();
     }
 
     @RequestMapping("/startPvp")
     public String startPvp(@RequestParam(name = "fighter1") String fighter1Name, @RequestParam(name = "fighter2") String fighter2Name) {
+        if (usersInFight.contains(fighter1Name) || usersInFight.contains(fighter2Name))
+            return "{ \"code\": 7}";    // 7 - user is busy
         FightPVP fight = new FightPVP();
         Character fighter1 = userService.getUser(fighter1Name).getCharacter();
         Character fighter2 = userService.getUser(fighter2Name).getCharacter();
         if (fighter1 == null || fighter2 == null) return "{ \"code\": 3}"; //code 3 means fighter does't exist
+        usersInFight.add(fighter1Name);
+        usersInFight.add(fighter2Name);
         fighter1.prepareForFight();
         fighter2.prepareForFight();
         fight.addFighter(fighter1, 1);
@@ -53,6 +60,10 @@ public class FightController {
 
     @RequestMapping("/startPve")
     public String startPve(@RequestParam(name = "fighters") String[] fighters, @RequestParam(name = "bossId") int bossId) {
+        for (String fighter : fighters) {
+            if (usersInFight.contains(fighter)) return "{ \"code\": 7}";
+        }
+        if (usersInFight.contains(String.valueOf(bossId))) return "{ \"code\": 7}";
         FightVsAI fight = new FightVsAI();
         for (String fighterName : fighters) {
             Character fighter = userService.getUser(fighterName).getCharacter();
@@ -62,6 +73,8 @@ public class FightController {
         Boss boss = bossService.getBoss(bossId);
         boss.prepareForFight();
         fight.addFighter(boss, 2);
+        Collections.addAll(usersInFight, fighters);
+        usersInFight.add(String.valueOf(bossId));
         fights.put(fight.getId(), fight);
         return fight.toString();
     }
@@ -83,6 +96,10 @@ public class FightController {
         Creature attacker;
         Creature enemy;
         Attack attack = new Attack();
+        if (fight.getFighters().get(attackerNumber).getKey().equals(fight.getFighters().get(enemyNumber).getKey())) {
+            attack.setCode(6); //6 means attack of a teammate
+            return attack;
+        }
         try {
             attacker = fight.getFighters().get(attackerNumber).getValue();
             enemy = fight.getFighters().get(--enemyNumber).getValue();
@@ -152,6 +169,11 @@ public class FightController {
             pvpFightsService.addFight(((FightPVP) fight));
         else fightVsAIService.addFight(((FightVsAI) fight));
         fights.remove(fightId);
+        fight.getFighters().iterator().forEachRemaining(fighter -> {
+            if (fighter.getValue() instanceof Boss)
+                usersInFight.remove(String.valueOf(((Boss) fighter.getValue()).getId()));
+            else usersInFight.remove(((Character) fighter.getValue()).getUser().getLogin());
+        });
     }
 
 
