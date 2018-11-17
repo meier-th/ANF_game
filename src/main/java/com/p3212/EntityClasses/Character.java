@@ -9,6 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -34,6 +35,10 @@ public class Character extends Creature implements Serializable {
     @JoinColumn(name = "animal_race")
     private NinjaAnimalRace animalRace;
 
+    @OneToMany(mappedBy="fighter")
+    private List<UserAIFight> fights;
+    
+    
     public NinjaAnimalRace getAnimalRace() {
         return animalRace;
     }
@@ -49,6 +54,8 @@ public class Character extends Creature implements Serializable {
         return spellsKnown;
     }
 
+    
+    
     public void setSpellsKnown(List<SpellHandling> spellsKnown) {
         this.spellsKnown = spellsKnown;
     }
@@ -76,14 +83,11 @@ public class Character extends Creature implements Serializable {
     @JsonIgnore
     private User user;
 
-    @OneToMany(mappedBy = "aiId.fighter")
-    private List<FightVsAI> fights;
-
-    public List<FightVsAI> getFights() {
+    public List<UserAIFight> getFights() {
         return fights;
     }
 
-    public void setFights(List<FightVsAI> fights) {
+    public void setFights(List<UserAIFight> fights) {
         this.fights = fights;
     }
 
