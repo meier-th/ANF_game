@@ -23,10 +23,10 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency> 
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-orm</artifactId>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.springframework</groupId>-->
+            <!--<artifactId>spring-orm</artifactId>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
@@ -36,7 +36,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-    
+
         </dependency>
 
         <dependency>
@@ -52,7 +52,7 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-jpa</artifactId>
-            
+
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -78,7 +78,7 @@
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring-jms</artifactId>
+            <artifactId>spring-jms</artifactId>             <!-- ? -->
         </dependency>
         <dependency>
             <groupId>javax.jms</groupId>
@@ -87,7 +87,7 @@
         <dependency>
             <groupId>javax.ejb</groupId>
             <artifactId>javax.ejb-api</artifactId>
-            <version>LATEST</version>
+            <version>LATEST</version>                       <!--?-->
         </dependency>
         <dependency>
             <groupId>com.rabbitmq.jms</groupId>

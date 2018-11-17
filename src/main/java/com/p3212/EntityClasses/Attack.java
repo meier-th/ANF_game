@@ -7,6 +7,13 @@ public class Attack {
     private int damage;
     private int chakra;
     private boolean deadly = false;
+    private int code;
+
+    public Attack() {
+        damage = 0;
+        chakra = 0;
+        code = 0;
+    }
 
     public Attack(int damage, int chakra) {
         this.damage = damage;
@@ -43,6 +50,15 @@ public class Attack {
                 "\"damage\": " + damage +
                 ",\n\"chakra\": " + chakra +
                 ",\n\"deadly\": " + deadly +
+                ",\n\"code\": " + code +
                 "\n}";
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
     }
 }

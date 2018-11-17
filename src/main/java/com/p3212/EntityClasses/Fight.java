@@ -22,6 +22,8 @@ public class Fight {
 
     private static volatile int number;
 
+    private int currentAttacker = 0;
+
     private ArrayList<Pair<Integer, Creature>> fighters; //Pair of side and fighter
 
     public void addFighter(Creature fighter, int side) {
@@ -42,6 +44,14 @@ public class Fight {
 
     public static void setNumber(int number) {
         Fight.number = number;
+    }
+
+    public int getCurrentAttacker() {
+        return currentAttacker;
+    }
+
+    public void switchAttacker() {
+        currentAttacker = (currentAttacker + 1) % fighters.size();
     }
 
     @Override
