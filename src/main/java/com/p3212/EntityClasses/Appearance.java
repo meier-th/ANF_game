@@ -10,6 +10,7 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 
 /**
  * Represents Features entity
@@ -20,7 +21,7 @@ import javax.persistence.GeneratedValue;
 public class Appearance {
 
     @Id
-            @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
     public static enum Gender {
         MALE,
@@ -142,10 +143,6 @@ public class Appearance {
 
     public int getId() {
         return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public Character getCharact() {

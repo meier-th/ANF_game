@@ -48,6 +48,6 @@ public class PrivateMessage {
         return message;
     }
     
-    
+    public PrivateMessage(){}
     
 }

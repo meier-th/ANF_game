@@ -55,4 +55,7 @@ public class MessageCompositeKey implements Serializable {
         this.sender = sender;
         this.sendingDate = date;
     }
+    
+    public MessageCompositeKey(){}
+    
 }

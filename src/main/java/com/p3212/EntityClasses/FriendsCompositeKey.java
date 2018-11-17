@@ -50,6 +50,6 @@ public class FriendsCompositeKey implements Serializable {
         this.user2 = user2;
     }
     
-    
+    public FriendsCompositeKey(){}
     
 }

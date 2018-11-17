@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,21 +37,18 @@ public class CommunicationController {
     private FriendsRequestService requestServ;
     
     @PostMapping("/messages")
-    public @ResponseBody Date sendMessage(@RequestBody String senderName,@RequestBody String receiverName,@RequestBody String body) {
-	User sen = userServ.getUser(senderName);
-        User rec = userServ.getUser(receiverName);
-        PrivateMessage msg = new PrivateMessage(new MessageCompositeKey(sen, rec), body);
+    public @ResponseBody Date sendMessage(@RequestBody PrivateMessage msg) {
         messageServ.addMessage(msg);
 	return msg.getMessage_id().getSendingDate();
 }
     
     @GetMapping("/messages/unread")
-    public @ResponseBody List<PrivateMessage> getUnreadMessages(@RequestBody String user) {
-        return messageServ.getUnreadMessages(user);
+    public @ResponseBody List<PrivateMessage> getUnreadMessages(@RequestBody User user) {
+        return messageServ.getUnreadMessages(user.getLogin());
     }
     
     @GetMapping("/messages/dialog")
-    public @ResponseBody List<PrivateMessage> getMessagesFromDialog(@RequestBody String firstName, @RequestBody String secondName) {
+    public @ResponseBody List<PrivateMessage> getMessagesFromDialog(@RequestParam String firstName, @RequestParam String secondName) {
         User sen = userServ.getUser(firstName);
         User rec = userServ.getUser(secondName);
         return messageServ.getAllFromDialog(sen, rec);
@@ -62,7 +60,7 @@ public class CommunicationController {
     }
     
     @DeleteMapping("/messages")
-    public @ResponseBody String deleteMessage(@RequestBody String sender, @RequestBody String receiver, @RequestBody Date date) {
+    public @ResponseBody String deleteMessage(@RequestParam String sender, @RequestParam String receiver, @RequestParam Date date) {
         try {
             User sen = userServ.getUser(sender);
             User rec = userServ.getUser(receiver);
@@ -74,25 +72,19 @@ public class CommunicationController {
         }
     }
     
-    @PostMapping("/messages/one")
-    @ResponseBody public PrivateMessage getOneMessage(@RequestBody String sender, @RequestBody String receiver, @RequestBody Date date){
-        User sen = userServ.getUser(sender);
-        User rec = userServ.getUser(receiver);
-        MessageCompositeKey msgKey = new MessageCompositeKey(rec, sen, date);
+    @GetMapping("/messages/one")
+    @ResponseBody public PrivateMessage getOneMessage(@RequestBody MessageCompositeKey msgKey){
         return messageServ.getMessage(msgKey);
     }
     
     @PostMapping("/messages/read")
-    public void setMessageRead(@RequestBody String sender, @RequestBody String receiver, @RequestBody Date date) {
+    public void setMessageRead(@RequestParam String sender, @RequestParam String receiver, @RequestParam Date date) {
         messageServ.setRead(sender, receiver, date);
     }
     
     @PostMapping("/friends")
-    @ResponseBody public String addFriends(@RequestBody String user1, @RequestBody String user2){
+    @ResponseBody public String addFriends(@RequestBody Friends friends){
         try {
-            User us1 = userServ.getUser(user1);
-            User us2 = userServ.getUser(user2);
-            Friends friends = new Friends(new FriendsCompositeKey(us1, us2));
             friendServ.addFriend(friends);
             return "OK";
         } catch (Throwable error) {
@@ -101,11 +93,8 @@ public class CommunicationController {
     }
     
     @DeleteMapping("/friends")
-    @ResponseBody public String deleteFriends(@RequestBody String user1, @RequestBody String user2) {
+    @ResponseBody public String deleteFriends(@RequestBody Friends friends) {
         try {
-            User us1 = userServ.getUser(user1);
-            User us2 = userServ.getUser(user2);
-            Friends friends = new Friends(new FriendsCompositeKey(us1, us2));
             friendServ.removeFriend(friends);
             return "OK";
         } catch (Throwable error) {
@@ -120,11 +109,8 @@ public class CommunicationController {
     }
     
     @PostMapping("/friends/requests")
-    @ResponseBody public String addRequest (@RequestBody String senderName, @RequestBody String receiverName) {
+    @ResponseBody public String addRequest (@RequestBody FriendsRequest req) {
         try {
-            User sender = userServ.getUser(senderName);
-            User receiver = userServ.getUser(receiverName);
-            FriendsRequest req = new FriendsRequest(new FriendRequestCompositeKey(sender, receiver));
             requestServ.addRequest(req);
             return "OK";
         } catch (Throwable error) {
@@ -133,11 +119,8 @@ public class CommunicationController {
     }
     
     @DeleteMapping("/friends/requests")
-    @ResponseBody public String deleteRequest (@RequestBody String senderName, @RequestBody String receiverName) {
+    @ResponseBody public String deleteRequest (@RequestBody FriendRequestCompositeKey req) {
         try {
-            User sender = userServ.getUser(senderName);
-            User receiver = userServ.getUser(receiverName);
-            FriendRequestCompositeKey req = new FriendRequestCompositeKey(sender, receiver);
             requestServ.removeRequest(req);
             return "OK";
         } catch (Throwable error) {

@@ -49,6 +49,6 @@ public class FriendRequestCompositeKey implements Serializable {
         this.requestingUser = requestingUser;
     }
     
-    
+    public FriendRequestCompositeKey(){}
     
 }

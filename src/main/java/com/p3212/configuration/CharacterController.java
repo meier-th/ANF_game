@@ -43,15 +43,9 @@ public class CharacterController {
     @Autowired
     StatsService statsServ;
     
-    @PostMapping("/characters/{id}/appearance")
-    @ResponseBody public String addAppearance(@RequestBody String gender, @RequestBody String hair, @RequestBody String skin, @RequestBody String clothes, @PathVariable int id) {
+    @PostMapping("/characters/{id}/appearance") //  CANNOT SEE ID FROM REQUEST. FUCK
+    @ResponseBody public String addAppearance(@RequestBody Appearance appear, @PathVariable int id) {
         try {
-            Appearance appear = new Appearance();
-            appear.setCharact(charServ.getCharacter(id));
-            appear.setClothesColour(Appearance.ClothesColour.valueOf(clothes));
-            appear.setGender(Appearance.Gender.valueOf(gender));
-            appear.setHairColour(Appearance.HairColour.valueOf(hair));
-            appear.setSkinColour(Appearance.SkinColour.valueOf(skin));
             appearanceServ.addAppearance(appear);
             Character ch = charServ.getCharacter(id);
             ch.setAppearance(appear);
@@ -67,7 +61,7 @@ public class CharacterController {
         return appearanceServ.getUserAppearance(id);
     }
     
-    @DeleteMapping("/characters/{id}/appearance")
+    @DeleteMapping("/characters/{id}/appearance") //  Key (id)=(1) is still referenced from table "persons"
     @ResponseBody public String deleteAppearance(@PathVariable int id) {
         try {
             appearanceServ.removeUserAppearance(id);
@@ -82,12 +76,11 @@ public class CharacterController {
         return charServ.getAllCharacters();
     }
     
-    @PostMapping("/characters/{id}")
-    @ResponseBody public String addCharacter(@PathVariable int id, @RequestBody String login) {
+    @PostMapping("/characters/{id}") // id
+    @ResponseBody public String addCharacter(@PathVariable int id, @RequestBody User us) {
         try{
             Character ch = new Character(0.05f, 100, 10, 30);
             charServ.addCharacter(ch);
-            User us = userServ.getUser(login);
             us.setCharacter(ch);
             userServ.saveUser(us);
             return "OK";
@@ -101,7 +94,7 @@ public class CharacterController {
         return charServ.getCharacter(id);
     }
     
-    @DeleteMapping("/characters/{id}")
+    @DeleteMapping("/characters/{id}") //Key (id)=(2) is still referenced from table "pvp_fights"
     @ResponseBody public String deleteCharacter(@PathVariable int id) {
         try{
             charServ.removeCharacter(id);
@@ -111,7 +104,7 @@ public class CharacterController {
         }
     }
     
-    @PostMapping("/admin/users/{login}/grantAdmin")
+    @PostMapping("/admin/users/{login}/grantAdmin") //RETURNS OK, BUT DOESN'T WORK
     @ResponseBody public String grantAdmin(@PathVariable String login) {
         try {
             User user = userServ.getUser(login);
@@ -137,7 +130,7 @@ public class CharacterController {
         return userServ.getUser(login);
     }
     
-    @DeleteMapping("/users/{login}")
+    @DeleteMapping("/users/{login}") // Key (role)=(USER) is still referenced from table "user_role".
     @ResponseBody public String deleteUser(@PathVariable String login) {
         try {
             userServ.removeUser(login);
@@ -147,11 +140,9 @@ public class CharacterController {
         }
     }
     
-    @PostMapping("/users/{login}/stats")
-    @ResponseBody public String addOrUpdateStats(@PathVariable String login, @RequestBody int fights, @RequestBody int rating, @RequestBody int deaths, @RequestBody int wins,
-                                         @RequestBody int losses, @RequestBody int experience, @RequestBody int level, @RequestBody int upgradePoints) {
+    @PostMapping("/users/{login}/stats") //null value in column "id" violates not-null constraint
+    @ResponseBody public String addOrUpdateStats(@PathVariable String login, @RequestBody Stats sts) {
         try {
-            Stats sts = new Stats(rating, fights, wins, losses, deaths, experience, level, upgradePoints);
             statsServ.addStats(sts);
             User user = userServ.getUser(login);
             if (user.getStats() == null) {
@@ -164,7 +155,7 @@ public class CharacterController {
         }
     }
     
-    @DeleteMapping("/users/{login}/stats")
+    @DeleteMapping("/users/{login}/stats") // Key (id)=(1) is still referenced from table "users".
     @ResponseBody public String deleteStats(@PathVariable String login) {
         try {
             int id = userServ.getUser(login).getStats().getId();
@@ -175,7 +166,7 @@ public class CharacterController {
         }
     }
     
-    @GetMapping("/users/{login}/stats")
+    @GetMapping("/users/{login}/stats") 
     @ResponseBody public Stats getStats(@PathVariable String login) {
         return userServ.getUser(login).getStats();
     }

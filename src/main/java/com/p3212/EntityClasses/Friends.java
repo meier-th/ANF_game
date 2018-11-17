@@ -21,6 +21,6 @@ public class Friends implements Serializable {
         return friends_id;
     }
     
-    
+    public Friends(){}
     
 }

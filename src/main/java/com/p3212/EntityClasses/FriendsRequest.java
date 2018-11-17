@@ -15,4 +15,6 @@ public class FriendsRequest {
         this.request_id = key;
     }
     
+    public FriendsRequest(){}
+    
 }
