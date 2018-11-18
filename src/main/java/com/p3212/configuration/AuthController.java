@@ -26,6 +26,12 @@ public class AuthController {
         return modelAndView;
     }
 
+    @RequestMapping(value = {"/kek"})
+    public String kek() {
+        System.out.println("kek");
+        return "redirect:/characters/3/animals";
+    }
+
     @RequestMapping(value = "/registration", method = RequestMethod.GET)
     public ModelAndView registration() {
         ModelAndView modelAndView = new ModelAndView();
@@ -47,7 +53,7 @@ public class AuthController {
         if (bindingResult.hasErrors()) {
             modelAndView.setViewName("registration");
         } else {
-                userService.saveUser(user);
+            userService.saveUser(user);
             modelAndView.addObject("successMessage", "User has been registered successfully");
             modelAndView.addObject("user", new User());
             modelAndView.setViewName("registration");

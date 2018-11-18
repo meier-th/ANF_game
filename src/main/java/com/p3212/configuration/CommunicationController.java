@@ -54,10 +54,10 @@ public class CommunicationController {
         return messageServ.getAllFromDialog(sen, rec);
     }
     
-    @RequestMapping("*")
-    @ResponseBody public String fallbackMethod() {
-        return "Something failed.";
-    }
+//    @RequestMapping("*")
+//    @ResponseBody public String fallbackMethod() {
+//        return "Something failed.";
+//    }
     
     @DeleteMapping("/messages")
     public @ResponseBody String deleteMessage(@RequestParam String sender, @RequestParam String receiver, @RequestParam Date date) {
