@@ -1,21 +1,16 @@
 package com.p3212.configuration;
 
-import com.p3212.EntityClasses.Appearance;
-import com.p3212.Services.AppearanceService;
-import com.p3212.Services.CharacterService;
-import com.p3212.Services.StatsService;
+import com.p3212.EntityClasses.*;
+import com.p3212.EntityClasses.Character;
+import com.p3212.Services.*;
 
 import java.util.List;
 
-import com.p3212.EntityClasses.Character;
-import com.p3212.EntityClasses.User;
-import com.p3212.EntityClasses.Role;
-import com.p3212.EntityClasses.Stats;
 import com.p3212.Repositories.RoleRepository;
-import com.p3212.Services.UserService;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -47,6 +42,9 @@ public class CharacterController {
     @Autowired
     StatsService statsServ;
 
+    @Autowired
+    NinjaAnimalService ninjaAnimalServ;
+
     @PostMapping("/characters/{id}/appearance")
     @ResponseBody
     public String addAppearance(@RequestBody Appearance appear, @PathVariable int id) {
@@ -59,6 +57,18 @@ public class CharacterController {
         } catch (Throwable error) {
             return error.getMessage();
         }
+    }
+
+    @GetMapping("/characters/{id}/animals")
+    public List<NinjaAnimal> getAvailableAnimals(@PathVariable int id) {
+        Character character = charServ.getCharacter(id);
+        if (character == null) return null;
+        final int lvl = character.getUser().getStats().getLevel();
+        NinjaAnimalRace race = character.getAnimalRace();
+        return ninjaAnimalServ.list()
+                .stream()
+                .filter(animal -> animal.getRequiredLevel() <= lvl)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/characters/{id}/appearance")

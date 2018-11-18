@@ -15,12 +15,11 @@ import javax.persistence.Table;
 @Table(name = "Ninja_animal_races")
 public class NinjaAnimalRace {
     static enum races {
-    CHISTI,
+    Snake,
     VILKOY,
     GOVNO;
     }
     @Id
     @Enumerated(EnumType.STRING)
     private races raceName;
-    
 }

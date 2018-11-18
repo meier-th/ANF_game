@@ -1,5 +1,6 @@
 package com.p3212.Services;
 
+import com.google.common.collect.Lists;
 import com.p3212.EntityClasses.NinjaAnimal;
 import com.p3212.EntityClasses.NinjaAnimalRace;
 import com.p3212.Repositories.NinjaAnimalRepository;
@@ -52,8 +53,8 @@ public class NinjaAnimalService {
      *
      * @return Iterable with all NinjaAnimals
      */
-    public Iterable<NinjaAnimal> list() {
-        return repository.findAll();
+    public List<NinjaAnimal> list() {
+        return Lists.newArrayList(repository.findAll());
     }
 
     /**
