@@ -9,8 +9,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
+import javax.persistence.Column;
 
 /**
  * Represents Features entity
@@ -51,17 +50,20 @@ public class Appearance {
      * Responsible for model
      */
     @Enumerated(EnumType.STRING)
+    @Column(length=6)
     private Gender gender;
 
     /**
      * Skin colour of a character
      */
+    @Column(length=5)
     @Enumerated(EnumType.STRING)
     private SkinColour skinColour;
 
     /**
      * Hair colour of a character
      */
+    @Column(length=6)
     @Enumerated(EnumType.STRING)
     private HairColour hairColour;
 
@@ -73,6 +75,7 @@ public class Appearance {
      * Clothes colour of a character
      */
     @Enumerated(EnumType.STRING)
+    @Column(length=5)
     private ClothesColour clothesColour;
 
 

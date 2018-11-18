@@ -40,7 +40,7 @@ public class UserAIFight {
     /**
      * Result - won, lost, died
      */
-    @Column(name="fresult")
+    @Column(name="fresult", length=4)
     @Enumerated(EnumType.STRING)
     private Result result;
     
@@ -94,6 +94,18 @@ public class UserAIFight {
 
     public int getfIdentity() {
         return fIdentity;
+    }
+
+    public void setfIdentity(int fIdentity) {
+        this.fIdentity = fIdentity;
+    }
+
+    public void setFight(FightVsAI fight) {
+        this.fight = fight;
+    }
+
+    public void setFighter(Character fighter) {
+        this.fighter = fighter;
     }
     
     

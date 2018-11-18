@@ -1,6 +1,7 @@
 package com.p3212.EntityClasses;
 
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Id;
 
 import javax.persistence.Entity;
@@ -27,6 +28,7 @@ public class Boss extends Creature implements Serializable {
     /**
      * Name of the boss
      */
+    @Column(length=30)
     private String name;
 
     /**

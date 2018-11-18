@@ -5,6 +5,7 @@ import java.util.List;
 import java.io.Serializable;
 import java.util.Set;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Id;
@@ -25,6 +26,7 @@ public class User implements Serializable {
      * User's login
      */
     @Id
+    @Column(length=30)
     private String login;
 
     /**

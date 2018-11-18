@@ -1,6 +1,7 @@
 package com.p3212.EntityClasses;
 
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Id;
 
 import javax.persistence.Entity;
@@ -47,11 +48,13 @@ public class Spell implements Serializable {
     /**
      * Name of a spell
      */
+    @Column(length=20)
     private String name;
 
     /**
      * Description of a spell
      */
+    @Column(columnDefinition="TEXT")
     private String description;
 
     /**

@@ -1,5 +1,6 @@
 package com.p3212.EntityClasses;
 
+import javax.persistence.Column;
 import javax.persistence.Id;
 
 import javax.persistence.Entity;
@@ -19,6 +20,7 @@ public class NinjaAnimal extends Creature {
      * Name of the ninja animal
      */
     @Id
+    @Column(length=30)
     private String name;
 
     /**
