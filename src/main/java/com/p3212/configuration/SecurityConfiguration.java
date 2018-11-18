@@ -19,7 +19,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
-@EnableOAuth2Sso
+//@EnableOAuth2Sso
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired

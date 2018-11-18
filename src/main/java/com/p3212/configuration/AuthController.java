@@ -19,7 +19,7 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
-    @RequestMapping(value = {"/login"}, method = RequestMethod.GET)
+    @RequestMapping(value = {"/login"})
     public ModelAndView login() {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("login");
