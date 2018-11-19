@@ -50,7 +50,7 @@ public class Controller {
         return "start page";
     }
     
-    @RequestMapping("/admin/users")
+    @RequestMapping("/users")
     public List<User> getAllUsers() {
         return userService.getAllUsers();
     }

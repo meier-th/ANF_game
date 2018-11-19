@@ -71,13 +71,13 @@ public class CharacterController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/characters/{id}/appearance")
+    @GetMapping("/characters/{id}/appearance") // WE HAVE TO MAKE SURE ALL CHARACTERS HAVE THE SAME ID AS THEIR APPEARANCES, OTHERWISE WE'LL GET WRONG RESULTS HERE
     @ResponseBody
     public Appearance getAppearance(@PathVariable int id) {
         return appearanceServ.getUserAppearance(id);
     }
 
-    @DeleteMapping("/characters/{id}/appearance") //  Key (id)=(1) is still referenced from table "persons"
+    @DeleteMapping("/characters/{id}/appearance")
     @ResponseBody
     public String deleteAppearance(@PathVariable int id) {
         try {
@@ -94,7 +94,7 @@ public class CharacterController {
         return charServ.getAllCharacters();
     }
 
-    @PostMapping("/characters/{id}")
+    @PostMapping("/characters/{id}") // after adding : /admin/users fails with Could not write JSON: (was java.lang.NullPointerException); nested exception is com.fasterxml.jackson.databind.JsonMappingException: (was java.lang.NullPointerException) (through reference chain: java.util.ArrayList[5]->com.p3212.EntityClasses.User[\"character\"]->com.p3212.EntityClass
     @ResponseBody
     public String addCharacter(@PathVariable int id, @RequestBody User us) {
         try {
@@ -115,7 +115,7 @@ public class CharacterController {
         return charServ.getCharacter(id);
     }
 
-    @DeleteMapping("/characters/{id}") //Key (id)=(2) is still referenced from table "pvp_fights"
+    @DeleteMapping("/characters/{id}") 
     @ResponseBody
     public String deleteCharacter(@PathVariable int id) {
         try {
@@ -131,11 +131,7 @@ public class CharacterController {
     public String grantAdmin(@PathVariable String login) {
         try {
             User user = userServ.getUser(login);
-            Role usr = new Role();
-            usr.setRole("USER");
-            Role adm = new Role();
-            adm.setRole("ADMIN");
-            user.setRoles(new HashSet<>(Arrays.asList(usr, adm)));
+            user.addRole(new Role("ADMIN"));
             userServ.saveUser(user);
             return "OK";
         } catch (Throwable error) {
@@ -155,7 +151,7 @@ public class CharacterController {
         return userServ.getUser(login);
     }
 
-    @DeleteMapping("/users/{login}") // Key (role)=(USER) is still referenced from table "user_role".
+    @DeleteMapping("/users/{login}") 
     @ResponseBody
     public String deleteUser(@PathVariable String login) {
         try {
@@ -170,19 +166,17 @@ public class CharacterController {
     @ResponseBody
     public String addOrUpdateStats(@PathVariable String login, @RequestBody Stats sts) {
         try {
+            statsServ.addStats(sts);
             User user = userServ.getUser(login);
-            if (user.getStats() == null) {
-                statsServ.addStats(sts);
-                user.setStats(sts);
-                userServ.saveUser(user);
-            }
-            return "OK";
+            user.setStats(sts);
+            userServ.saveUser(user);
+            return "OK"; 
         } catch (Throwable error) {
             return error.getMessage();
         }
     }
 
-    @DeleteMapping("/users/{login}/stats") // Key (id)=(1) is still referenced from table "users".
+    @DeleteMapping("/users/{login}/stats") 
     @ResponseBody
     public String deleteStats(@PathVariable String login) {
         try {

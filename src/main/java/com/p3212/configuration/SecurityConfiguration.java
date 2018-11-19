@@ -47,26 +47,26 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 //                .antMatchers("/login","/","/callback/").permitAll()
 //                .anyRequest().authenticated()
 //                .and().csrf().disable();
-//        http.csrf().disable()
-//                .antMatcher("/characters/**").
-//                authorizeRequests()
-//                .antMatchers("/registerVk").permitAll()
-//                .antMatchers("/authVk").permitAll()
-//                .antMatchers("/getVkCode").permitAll()
-//                .antMatchers("/").permitAll()
-//                .antMatchers("/login").permitAll()
-//                .antMatchers("/registration").permitAll()
-//                .antMatchers("/admin/**").hasAuthority("ADMIN").anyRequest()
-//                .authenticated().and().csrf().disable().formLogin()
-//                .loginPage("/login").failureUrl("/login?error=true")
-//                .defaultSuccessUrl("/home")
-//                .usernameParameter("login")
-//                .passwordParameter("password")
-//                .and().logout()
-//                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-//                .logoutSuccessUrl("/").and().exceptionHandling()
-//                .accessDeniedPage("/access-denied");
-        http.csrf().disable().
+        http.csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/users").permitAll()
+                .antMatchers("/registerVk").permitAll()
+                .antMatchers("/authVk").permitAll()
+                .antMatchers("/getVkCode").permitAll()
+                .antMatchers("/").permitAll()
+                .antMatchers("/login").permitAll()
+                .antMatchers("/registration").permitAll()
+                .antMatchers("/admin/**").hasAuthority("ADMIN").anyRequest()
+                .authenticated().and().csrf().disable().formLogin()
+                .loginPage("/login").failureUrl("/login?error=true")
+                .defaultSuccessUrl("/users")
+                .usernameParameter("login")
+                .passwordParameter("password")
+                .and().logout()
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .logoutSuccessUrl("/").and().exceptionHandling()
+                .accessDeniedPage("/access-denied");
+        /*http.csrf().disable().
                 authorizeRequests()
                 .antMatchers("*").permitAll()
                 .antMatchers("/registerVk").permitAll()
@@ -75,7 +75,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and().logout()
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                 .logoutSuccessUrl("/").and().exceptionHandling()
-                .accessDeniedPage("/access-denied");
+                .accessDeniedPage("/access-denied");*/
     }
 
     @Override

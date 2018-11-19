@@ -44,6 +44,18 @@ public class UserAIFight {
     @Enumerated(EnumType.STRING)
     private Result result;
     
+    @Column(name="experience_gain")
+    private int experience;
+    
+    public UserAIFight(){}
+    
+    public UserAIFight(Result result, FightVsAI fight, Character fighter, int exp) {
+        this.experience = exp;
+        this.fight = fight;
+        this.fighter = fighter;
+        this.result = result;
+    }
+    
     public int getId() {
         return fIdentity;
     }
@@ -71,5 +83,19 @@ public class UserAIFight {
     public void setResult(Result result) {
         this.result = result;
     }
+
+    public int getExperience() {
+        return experience;
+    }
+
+    public void setExperience(int experience) {
+        this.experience = experience;
+    }
+
+    public int getfIdentity() {
+        return fIdentity;
+    }
+    
+    
     
 }
