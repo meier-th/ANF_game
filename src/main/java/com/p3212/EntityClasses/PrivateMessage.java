@@ -18,7 +18,7 @@ public class PrivateMessage {
      * Message itself
      */
     
-    @Column(name="message")
+    @Column(name="message", columnDefinition="TEXT")
     String message;
     
     boolean isRead;

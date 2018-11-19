@@ -13,7 +13,11 @@ public class BossService {
     public void addBoss(Boss boss) {
         bossRepository.save(boss);
     }
-
+    
+    public Boss getBossByName(String name) {
+        return bossRepository.getByName(name);
+    }
+    
     public Boss getBoss(int id) {
         return bossRepository.findById(id).get();
     }

@@ -1,5 +1,6 @@
 package com.p3212.EntityClasses;
 
+import javax.persistence.Column;
 import javax.persistence.Id;
 
 import javax.persistence.Entity;
@@ -20,6 +21,7 @@ public class NinjaAnimalRace {
     GOVNO;
     }
     @Id
+    @Column(length=20)
     @Enumerated(EnumType.STRING)
     private races raceName;
 }
