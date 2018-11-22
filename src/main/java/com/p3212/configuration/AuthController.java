@@ -78,5 +78,5 @@ public class AuthController {
         attributes.addAttribute("code", code);
         return new RedirectView("https://oauth.vk.com/access_token");
     }
-
+//
 }
