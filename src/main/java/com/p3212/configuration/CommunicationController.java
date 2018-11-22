@@ -1,14 +1,8 @@
 package com.p3212.configuration;
 
-import com.p3212.EntityClasses.FriendRequestCompositeKey;
-import com.p3212.EntityClasses.Friends;
-import com.p3212.EntityClasses.FriendsCompositeKey;
-import com.p3212.EntityClasses.FriendsRequest;
-import com.p3212.EntityClasses.MessageCompositeKey;
 import com.p3212.EntityClasses.PrivateMessage;
 import com.p3212.EntityClasses.User;
 import com.p3212.Services.FriendsRequestService;
-import com.p3212.Services.FriendsService;
 import com.p3212.Services.MessagesService;
 import com.p3212.Services.UserService;
 import java.util.Date;
@@ -19,7 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,14 +25,12 @@ public class CommunicationController {
     @Autowired
     private UserService userServ;
     @Autowired
-    private FriendsService friendServ;
-    @Autowired
     private FriendsRequestService requestServ;
     
     @PostMapping("/messages")
     public @ResponseBody Date sendMessage(@RequestBody PrivateMessage msg) {
         messageServ.addMessage(msg);
-	return msg.getMessage_id().getSendingDate();
+	return msg.getSendingDate();
 }
     
     @GetMapping("/messages/unread")
@@ -59,22 +50,19 @@ public class CommunicationController {
 //        return "Something failed.";
 //    }
     
-    @DeleteMapping("/messages")
-    public @ResponseBody String deleteMessage(@RequestParam String sender, @RequestParam String receiver, @RequestParam Date date) {
+    @DeleteMapping("/messages/{id}")
+    public @ResponseBody String deleteMessage(@PathVariable int id) {
         try {
-            User sen = userServ.getUser(sender);
-            User rec = userServ.getUser(receiver);
-            MessageCompositeKey msgKey = new MessageCompositeKey(rec, sen, date);
-            messageServ.removeMessage(msgKey);
+            messageServ.removeMessage(id);
             return "OK";
         } catch (Throwable error) {
             return error.getMessage();
         }
     }
     
-    @GetMapping("/messages/one")
-    @ResponseBody public PrivateMessage getOneMessage(@RequestBody MessageCompositeKey msgKey){
-        return messageServ.getMessage(msgKey);
+    @GetMapping("/messages/{id}")
+    @ResponseBody public PrivateMessage getOneMessage(@PathVariable int id){
+        return messageServ.getMessage(id);
     }
     
     @PostMapping("/messages/read")
@@ -82,46 +70,10 @@ public class CommunicationController {
         messageServ.setRead(sender, receiver, date);
     }
     
-    @PostMapping("/friends")
-    @ResponseBody public String addFriends(@RequestBody Friends friends){
-        try {
-            friendServ.addFriend(friends);
-            return "OK";
-        } catch (Throwable error) {
-            return error.getMessage();
-        }
-    }
-    
-    @DeleteMapping("/friends")
-    @ResponseBody public String deleteFriends(@RequestBody Friends friends) {
-        try {
-            friendServ.removeFriend(friends);
-            return "OK";
-        } catch (Throwable error) {
-            return error.getMessage();
-        }
-    }
-    
-    @GetMapping("/friends/{login}")
-    @ResponseBody public List<User> getUsersFriends(@PathVariable String login) {
-        User user = userServ.getUser(login);
-        return friendServ.getUsersFriends(user);
-    }
-    
-    @PostMapping("/friends/requests")
-    @ResponseBody public String addRequest (@RequestBody FriendsRequest req) {
-        try {
-            requestServ.addRequest(req);
-            return "OK";
-        } catch (Throwable error) {
-            return error.getMessage();
-        }
-    }
-    
     @DeleteMapping("/friends/requests")
-    @ResponseBody public String deleteRequest (@RequestBody FriendRequestCompositeKey req) {
+    @ResponseBody public String deleteRequest (@RequestParam int id) {
         try {
-            requestServ.removeRequest(req);
+            requestServ.removeRequest(id);
             return "OK";
         } catch (Throwable error) {
             return error.getMessage();

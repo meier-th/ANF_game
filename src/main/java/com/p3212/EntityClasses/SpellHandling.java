@@ -74,4 +74,38 @@ public class SpellHandling {
         this.spellLevel = level;
     }
 
+    public int getHandlingId() {
+        return handlingId;
+    }
+
+    public void setHandlingId(int handlingId) {
+        this.handlingId = handlingId;
+    }
+
+    public Character getCharacterHandler() {
+        return characterHandler;
+    }
+
+    public void setCharacterHandler(Character characterHandler) {
+        this.characterHandler = characterHandler;
+    }
+
+    public Spell getSpellUse() {
+        return spellUse;
+    }
+
+    public void setSpellUse(Spell spellUse) {
+        this.spellUse = spellUse;
+    }
+
+    public static ArrayList<SpellHandling> getInfoAboutSpells() {
+        return infoAboutSpells;
+    }
+
+    public static void setInfoAboutSpells(ArrayList<SpellHandling> infoAboutSpells) {
+        SpellHandling.infoAboutSpells = infoAboutSpells;
+    }
+
+    
+    
 }

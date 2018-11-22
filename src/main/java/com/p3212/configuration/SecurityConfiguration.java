@@ -6,7 +6,6 @@ import javax.sql.DataSource;
 import com.p3212.EntityClasses.User;
 import com.p3212.Repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth2Sso;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.PrincipalExtractor;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
@@ -25,12 +24,14 @@ import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import java.security.Principal;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -98,8 +99,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .logoutSuccessUrl("/").and().exceptionHandling()
                 .accessDeniedPage("/access-denied");*/
         http.oauth2Login()
-                .authorizationEndpoint()
-                .authorizationRequestRepository();
+                .authorizationEndpoint();
+               // .authorizationRequestRepository(new AuthorizationRequestRepository<>());
+        
 
     }
 
@@ -131,6 +133,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
+    public ClientRegistrationRepository clientRegistrationRepository(){
+        return new InMemoryClientRegistrationRepository(new ClientRegistration[1]);
+    }
+    
+    @Bean
     @ConfigurationProperties("vk.resource")
     public ResourceServerProperties vkResource() {
         return new ResourceServerProperties();
@@ -154,6 +161,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     public User kek(UserDetailsService ud) {
-
+        return null;
     }
 }

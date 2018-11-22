@@ -39,28 +39,32 @@ public class User implements Serializable {
     @JoinColumn(name = "stats_id")
     private Stats stats;
 
-    @OneToMany(mappedBy = "message_id.sender", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "sender", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<PrivateMessage> outgoingMessages;
 
-    @OneToMany(mappedBy = "message_id.receiver", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "receiver", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<PrivateMessage> incomingMessages;
 
-    @OneToMany(mappedBy = "request_id.friendUser", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "friendUser", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<FriendsRequest> friendRequestsIn;
 
-    @OneToMany(mappedBy = "request_id.requestingUser", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "requestingUser", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<FriendsRequest> friendRequestOut;
 
+    
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "friends", joinColumns = {
             @JoinColumn(name = "user1", referencedColumnName = "login", nullable = false)}, inverseJoinColumns = {
             @JoinColumn(name = "user2", referencedColumnName = "login", nullable = false)})
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<User> friends;
 
+    @ManyToMany(mappedBy="friends")
+    private List<User> allies;
+    
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "login"), inverseJoinColumns = @JoinColumn(name = "role"))
     private Set<Role> roles;

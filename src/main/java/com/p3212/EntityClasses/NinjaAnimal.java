@@ -1,5 +1,6 @@
 package com.p3212.EntityClasses;
 
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Id;
 
@@ -14,7 +15,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "Ninja_animals")
-public class NinjaAnimal extends Creature {
+public class NinjaAnimal extends Creature implements Serializable {
 
     /**
      * Name of the ninja animal
@@ -125,22 +126,9 @@ public class NinjaAnimal extends Creature {
         this.race = race;
     }
 
-    /**
-     * Default constructor
-     * Used for dependency injection
-     */
     public NinjaAnimal() {
     }
 
-    /**
-     * To be used when retrieved from database
-     *
-     * @param name     name of the animal
-     * @param race     race of the animal
-     * @param damage   physical damage of the animal
-     * @param hp       hit points of the animal
-     * @param reqlevel required level to summon the animal
-     */
     public NinjaAnimal(String name, NinjaAnimalRace race, int damage, int hp, int reqlevel) {
         this.damage = damage;
         this.hp = hp;

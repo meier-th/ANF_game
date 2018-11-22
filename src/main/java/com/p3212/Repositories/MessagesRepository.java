@@ -1,7 +1,6 @@
 package com.p3212.Repositories;
 
 import com.p3212.EntityClasses.PrivateMessage;
-import com.p3212.EntityClasses.MessageCompositeKey;
 import java.util.Date;
 import java.util.List;
 import org.springframework.data.jpa.repository.Query;
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Repository;
  * Repository for message entity
  */
 @Repository
-public interface MessagesRepository extends CrudRepository<PrivateMessage, MessageCompositeKey> {
+public interface MessagesRepository extends CrudRepository<PrivateMessage, Integer> {
     @Query("update PrivateMessage p set isRead = true where p.receiver = :receiver AND p.sender = :sender AND p.message_id.sendingDate = :date")
     void setRead(@Param("sender") String senderName, @Param("receiver") String receiverName, @Param("date") Date date);
     

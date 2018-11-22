@@ -1,9 +1,14 @@
 package com.p3212.EntityClasses;
 
+import java.util.Date;
 import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  * Entity class for a message
@@ -30,8 +35,6 @@ public class PrivateMessage {
     @Column(name = "sending_time")
     @Temporal(TemporalType.TIMESTAMP)
     Date sendingDate;
-
-    @Column(name = "message")
 
     @Column(name="message", columnDefinition="TEXT")
     String message;

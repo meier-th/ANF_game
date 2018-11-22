@@ -67,21 +67,9 @@ public class Stats {
      */
     private int upgradePoints;
 
-    /**
-     * Default constructor, to be used for dependency injection
-     */
     public Stats() {
     }
 
-    /**
-     * To be used when retrieved from database
-     *
-     * @param r Rating value
-     * @param f Number of fights
-     * @param w Number of wins
-     * @param l Number of losses
-     * @param d Number of deaths
-     */
     public Stats(int r, int f, int w, int l, int d) {
         this.deaths = d;
         this.fights = f;

@@ -37,7 +37,7 @@ public class Character extends Creature implements Serializable {
         this.animalRace = animalRace;
     }
 
-    @OneToMany(mappedBy = "handlingId.characterHandler")
+    @OneToMany(mappedBy = "characterHandler")
     private List<SpellHandling> spellsKnown;
 
     public List<SpellHandling> getSpellsKnown() {
@@ -59,11 +59,11 @@ public class Character extends Creature implements Serializable {
      */
     private int maxChakraAmount;
 
-    @OneToMany(mappedBy = "pvpId.firstFighter",  fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "firstFighter",  fetch = FetchType.LAZY)
     @JsonIgnore
     private List<FightPVP> pvpFightsAsFirst;
 
-    @OneToMany(mappedBy = "pvpId.secondFighter",  fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "secondFighter",  fetch = FetchType.LAZY)
     @JsonIgnore
     private List<FightPVP> pvpFightsAsSecond;
 
@@ -208,19 +208,9 @@ public class Character extends Creature implements Serializable {
         this.resistance = resistance;
     }
 
-    /**
-     * Default constructor. To be used for dependency injection
-     */
     public Character() {
     }
 
-    /**
-     * @param date       - creation date
-     * @param resistance - resistance float value
-     * @param hp         - max hp value
-     * @param damage     - physical damahe value
-     * @param chakra     - amount of chakra
-     */
     public Character(Date date, float resistance, int hp, int damage, int chakra) {
         this.creationDate = date;
         this.resistance = resistance;

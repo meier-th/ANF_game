@@ -74,7 +74,7 @@ public class FightController {
         Boss boss = bossService.getBoss(bossId);
         boss.prepareForFight();
         fight.addFighter(boss, 2);
-        fight.getAiId().setBoss(boss);
+        fight.setBoss(boss);
         Collections.addAll(usersInFight, fighters);
         usersInFight.add(String.valueOf(bossId));
         fights.put(fight.getId(), fight);
@@ -134,7 +134,7 @@ public class FightController {
                 stopFight(fightId);
             } else {
                 if (fight.getFighters().get(enemyNumber).getKey() == 1) {
-                    ((Character) enemy).changeXP(((FightVsAI) fight).getAiId().getBoss().getNumberOfTails() * 10);
+                    ((Character) enemy).changeXP(((FightVsAI) fight).getBoss().getNumberOfTails() * 10);
                     if (fight.getFighters().size() < 2) {
                         stopFight(fightId);
                     }
@@ -145,7 +145,7 @@ public class FightController {
                     fight.getFighters().remove(enemyNumber);
                     fight.getFighters().iterator().forEachRemaining(item -> {
                         if (item.getValue() instanceof Character) {
-                            ((Character) item.getValue()).changeXP(((FightVsAI) fight).getAiId().getBoss().getNumberOfTails() * 100);
+                            ((Character) item.getValue()).changeXP(((FightVsAI) fight).getBoss().getNumberOfTails() * 100);
                         }
                     });
                     stopFight(fightId);
@@ -174,14 +174,14 @@ public class FightController {
     private void stopFight(int fightId) {
         Fight fight = fights.get(fightId);
         if (fight instanceof FightPVP) {
-            int lvlDiff = ((FightPVP) fight).getPvpId().getFirstFighter().getLevel() -
-                    ((FightPVP) fight).getPvpId().getSecondFighter().getLevel();
+            int lvlDiff = ((FightPVP) fight).getFirstFighter().getLevel() -
+                    ((FightPVP) fight).getSecondFighter().getLevel();
             boolean isFirstWon = ((FightPVP) fight).isFirstWon();
             int rating = isFirstWon ?
                     5 + (lvlDiff < 0 ? -lvlDiff * 5 : 0) : 5 + (lvlDiff > 0 ? lvlDiff * 5 : 0);
             ((FightPVP) fight).setRatingChange(rating);
-            ((FightPVP) fight).getPvpId().getFirstFighter().changeRating(isFirstWon ? rating : -rating);
-            ((FightPVP) fight).getPvpId().getSecondFighter().changeRating(isFirstWon ? -rating : rating);
+            ((FightPVP) fight).getFirstFighter().changeRating(isFirstWon ? rating : -rating);
+            ((FightPVP) fight).getSecondFighter().changeRating(isFirstWon ? -rating : rating);
             pvpFightsService.addFight(((FightPVP) fight));
         } else fightVsAIService.addFight(((FightVsAI) fight));
         fights.remove(fightId);
