@@ -223,9 +223,7 @@ public class Stats {
         return this.deaths;
     }
 
-    public void changeRating(int change) {
-        rating += change;
-    }
+
 
     @Override
     public String toString() {

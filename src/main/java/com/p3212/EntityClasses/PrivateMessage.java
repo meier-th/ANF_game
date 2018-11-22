@@ -12,27 +12,42 @@ import javax.persistence.Table;
 @Table(name = "PrivateMessages")
 public class PrivateMessage {
 
-    @EmbeddedId
-    MessageCompositeKey message_id;
+    @Id
+    int message_id;
     /**
      * Message itself
      */
-    
+
+    @ManyToOne
+    @JoinColumn(name = "receiver")
+    User receiver;
+
+    @ManyToOne
+    @JoinColumn(name = "sender")
+    User sender;
+
+
+    @Column(name = "sending_time")
+    @Temporal(TemporalType.TIMESTAMP)
+    Date sendingDate;
+
+    @Column(name = "message")
+
     @Column(name="message", columnDefinition="TEXT")
     String message;
-    
+
     boolean isRead;
-    
-    public PrivateMessage(MessageCompositeKey key, String text) {
+
+    public PrivateMessage(int key, String text) {
         this.message_id = key;
         this.message = text;
     }
 
-    public MessageCompositeKey getMessage_id() {
+    public int getMessage_id() {
         return message_id;
     }
 
-    public void setMessage_id(MessageCompositeKey message_id) {
+    public void setMessage_id(int message_id) {
         this.message_id = message_id;
     }
 
@@ -47,7 +62,43 @@ public class PrivateMessage {
     public String getMessage() {
         return message;
     }
-    
-    public PrivateMessage(){}
-    
+
+    public PrivateMessage() {
+    }
+
+    public User getReceiver() {
+        return receiver;
+    }
+
+    public void setReceiver(User receiver) {
+        this.receiver = receiver;
+    }
+
+    public User getSender() {
+        return sender;
+    }
+
+    public void setSender(User sender) {
+        this.sender = sender;
+    }
+
+    public Date getSendingDate() {
+        return sendingDate;
+    }
+
+    public void setSendingDate(Date sendingDate) {
+        this.sendingDate = sendingDate;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public boolean isRead() {
+        return isRead;
+    }
+
+    public void setRead(boolean read) {
+        isRead = read;
+    }
 }

@@ -5,17 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 
 /**
  * Represents Person entity
@@ -35,10 +25,10 @@ public class Character extends Creature implements Serializable {
     @JoinColumn(name = "animal_race")
     private NinjaAnimalRace animalRace;
 
-    @OneToMany(mappedBy="fighter")
+    @OneToMany(mappedBy = "fighter",  fetch = FetchType.LAZY)
     private List<UserAIFight> fights;
-    
-    
+
+
     public NinjaAnimalRace getAnimalRace() {
         return animalRace;
     }
@@ -54,8 +44,7 @@ public class Character extends Creature implements Serializable {
         return spellsKnown;
     }
 
-    
-    
+
     public void setSpellsKnown(List<SpellHandling> spellsKnown) {
         this.spellsKnown = spellsKnown;
     }
@@ -70,11 +59,11 @@ public class Character extends Creature implements Serializable {
      */
     private int maxChakraAmount;
 
-    @OneToMany(mappedBy = "pvpId.firstFighter")
+    @OneToMany(mappedBy = "pvpId.firstFighter",  fetch = FetchType.LAZY)
     @JsonIgnore
     private List<FightPVP> pvpFightsAsFirst;
 
-    @OneToMany(mappedBy = "pvpId.secondFighter")
+    @OneToMany(mappedBy = "pvpId.secondFighter",  fetch = FetchType.LAZY)
     @JsonIgnore
     private List<FightPVP> pvpFightsAsSecond;
 
@@ -247,7 +236,7 @@ public class Character extends Creature implements Serializable {
         this.physicalDamage = damage;
         this.maxChakraAmount = chakra;
     }
-    
+
     @Override
     public void acceptDamage(int damage) {
         currentHP -= damage;
@@ -275,6 +264,15 @@ public class Character extends Creature implements Serializable {
     @Override
     public int getMaxChakra() {
         return maxChakraAmount;
+    }
+
+    public void changeXP(int change) {
+        user.getStats().setExperience(user.getStats().getExperience() + change);
+    }
+
+    public void changeRating(int change) {
+        user.getStats().setRating(user.getStats().getRating() + change);
+
     }
 }
 

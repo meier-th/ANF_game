@@ -1,8 +1,6 @@
 package com.p3212.EntityClasses;
 
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
 
 
@@ -11,13 +9,25 @@ import java.util.Date;
 public class FightPVP extends Fight {
 
     public FightPVP() {
-        pvpId = new PVPFightCompositeKey();
-        pvpId.setFightDate(new Date());
+        pvpId = id;
+        fightDate = new Date();
     }
 
 
-    @EmbeddedId
-    private PVPFightCompositeKey pvpId;
+    @Id
+    private int pvpId;
+
+    @ManyToOne
+    @JoinColumn(name = "firstFighter")
+    private Character firstFighter;
+
+    @ManyToOne
+    @JoinColumn(name = "secondFighter")
+    private Character secondFighter;
+
+    @Column(name = "fight_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fightDate;
 
     private boolean firstWon;
 
@@ -40,13 +50,27 @@ public class FightPVP extends Fight {
     }
 
     public void setFighters(Character char1, Character char2) {
-        pvpId.setFirstFighter(char1);
-        pvpId.setSecondFighter(char2);
+        firstFighter = char1;
+        secondFighter = char2;
     }
 
-    public PVPFightCompositeKey getPvpId() {
+    public int getPvpId() {
         return pvpId;
     }
 
+    public void setPvpId(int pvpId) {
+        this.pvpId = pvpId;
+    }
 
+    public Date getFightDate() {
+        return fightDate;
+    }
+
+    public Character getFirstFighter() {
+        return firstFighter;
+    }
+
+    public Character getSecondFighter() {
+        return secondFighter;
+    }
 }

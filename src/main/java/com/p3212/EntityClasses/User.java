@@ -4,16 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 import java.io.Serializable;
 import java.util.Set;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 
 /**
  * Represents User entity. Used to operate on users' registration data
@@ -48,35 +39,34 @@ public class User implements Serializable {
     @JoinColumn(name = "stats_id")
     private Stats stats;
 
-    @OneToMany(mappedBy = "message_id.sender")
+    @OneToMany(mappedBy = "message_id.sender", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<PrivateMessage> outgoingMessages;
 
-    @OneToMany(mappedBy = "message_id.receiver")
+    @OneToMany(mappedBy = "message_id.receiver", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<PrivateMessage> incomingMessages;
 
-    @OneToMany(mappedBy = "friends_id.user1")
-    @JsonIgnore
-    private List<Friends> friends1;
-
-    @OneToMany(mappedBy = "request_id.friendUser")
+    @OneToMany(mappedBy = "request_id.friendUser", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<FriendsRequest> friendRequestsIn;
 
-    @OneToMany(mappedBy = "request_id.requestingUser")
+    @OneToMany(mappedBy = "request_id.requestingUser", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<FriendsRequest> friendRequestOut;
 
-    @OneToMany(mappedBy = "friends_id.user2")
-    @JsonIgnore
-    private List<Friends> friends2;
+    @JoinTable(name = "friends", joinColumns = {
+            @JoinColumn(name = "user1", referencedColumnName = "login", nullable = false)}, inverseJoinColumns = {
+            @JoinColumn(name = "user2", referencedColumnName = "login", nullable = false)})
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private List<User> friends;
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "login"), inverseJoinColumns = @JoinColumn(name = "role"))
     private Set<Role> roles;
 
-    public User() {}
+    public User() {
+    }
 
     public User(String login, String password) {
         this.login = login;
@@ -103,20 +93,12 @@ public class User implements Serializable {
         this.friendRequestOut = friendRequestOut;
     }
 
-    public List<Friends> getFriends1() {
-        return friends1;
+    public List<User> getFriends() {
+        return friends;
     }
 
-    public void setFriends1(List<Friends> friends1) {
-        this.friends1 = friends1;
-    }
-
-    public List<Friends> getFriends2() {
-        return friends2;
-    }
-
-    public void setFriends2(List<Friends> friends2) {
-        this.friends2 = friends2;
+    public void setFriends(List<User> friends) {
+        this.friends = friends;
     }
 
     public List<PrivateMessage> getOutgoingMessages() {

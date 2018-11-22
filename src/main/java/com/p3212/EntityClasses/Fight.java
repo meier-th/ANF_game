@@ -16,7 +16,7 @@ public class Fight {
         this.id = number;
     }
 
-    private final int id;
+    protected final int id;
 
     private static volatile int number;
 

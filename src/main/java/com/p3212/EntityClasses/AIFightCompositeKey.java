@@ -3,13 +3,12 @@ package com.p3212.EntityClasses;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Column;
-import javax.persistence.Embeddable;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-@Embeddable
+
 public class AIFightCompositeKey implements Serializable {
     
     /**
@@ -27,7 +26,15 @@ public class AIFightCompositeKey implements Serializable {
     @ManyToOne
     @JoinColumn(name="boss")
     private Boss boss;
-    
+
+
+    public Boss getBoss() {
+        return boss;
+    }
+
+    public void setBoss(Boss boss) {
+        this.boss = boss;
+    }
 
     @Override
     public int hashCode() {

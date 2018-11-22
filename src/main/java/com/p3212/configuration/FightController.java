@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,6 +74,7 @@ public class FightController {
         Boss boss = bossService.getBoss(bossId);
         boss.prepareForFight();
         fight.addFighter(boss, 2);
+        fight.getAiId().setBoss(boss);
         Collections.addAll(usersInFight, fighters);
         usersInFight.add(String.valueOf(bossId));
         fights.put(fight.getId(), fight);
@@ -130,17 +132,23 @@ public class FightController {
                                 .get(enemyNumber)
                                 .getKey() == 1);
                 stopFight(fightId);
-                ((Character) attacker).getUser().getStats().changeRating(((FightPVP) fight).getRatingChange());
-                ((Character) enemy).getUser().getStats().changeRating(-((FightPVP) fight).getRatingChange());
             } else {
                 if (fight.getFighters().get(enemyNumber).getKey() == 1) {
+                    ((Character) enemy).changeXP(((FightVsAI) fight).getAiId().getBoss().getNumberOfTails() * 10);
+                    if (fight.getFighters().size() < 2) {
+                        stopFight(fightId);
+                    }
                     fight.getFighters().remove(enemyNumber);
-                    //TODO add xp to every fighter
-                    if (fight.getFighters().size() < 2) stopFight(fightId);               //ВСЕ SASNOOLEY
+                    usersInFight.remove(((Character) enemy).getUser().getLogin());
                     return attack;
                 } else {
-                    //TODO add xp to every fighter
-                    stopFight(fightId);                                               //И ЭТО БЛЯТЬ ПОБЕДА НАД БОССОМ!
+                    fight.getFighters().remove(enemyNumber);
+                    fight.getFighters().iterator().forEachRemaining(item -> {
+                        if (item.getValue() instanceof Character) {
+                            ((Character) item.getValue()).changeXP(((FightVsAI) fight).getAiId().getBoss().getNumberOfTails() * 100);
+                        }
+                    });
+                    stopFight(fightId);
                 }
             }
         }
@@ -165,9 +173,17 @@ public class FightController {
 
     private void stopFight(int fightId) {
         Fight fight = fights.get(fightId);
-        if (fight instanceof FightPVP)
+        if (fight instanceof FightPVP) {
+            int lvlDiff = ((FightPVP) fight).getPvpId().getFirstFighter().getLevel() -
+                    ((FightPVP) fight).getPvpId().getSecondFighter().getLevel();
+            boolean isFirstWon = ((FightPVP) fight).isFirstWon();
+            int rating = isFirstWon ?
+                    5 + (lvlDiff < 0 ? -lvlDiff * 5 : 0) : 5 + (lvlDiff > 0 ? lvlDiff * 5 : 0);
+            ((FightPVP) fight).setRatingChange(rating);
+            ((FightPVP) fight).getPvpId().getFirstFighter().changeRating(isFirstWon ? rating : -rating);
+            ((FightPVP) fight).getPvpId().getSecondFighter().changeRating(isFirstWon ? -rating : rating);
             pvpFightsService.addFight(((FightPVP) fight));
-        else fightVsAIService.addFight(((FightVsAI) fight));
+        } else fightVsAIService.addFight(((FightVsAI) fight));
         fights.remove(fightId);
         fight.getFighters().iterator().forEachRemaining(fighter -> {
             if (fighter.getValue() instanceof Boss)
