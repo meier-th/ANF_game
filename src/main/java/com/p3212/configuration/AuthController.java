@@ -19,12 +19,12 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
-    @RequestMapping(value = {"/login"})
+    /*@RequestMapping(value = {"/login"})
     public ModelAndView login() {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("login");
         return modelAndView;
-    }
+    }*/
 
     @RequestMapping(value = {"/kek"})
     public String kek() {
@@ -62,7 +62,7 @@ public class AuthController {
         return modelAndView;
     }
 
-    @RequestMapping(value = "/registerVk", method = RequestMethod.GET)
+   /* @RequestMapping(value = "/registerVk", method = RequestMethod.GET)
     public RedirectView registerVk(RedirectAttributes attributes) {
         attributes.addAttribute("client_id", "6751264");
         attributes.addAttribute("redirect_uri", "http://localhost:8080/getVkCode");
@@ -77,6 +77,6 @@ public class AuthController {
         attributes.addAttribute("redirect_uri", "http://localhost:8080/getVkCode");
         attributes.addAttribute("code", code);
         return new RedirectView("https://oauth.vk.com/access_token");
-    }
+    }*/
 
 }

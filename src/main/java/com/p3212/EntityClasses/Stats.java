@@ -22,6 +22,7 @@ public class Stats {
      * Rating of a user
      */
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @OneToOne(mappedBy = "stats")

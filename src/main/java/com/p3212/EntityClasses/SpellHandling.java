@@ -2,8 +2,14 @@ package com.p3212.EntityClasses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import javax.persistence.*;
+
 import java.util.ArrayList;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 /**
  * Represents USERS_OF_TECHNIQUES entity
@@ -14,6 +20,7 @@ public class SpellHandling {
 
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int handlingId;
 
     /**
