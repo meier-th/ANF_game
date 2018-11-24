@@ -1,6 +1,8 @@
 package com.p3212.EntityClasses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.http.codec.json.Jackson2JsonEncoder;
+
 import java.util.List;
 import java.io.Serializable;
 import java.util.Set;
@@ -21,7 +23,7 @@ public class User implements Serializable {
     @Id
     @NotNull
     @NotEmpty
-    @Column(length=30)
+    @Column(length = 30)
     private String login;
 
     /**
@@ -61,16 +63,16 @@ public class User implements Serializable {
     @JsonIgnore
     private List<FriendsRequest> friendRequestOut;
 
-    
+
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "friends", joinColumns = {
             @JoinColumn(name = "user1", referencedColumnName = "login", nullable = false)}, inverseJoinColumns = {
             @JoinColumn(name = "user2", referencedColumnName = "login", nullable = false)})
     private List<User> friends;
 
-    @ManyToMany(mappedBy="friends")
+    @ManyToMany(mappedBy = "friends")
     private List<User> allies;
-    
+
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "login"), inverseJoinColumns = @JoinColumn(name = "role"))
     private Set<Role> roles;
@@ -86,7 +88,7 @@ public class User implements Serializable {
     public void addRole(Role role) {
         this.roles.add(role);
     }
-    
+
     public List<FriendsRequest> getFriendRequestsIn() {
         return friendRequestsIn;
     }
@@ -185,4 +187,19 @@ public class User implements Serializable {
         this.character = character;
     }
 
+    @Override
+    public String toString() {
+        return "{" +
+                "\"login\":\"" + login + '\"' +
+                ", \"character\":" + character +
+                ", \"stats\":" + stats +
+                ", \"outgoingMessages\":" + outgoingMessages +
+                ", \"incomingMessages\":" + incomingMessages +
+                ", \"friendRequestsIn\":" + friendRequestsIn +
+                ", \"friendRequestOut\":" + friendRequestOut +
+                ", \"friends\":" + friends +
+                ", \"allies\":" + allies +
+                ", \"roles\":" + roles +
+                '}';
+    }
 }

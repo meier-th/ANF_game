@@ -12,7 +12,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.codec.json.Jackson2JsonEncoder;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,6 +48,14 @@ public class CharacterController {
 
     @Autowired
     NinjaAnimalService ninjaAnimalServ;
+
+    @GetMapping("/me")
+    public String myAccount() {
+        return userServ.getUser(SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getName()).toString();
+    }
 
     @PostMapping("/characters/{id}/appearance")
     @ResponseBody
