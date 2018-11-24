@@ -5,6 +5,8 @@ import java.util.List;
 import java.io.Serializable;
 import java.util.Set;
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 /**
  * Represents User entity. Used to operate on users' registration data
@@ -17,6 +19,8 @@ public class User implements Serializable {
      * User's login
      */
     @Id
+    @NotNull
+    @NotEmpty
     @Column(length=30)
     private String login;
 
@@ -30,6 +34,8 @@ public class User implements Serializable {
     /**
      * User's password
      */
+    @NotNull
+    @NotEmpty
     private String password;
 
     /**

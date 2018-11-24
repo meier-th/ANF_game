@@ -4,7 +4,9 @@ import javax.sql.DataSource;
 
 import com.p3212.EntityClasses.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,7 +22,11 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationFa
 @EnableOAuth2Client
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
-    UserDetailsService udService;
+    private UserDetailsService udService;
+    
+    @Autowired
+    private UserDetailsService userDetailsService;
+    
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -29,6 +35,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private AuthenticationSuccessHandler successHandler;
+    
+    @Autowired
+    private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
     
     private final SimpleUrlAuthenticationFailureHandler failureHandler = new SimpleUrlAuthenticationFailureHandler();
     
@@ -55,8 +64,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 //                .anyRequest().authenticated()
 //                .and().csrf().disable();
         http.csrf().disable()
+                .exceptionHandling()
+                .authenticationEntryPoint(restAuthenticationEntryPoint)
+                .and()
                 .authorizeRequests()
-                .antMatchers("/users").permitAll()
+                .antMatchers("/users").authenticated()
                 .antMatchers("/registerVk").permitAll()
                 .antMatchers("/authVk").permitAll()
                 .antMatchers("/getVkCode").permitAll()
@@ -64,11 +76,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/login").permitAll()
                 .antMatchers("/login/vk").permitAll()
                 .antMatchers("/registration").permitAll()
-                .antMatchers("/admin/**").hasAuthority("ADMIN").anyRequest()
-                .authenticated().and().formLogin()
+                .antMatchers("/admin/**").hasAuthority("ADMIN")
+                .anyRequest().authenticated()
+                .and()
+                .formLogin()
                 .successHandler(successHandler)
                 .failureHandler(failureHandler)
-                .and().logout();
+                .and()
+                .logout().deleteCookies("JSESSIONID");
                 /*.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                 .logoutSuccessUrl("/").and().exceptionHandling()
                 .accessDeniedPage("/access-denied");*/
@@ -145,6 +160,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         };
     }
 */
+    @Override
+    @Bean
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+    
     public User kek(UserDetailsService ud) {
         return null;
     }
