@@ -112,9 +112,9 @@ public class PrivateMessage {
     public String toString() {
         return "{" +
                 "\"message_id\":" + message_id +
-                ", \"receiver\":" + receiver +
-                ", \"sender\":" + sender +
-                ", \"sendingDate\":" + sendingDate +
+                ", \"receiver\":\"" + receiver.getLogin() +
+                "\", \"sender\":\"" + sender.getLogin() +
+                "\", \"sendingDate\":" + sendingDate +
                 ", \"message\":\"" + message + '\"' +
                 ", \"isRead\":" + isRead +
                 '}';
