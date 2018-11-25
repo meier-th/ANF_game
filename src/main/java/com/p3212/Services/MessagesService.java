@@ -31,8 +31,8 @@ public class MessagesService {
         return repository.getAllFromDialog(fname, sname);
     }
     
-    public List<PrivateMessage> getUnreadMessages(String userName) {
-        return repository.getUnreadMessages(userName);
+    public List<PrivateMessage> getUnreadMessages(User user) {
+        return repository.getUnreadMessages(user);
     }
     
     public void setRead(String sender, String receiver, Date date) {
