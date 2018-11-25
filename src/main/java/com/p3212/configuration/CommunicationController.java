@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,8 +46,12 @@ public class CommunicationController {
 
     @GetMapping("/messages/unread")
     public @ResponseBody
-    List<PrivateMessage> getUnreadMessages(@RequestBody User user) {
-        return messageServ.getUnreadMessages(user.getLogin());
+    List<PrivateMessage> getUnreadMessages() {
+        return messageServ
+                .getUnreadMessages(
+                        userServ.getUser(
+                                SecurityContextHolder.getContext()
+                                        .getAuthentication().getName()));
     }
 
     @GetMapping("/messages/dialog")
