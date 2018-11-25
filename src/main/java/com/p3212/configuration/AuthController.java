@@ -1,6 +1,8 @@
 package com.p3212.configuration;
 
+import com.p3212.EntityClasses.Stats;
 import com.p3212.EntityClasses.User;
+import com.p3212.Services.StatsService;
 import com.p3212.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
@@ -23,6 +25,9 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private StatsService statsService;
+    
     @RequestMapping(value = {"/kek"})
     public String kek() {
         System.out.println("kek");
@@ -43,6 +48,9 @@ public class AuthController {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User object validation failed.");
         }
+        Stats stats = new Stats(50, 0, 0, 0, 0, 0, 1, 3);
+        user.setStats(stats);
+        statsService.addStats(stats);
         userService.saveUser(user);
         return ResponseEntity.status(HttpStatus.CREATED).body("User successfully registered!");
     }
