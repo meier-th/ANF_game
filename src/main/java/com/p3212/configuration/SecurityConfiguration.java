@@ -3,17 +3,32 @@ package com.p3212.configuration;
 import javax.sql.DataSource;
 
 import com.p3212.EntityClasses.User;
+import com.p3212.Repositories.UserRepository;
+import javax.servlet.Filter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.PrincipalExtractor;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
+import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
+import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 
@@ -106,7 +121,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     }
 
-   /* private Filter ssoFilter() {
+   private Filter ssoFilter() {
         OAuth2ClientAuthenticationProcessingFilter vkFilter =
                 new OAuth2ClientAuthenticationProcessingFilter("/login/vk");
         OAuth2RestTemplate vkTemplate = new OAuth2RestTemplate(vk(), oauth2ClientContext);
@@ -133,10 +148,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         return registration;
     }
 
-    @Bean
+    /*@Bean
     public ClientRegistrationRepository clientRegistrationRepository(){
         return new InMemoryClientRegistrationRepository(new ClientRegistration[1]);
-    }
+    }*/
     
     @Bean
     @ConfigurationProperties("vk.resource")
@@ -160,7 +175,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             return null;
         };
     }
-*/
+
     @Override
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
