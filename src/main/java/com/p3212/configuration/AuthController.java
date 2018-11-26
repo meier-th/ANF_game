@@ -27,12 +27,6 @@ public class AuthController {
 
     @Autowired
     private StatsService statsService;
-    
-    @RequestMapping(value = {"/kek"})
-    public String kek() {
-        System.out.println("kek");
-        return "redirect:/characters/3/animals";
-    }
 
     @GetMapping(value = "/registration")
     public String registrationRequest(User user) {

@@ -32,6 +32,9 @@ public class FightController {
     @Autowired
     NinjaAnimalService ninjaAnimalService;
 
+    @Autowired
+    SpellHandlingService spellHandlingService;
+
     private HashMap<Integer, Fight> fights;
     private HashSet<String> usersInFight;
 
@@ -110,7 +113,9 @@ public class FightController {
             return attack;
         }
         Spell spell = spellService.get(spellId);
-        attack = spell.performAttack(attacker.getLevel(), enemy.getResistance());
+        int spellLvl = attacker instanceof Character
+                ? spellHandlingService.getSpellHandling((Character) attacker, spell).getSpellLevel() : 1;
+        attack = spell.performAttack(spellLvl, enemy.getResistance());
         if (attacker.getCurrentChakra() < attack.getChakra()) {
             if (attacker instanceof NinjaAnimal)
                 fight.getFighters().remove(attackerNumber);         //animals disappear when no chakra
