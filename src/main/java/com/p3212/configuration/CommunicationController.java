@@ -1,23 +1,23 @@
 package com.p3212.configuration;
 
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.p3212.EntityClasses.PrivateMessage;
 import com.p3212.EntityClasses.User;
 import com.p3212.Services.FriendsRequestService;
 import com.p3212.Services.MessagesService;
 import com.p3212.Services.UserService;
-
-import java.util.Date;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class CommunicationController {
@@ -45,14 +45,18 @@ public class CommunicationController {
 
     @GetMapping("/messages/unread")
     public @ResponseBody
-    List<PrivateMessage> getUnreadMessages(@RequestBody User user) {
-        return messageServ.getUnreadMessages(user.getLogin());
+    List<PrivateMessage> getUnreadMessages() {
+        return messageServ
+                .getUnreadMessages(
+                        userServ.getUser(
+                                SecurityContextHolder.getContext()
+                                        .getAuthentication().getName()));
     }
 
     @GetMapping("/messages/dialog")
     public @ResponseBody
-    List<PrivateMessage> getMessagesFromDialog(@RequestParam String firstName, @RequestParam String secondName) {
-        User sen = userServ.getUser(firstName);
+    List<PrivateMessage> getMessagesFromDialog(@RequestParam String secondName) {
+        User sen = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
         User rec = userServ.getUser(secondName);
         return messageServ.getAllFromDialog(sen, rec);
     }
@@ -80,8 +84,10 @@ public class CommunicationController {
     }
 
     @PostMapping("/messages/read")
-    public void setMessageRead(@RequestParam String sender, @RequestParam String receiver, @RequestParam Date date) {
-        messageServ.setRead(sender, receiver, date);
+    public void setMessageRead(@RequestParam String sender, @RequestParam Date date) {
+    	User sendr = userServ.getUser(sender);
+    	User recvr = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
+        messageServ.setRead(sendr, recvr, date);
     }
 
     @DeleteMapping("/friends/requests")

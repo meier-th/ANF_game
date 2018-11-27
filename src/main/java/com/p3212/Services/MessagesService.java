@@ -26,16 +26,14 @@ public class MessagesService {
     }
     
     public List<PrivateMessage> getAllFromDialog(User firstUser, User secondUser) {
-        String fname = firstUser.getLogin();
-        String sname = secondUser.getLogin();
-        return repository.getAllFromDialog(fname, sname);
+        return repository.getAllFromDialog(firstUser, secondUser);
     }
     
-    public List<PrivateMessage> getUnreadMessages(String userName) {
-        return repository.getUnreadMessages(userName);
+    public List<PrivateMessage> getUnreadMessages(User user) {
+        return repository.getUnreadMessages(user);
     }
     
-    public void setRead(String sender, String receiver, Date date) {
+    public void setRead(User sender, User receiver, Date date) {
         repository.setRead(sender, receiver, date);
     }
 }

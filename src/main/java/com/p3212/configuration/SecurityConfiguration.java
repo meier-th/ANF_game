@@ -139,7 +139,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         return new AuthorizationCodeResourceDetails();
     }
 
-    @Bean
+    /*@Bean
     public FilterRegistrationBean oauth2ClientFilterRegistration(
             OAuth2ClientContextFilter filter) {
         FilterRegistrationBean registration = new FilterRegistrationBean();
@@ -148,7 +148,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         return registration;
     }
 
-    /*@Bean
+    @Bean
     public ClientRegistrationRepository clientRegistrationRepository(){
         return new InMemoryClientRegistrationRepository(new ClientRegistration[1]);
     }*/
