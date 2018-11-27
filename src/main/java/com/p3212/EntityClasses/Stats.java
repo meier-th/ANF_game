@@ -6,6 +6,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import javax.persistence.CascadeType;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
@@ -22,6 +23,7 @@ public class Stats {
      * Rating of a user
      */
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @OneToOne(mappedBy = "stats")
@@ -67,21 +69,9 @@ public class Stats {
      */
     private int upgradePoints;
 
-    /**
-     * Default constructor, to be used for dependency injection
-     */
     public Stats() {
     }
 
-    /**
-     * To be used when retrieved from database
-     *
-     * @param r Rating value
-     * @param f Number of fights
-     * @param w Number of wins
-     * @param l Number of losses
-     * @param d Number of deaths
-     */
     public Stats(int r, int f, int w, int l, int d) {
         this.deaths = d;
         this.fights = f;
@@ -223,9 +213,7 @@ public class Stats {
         return this.deaths;
     }
 
-    public void changeRating(int change) {
-        rating += change;
-    }
+
 
     @Override
     public String toString() {

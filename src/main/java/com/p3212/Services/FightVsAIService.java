@@ -1,6 +1,5 @@
 package com.p3212.Services;
 
-import com.p3212.EntityClasses.AIFightCompositeKey;
 import com.p3212.EntityClasses.FightVsAI;
 import com.p3212.Repositories.FightVsAIRepository;
 import java.util.List;
@@ -23,7 +22,7 @@ public class FightVsAIService {
         return repository.getAIFightsByUser(id);
     }
     
-    public FightVsAI getFight(AIFightCompositeKey id) {
+    public FightVsAI getFight(int id) {
         return repository.findById(id).get();
     }
 }

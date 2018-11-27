@@ -90,19 +90,9 @@ public class Boss extends Creature implements Serializable {
     }
 
 
-    /**
-     * Default constructor for dependency injection
-     */
     public Boss() {
     }
 
-    /**
-     * To be used when retrieved from database
-     *
-     * @param name   - name
-     * @param tails  - number of tails
-     * @param chakra - amount of chakra
-     */
     public Boss(String name, int tails, int chakra) {
         this.name = name;
         this.maxChakraAmount = chakra;

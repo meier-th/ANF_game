@@ -1,19 +1,14 @@
 package com.p3212.EntityClasses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.http.codec.json.Jackson2JsonEncoder;
+
 import java.util.List;
 import java.io.Serializable;
 import java.util.Set;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 /**
  * Represents User entity. Used to operate on users' registration data
@@ -26,7 +21,9 @@ public class User implements Serializable {
      * User's login
      */
     @Id
-    @Column(length=30)
+    @NotNull
+    @NotEmpty
+    @Column(length = 30)
     private String login;
 
     /**
@@ -39,6 +36,8 @@ public class User implements Serializable {
     /**
      * User's password
      */
+    @NotNull
+    @NotEmpty
     private String password;
 
     /**
@@ -48,35 +47,38 @@ public class User implements Serializable {
     @JoinColumn(name = "stats_id")
     private Stats stats;
 
-    @OneToMany(mappedBy = "message_id.sender")
+    @OneToMany(mappedBy = "sender", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<PrivateMessage> outgoingMessages;
 
-    @OneToMany(mappedBy = "message_id.receiver")
+    @OneToMany(mappedBy = "receiver", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<PrivateMessage> incomingMessages;
 
-    @OneToMany(mappedBy = "friends_id.user1")
-    @JsonIgnore
-    private List<Friends> friends1;
-
-    @OneToMany(mappedBy = "request_id.friendUser")
+    @OneToMany(mappedBy = "friendUser", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<FriendsRequest> friendRequestsIn;
 
-    @OneToMany(mappedBy = "request_id.requestingUser")
+    @OneToMany(mappedBy = "requestingUser", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<FriendsRequest> friendRequestOut;
 
-    @OneToMany(mappedBy = "friends_id.user2")
-    @JsonIgnore
-    private List<Friends> friends2;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "friends", joinColumns = {
+            @JoinColumn(name = "user1", referencedColumnName = "login", nullable = false)}, inverseJoinColumns = {
+            @JoinColumn(name = "user2", referencedColumnName = "login", nullable = false)})
+    private List<User> friends;
+
+    @ManyToMany(mappedBy = "friends")
+    private List<User> allies;
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "login"), inverseJoinColumns = @JoinColumn(name = "role"))
     private Set<Role> roles;
 
-    public User() {}
+    public User() {
+    }
 
     public User(String login, String password) {
         this.login = login;
@@ -86,7 +88,7 @@ public class User implements Serializable {
     public void addRole(Role role) {
         this.roles.add(role);
     }
-    
+
     public List<FriendsRequest> getFriendRequestsIn() {
         return friendRequestsIn;
     }
@@ -103,20 +105,12 @@ public class User implements Serializable {
         this.friendRequestOut = friendRequestOut;
     }
 
-    public List<Friends> getFriends1() {
-        return friends1;
+    public List<User> getFriends() {
+        return friends;
     }
 
-    public void setFriends1(List<Friends> friends1) {
-        this.friends1 = friends1;
-    }
-
-    public List<Friends> getFriends2() {
-        return friends2;
-    }
-
-    public void setFriends2(List<Friends> friends2) {
-        this.friends2 = friends2;
+    public void setFriends(List<User> friends) {
+        this.friends = friends;
     }
 
     public List<PrivateMessage> getOutgoingMessages() {
@@ -193,4 +187,19 @@ public class User implements Serializable {
         this.character = character;
     }
 
+    @Override
+    public String toString() {
+        return "{" +
+                "\"login\":\"" + login + '\"' +
+                ", \"character\":" + character +
+                ", \"stats\":" + stats +
+                ", \"outgoingMessages\":" + outgoingMessages +
+                ", \"incomingMessages\":" + incomingMessages +
+                ", \"friendRequestsIn\":" + friendRequestsIn +
+                ", \"friendRequestOut\":" + friendRequestOut +
+                ", \"friends\":" + friends +
+                ", \"allies\":" + allies +
+                ", \"roles\":" + roles +
+                '}';
+    }
 }

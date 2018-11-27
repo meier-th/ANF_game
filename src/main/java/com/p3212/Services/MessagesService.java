@@ -1,6 +1,5 @@
 package com.p3212.Services;
 
-import com.p3212.EntityClasses.MessageCompositeKey;
 import com.p3212.EntityClasses.PrivateMessage;
 import com.p3212.EntityClasses.User;
 import com.p3212.Repositories.MessagesRepository;
@@ -18,11 +17,11 @@ public class MessagesService {
         repository.save(message);
     }
 
-    public PrivateMessage getMessage(MessageCompositeKey id) {
+    public PrivateMessage getMessage(int id) {
         return repository.findById(id).get();
     }
 
-    public void removeMessage(MessageCompositeKey id) {
+    public void removeMessage(int id) {
         repository.deleteById(id);
     }
     

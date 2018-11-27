@@ -1,6 +1,8 @@
 package com.p3212.configuration;
 
+import com.p3212.EntityClasses.Stats;
 import com.p3212.EntityClasses.User;
+import com.p3212.Services.StatsService;
 import com.p3212.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
@@ -8,61 +10,46 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
 import javax.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController()
 public class AuthController {
     @Autowired
     private UserService userService;
 
-    @RequestMapping(value = {"/login"})
-    public ModelAndView login() {
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.setViewName("login");
-        return modelAndView;
-    }
+    @Autowired
+    private StatsService statsService;
 
-    @RequestMapping(value = {"/kek"})
-    public String kek() {
-        System.out.println("kek");
-        return "redirect:/characters/3/animals";
+    @GetMapping(value = "/registration")
+    public String registrationRequest(User user) {
+        return "registration";
     }
-
-    @RequestMapping(value = "/registration", method = RequestMethod.GET)
-    public ModelAndView registration() {
-        ModelAndView modelAndView = new ModelAndView();
-        User user = new User();
-        modelAndView.addObject("user", user);
-        modelAndView.setViewName("registration");
-        return modelAndView;
-    }
-
-    @RequestMapping(value = "/registration", method = RequestMethod.POST)
-    public ModelAndView createNewUser(@Valid User user, BindingResult bindingResult) {
-        ModelAndView modelAndView = new ModelAndView();
+    
+    @PostMapping(value = "/registration")
+    public ResponseEntity createNewUser(@RequestBody @Valid User user, BindingResult bindingResult) {
         User userExists = userService.getUser(user.getLogin());
         if (userExists != null) {
-            bindingResult
-                    .rejectValue("login", "error.user",
-                            "There is already a user registered with the login provided");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("This username is already occupied");
         }
         if (bindingResult.hasErrors()) {
-            modelAndView.setViewName("registration");
-        } else {
-            userService.saveUser(user);
-            modelAndView.addObject("successMessage", "User has been registered successfully");
-            modelAndView.addObject("user", new User());
-            modelAndView.setViewName("registration");
-
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User object validation failed.");
         }
-        return modelAndView;
+        Stats stats = new Stats(50, 0, 0, 0, 0, 0, 1, 3);
+        user.setStats(stats);
+        statsService.addStats(stats);
+        userService.saveUser(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body("User successfully registered!");
     }
 
-    @RequestMapping(value = "/registerVk", method = RequestMethod.GET)
+   @RequestMapping(value = "/registerVk", method = RequestMethod.GET)
     public RedirectView registerVk(RedirectAttributes attributes) {
         attributes.addAttribute("client_id", "6751264");
         attributes.addAttribute("redirect_uri", "http://localhost:8080/getVkCode");

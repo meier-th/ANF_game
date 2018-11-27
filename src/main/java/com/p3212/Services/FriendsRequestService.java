@@ -1,6 +1,5 @@
 package com.p3212.Services;
 
-import com.p3212.EntityClasses.FriendRequestCompositeKey;
 import com.p3212.EntityClasses.FriendsRequest;
 import com.p3212.EntityClasses.User;
 import com.p3212.Repositories.FriendsRequestRepository;
@@ -34,7 +33,7 @@ public class FriendsRequestService {
      *
      * @param id id of the request
      */
-    public void removeRequest(FriendRequestCompositeKey id) {
+    public void removeRequest(int id) {
         repository.deleteById(id);
     }
     
@@ -43,7 +42,7 @@ public class FriendsRequestService {
         List<FriendsRequest> requests = repository.getIncomingRequests(name);
         ArrayList<User>requesters = new ArrayList<>();
         requests.forEach((req) -> {
-            requesters.add(req.request_id.getRequestingUser());
+            requesters.add(req.getRequestingUser());
         });
         return requesters;
     }
@@ -53,7 +52,7 @@ public class FriendsRequestService {
         List<FriendsRequest> requests = repository.getOutgoingRequests(name);
         ArrayList<User>requesters = new ArrayList<>();
         requests.forEach((req) -> {
-            requesters.add(req.request_id.getFriendUser());
+            requesters.add(req.getFriendUser());
         });
         return requesters;
     }
