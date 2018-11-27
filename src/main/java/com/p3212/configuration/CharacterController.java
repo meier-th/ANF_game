@@ -49,7 +49,7 @@ public class CharacterController {
     @Autowired
     NinjaAnimalService ninjaAnimalServ;
 
-    @GetMapping("/me")
+    @GetMapping("/profile")
     public String myAccount() {
         return userServ.getUser(SecurityContextHolder
                                 .getContext()
@@ -83,36 +83,19 @@ public class CharacterController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/characters/{id}/appearance") // WE HAVE TO MAKE SURE ALL CHARACTERS HAVE THE SAME ID AS THEIR APPEARANCES, OTHERWISE WE'LL GET WRONG RESULTS HERE
-    @ResponseBody
-    public Appearance getAppearance(@PathVariable int id) {
-        return appearanceServ.getUserAppearance(id);
-    }
-
-    @DeleteMapping("/characters/{id}/appearance")
-    @ResponseBody
-    public String deleteAppearance(@PathVariable int id) {
-        try {
-            appearanceServ.removeUserAppearance(id);
-            return "OK";
-        } catch (Throwable error) {
-            return error.getMessage();
-        }
-    }
-
     @GetMapping("/admin/characters")
     @ResponseBody
     public List<Character> getAllCharacters() {
         return charServ.getAllCharacters();
     }
 
-    @PostMapping("/characters/{id}") // after adding : /admin/users fails with Could not write JSON: (was java.lang.NullPointerException); nested exception is com.fasterxml.jackson.databind.JsonMappingException: (was java.lang.NullPointerException) (through reference chain: java.util.ArrayList[5]->com.p3212.EntityClasses.User[\"character\"]->com.p3212.EntityClass
+    @PostMapping("/profile/character") // after adding : /admin/users fails with Could not write JSON: (was java.lang.NullPointerException); nested exception is com.fasterxml.jackson.databind.JsonMappingException: (was java.lang.NullPointerException) (through reference chain: java.util.ArrayList[5]->com.p3212.EntityClasses.User[\"character\"]->com.p3212.EntityClass
     @ResponseBody
-    public String addCharacter(@PathVariable int id, @RequestBody User us) {
+    public String addCharacter() {
         try {
             Character ch = new Character(0.05f, 100, 10, 30);
-            ch.setId(id);
             charServ.addCharacter(ch);
+            User us = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             us.setCharacter(ch);
             userServ.saveUser(us);
             return "OK";
@@ -121,22 +104,13 @@ public class CharacterController {
         }
     }
 
-    @GetMapping("/characters/{id}")
+    @GetMapping("/users/{login}/character")
     @ResponseBody
-    public Character getCharacter(@PathVariable int id) {
-        return charServ.getCharacter(id);
+    public Character getCharacter(@PathVariable String login) {
+    	User user = userServ.getUser(login);
+        return user.getCharacter();
     }
 
-    @DeleteMapping("/characters/{id}") 
-    @ResponseBody
-    public String deleteCharacter(@PathVariable int id) {
-        try {
-            charServ.removeCharacter(id);
-            return "OK";
-        } catch (Throwable error) {
-            return error.getMessage();
-        }
-    }
 
     @PostMapping("/admin/users/{login}/grantAdmin") //RETURNS OK, BUT DOESN'T WORK
     @ResponseBody
@@ -163,10 +137,11 @@ public class CharacterController {
         return userServ.getUser(login);
     }
 
-    @DeleteMapping("/users/{login}") 
+    @DeleteMapping("/users") 
     @ResponseBody
-    public String deleteUser(@PathVariable String login) {
+    public String deleteUser() {
         try {
+        	String login = SecurityContextHolder.getContext().getAuthentication().getName();
             userServ.removeUser(login);
             return "OK";
         } catch (Throwable error) {
@@ -174,27 +149,15 @@ public class CharacterController {
         }
     }
 
-    @PostMapping("/users/{login}/stats")
+    @PostMapping("/profile/stats")
     @ResponseBody
-    public String addOrUpdateStats(@PathVariable String login, @RequestBody Stats sts) {
+    public String addOrUpdateStats(@RequestBody Stats sts) {
         try {
             statsServ.addStats(sts);
-            User user = userServ.getUser(login);
+            User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             user.setStats(sts);
             userServ.saveUser(user);
             return "OK"; 
-        } catch (Throwable error) {
-            return error.getMessage();
-        }
-    }
-
-    @DeleteMapping("/users/{login}/stats") 
-    @ResponseBody
-    public String deleteStats(@PathVariable String login) {
-        try {
-            int id = userServ.getUser(login).getStats().getId();
-            statsServ.removeStats(id);
-            return "OK";
         } catch (Throwable error) {
             return error.getMessage();
         }

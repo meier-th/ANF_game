@@ -26,7 +26,7 @@ public class Stats {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @OneToOne(mappedBy = "stats")
+    @OneToOne(mappedBy = "stats", cascade = CascadeType.REMOVE)
     @JsonIgnore
     private User user;
 

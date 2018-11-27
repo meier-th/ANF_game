@@ -25,23 +25,4 @@ public class AppearanceService {
         appearanceRepository.save(appearance);
     }
 
-    /**
-     * Get appearance with the id
-     *
-     * @param id id of the character(appearance too)
-     * @return Requested appearance
-     */
-    public Appearance getUserAppearance(int id) {
-        return appearanceRepository.findById(id).get();
-    }
-
-    /**
-     * Remove appearance
-     *
-     * @param id id of the appearance (character)
-     */
-    public void removeUserAppearance(int id) {
-        appearanceRepository.deleteById(id);
-    }
-
 }

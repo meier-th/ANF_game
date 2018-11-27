@@ -38,6 +38,7 @@ public class User implements Serializable {
      */
     @NotNull
     @NotEmpty
+    @JsonIgnore
     private String password;
 
     /**

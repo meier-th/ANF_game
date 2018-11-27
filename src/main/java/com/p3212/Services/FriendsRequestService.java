@@ -33,8 +33,8 @@ public class FriendsRequestService {
      *
      * @param id id of the request
      */
-    public void removeRequest(int id) {
-        repository.deleteById(id);
+    public void removeRequest(User friend, User requester) {
+        repository.deleteRequest(friend, requester);
     }
     
     public ArrayList<User> requestingUsers(User user) {
