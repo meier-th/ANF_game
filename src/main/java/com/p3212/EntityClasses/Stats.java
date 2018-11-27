@@ -33,40 +33,46 @@ public class Stats {
     public String getLogin() {
         return user.getLogin();
     }
-
+    @Column(nullable=false)
     private int rating;
     /**
      * Number of fights user took part in
      */
+    @Column(nullable=false)
     private int fights;
     /**
      * Number of fights user won
      */
+    @Column(nullable=false)
     private int wins;
     /**
      * Number of fights user lost
      */
+    @Column(nullable=false)
     private int losses;
     /**
      * Number of fights during which user died
      * Death occurs when a character died in battle against AI, but his team won
      */
+    @Column(nullable=false)
     private int deaths;
 
     /**
      * Level
      */
-    @Column(name = "lvl")
+    @Column(name = "lvl", nullable=false)
     private int level;
 
     /**
      * Experience
      */
+    @Column(nullable=false)
     private int experience;
 
     /**
      * Number of available upgrade points
      */
+    @Column(nullable=false)
     private int upgradePoints;
 
     public Stats() {

@@ -19,11 +19,11 @@ public class FriendsRequest {
     public int request_id;
 
     @ManyToOne
-    @JoinColumn(name = "friend_request")
+    @JoinColumn(name = "friend_request", nullable=false)
     User friendUser;
 
     @ManyToOne
-    @JoinColumn(name = "requesting_user")
+    @JoinColumn(name = "requesting_user", nullable=false)
     User requestingUser;
     
     public FriendsRequest(User sender, User receiver){
@@ -57,4 +57,10 @@ public class FriendsRequest {
     public void setRequestingUser(User requestingUser) {
         this.requestingUser = requestingUser;
     }
+    
+    @Override
+    public String toString() {
+        return "{"+"\"friendUser\": "+"\""+friendUser.getLogin()+"\","+"\"requestingUser\": "+"\""+requestingUser.getLogin()+"\", \"request_id\": "+request_id+"}";
+    }
+    
 }

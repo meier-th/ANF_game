@@ -28,23 +28,23 @@ public class UserAIFight {
     
     @ManyToOne
     @JoinColumns({
-        @JoinColumn(name="boss", referencedColumnName="boss"),
-        @JoinColumn(name="fight_date", referencedColumnName="fight_date")
+        @JoinColumn(name="boss", referencedColumnName="boss", nullable=false),
+        @JoinColumn(name="fight_date", referencedColumnName="fight_date", nullable=false)
     })
     private FightVsAI fight;
 
     @ManyToOne
-    @JoinColumn(name="id", referencedColumnName="id")
+    @JoinColumn(name="id", referencedColumnName="id", nullable=false)
     private Character fighter;
 
     /**
      * Result - won, lost, died
      */
-    @Column(name="fresult", length=4)
+    @Column(name="fresult", length=4, nullable=false)
     @Enumerated(EnumType.STRING)
     private Result result;
     
-    @Column(name="experience_gain")
+    @Column(name="experience_gain", nullable=false)
     private int experience;
     
     public UserAIFight(){}

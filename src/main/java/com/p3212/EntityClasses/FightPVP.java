@@ -29,20 +29,22 @@ public class FightPVP extends Fight {
     private int pvpId;
 
     @ManyToOne
-    @JoinColumn(name = "firstFighter")
+    @JoinColumn(name = "firstFighter", nullable=false)
     private Character firstFighter;
 
     @ManyToOne
-    @JoinColumn(name = "secondFighter")
+    @JoinColumn(name = "secondFighter", nullable=false)
     private Character secondFighter;
 
-    @Column(name = "fight_date")
+    @Column(name = "fight_date", nullable=false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date fightDate;
 
+    @Column(nullable=false)
     private boolean firstWon;
 
-    private int ratingChange = 0;
+    @Column(nullable=false)
+    private int ratingChange;
 
     public boolean isFirstWon() {
         return firstWon;

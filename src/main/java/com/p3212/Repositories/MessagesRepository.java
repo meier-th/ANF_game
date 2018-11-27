@@ -1,6 +1,5 @@
 package com.p3212.Repositories;
 
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
@@ -10,12 +9,14 @@ import org.springframework.stereotype.Repository;
 
 import com.p3212.EntityClasses.PrivateMessage;
 import com.p3212.EntityClasses.User;
+import org.springframework.data.jpa.repository.Modifying;
 
 /**
  * Repository for message entity
  */
 @Repository
 public interface MessagesRepository extends CrudRepository<PrivateMessage, Integer> {
+    @Modifying
     @Query("update PrivateMessage p set isRead = true where p.message_id = :id")
     void setRead(@Param("id") int id);
     

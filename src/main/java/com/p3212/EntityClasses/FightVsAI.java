@@ -29,7 +29,7 @@ public class FightVsAI extends Fight {
     /**
      * Date of a fight
      */
-    @Column(name = "fight_date")
+    @Column(name = "fight_date", nullable=false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date fight_date;
 
@@ -39,7 +39,7 @@ public class FightVsAI extends Fight {
      */
 
     @ManyToOne
-    @JoinColumn(name = "boss")
+    @JoinColumn(name = "boss", nullable=false)
     private Boss boss;
 
     @OneToMany(mappedBy = "fight")

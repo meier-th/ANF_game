@@ -27,21 +27,22 @@ public class PrivateMessage {
      */
 
     @ManyToOne
-    @JoinColumn(name = "receiver")
+    @JoinColumn(name = "receiver", nullable=false)
     User receiver;
 
     @ManyToOne
-    @JoinColumn(name = "sender")
+    @JoinColumn(name = "sender", nullable=false)
     User sender;
 
 
-    @Column(name = "sending_time")
+    @Column(name = "sending_time", nullable=false)
     @Temporal(TemporalType.TIMESTAMP)
     Date sendingDate;
 
-    @Column(name="message", columnDefinition="TEXT")
+    @Column(name="message", columnDefinition="TEXT", nullable=false)
     String message;
-
+    
+    @Column(name="is_read", nullable=false)
     boolean isRead;
 
     public PrivateMessage(int key, String text) {

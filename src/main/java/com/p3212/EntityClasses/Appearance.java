@@ -55,23 +55,23 @@ public class Appearance {
      * Responsible for model
      */
     @Enumerated(EnumType.STRING)
-    @Column(length=6)
+    @Column(length=6, nullable=false)
     private Gender gender;
 
     /**
      * Skin colour of a character
      */
-    @Column(length=5)
+    @Column(length=5, nullable=false)
     @Enumerated(EnumType.STRING)
     private SkinColour skinColour;
 
     /**
      * Hair colour of a character
      */
-    @Column(length=6)
+    @Column(length=6, nullable=false)
     @Enumerated(EnumType.STRING)
     private HairColour hairColour;
-
+    
     @OneToOne(mappedBy="appearance", cascade = CascadeType.REMOVE)
     @JsonIgnore
     private Character charact;

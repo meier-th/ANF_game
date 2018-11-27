@@ -28,17 +28,19 @@ public class Boss extends Creature implements Serializable {
     /**
      * Name of the boss
      */
-    @Column(length=30)
+    @Column(length=30, nullable=false)
     private String name;
 
     /**
      * Number of tails. Responsible for damage, hp
      */
+    @Column(nullable=false)
     private int numberOfTails;
 
     /**
      * Maximum mount of chakra (mana)
      */
+    @Column(nullable=false)
     private int maxChakraAmount;
 
     /**

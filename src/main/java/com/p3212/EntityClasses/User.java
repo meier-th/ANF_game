@@ -67,11 +67,13 @@ public class User implements Serializable {
 
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JsonProperty(access=Access.WRITE_ONLY)
     @JoinTable(name = "friends", joinColumns = {
             @JoinColumn(name = "user1", referencedColumnName = "login", nullable = false)}, inverseJoinColumns = {
             @JoinColumn(name = "user2", referencedColumnName = "login", nullable = false)})
     private List<User> friends;
 
+    @JsonProperty(access=Access.WRITE_ONLY)
     @ManyToMany(mappedBy = "friends")
     private List<User> allies;
 
@@ -200,8 +202,6 @@ public class User implements Serializable {
                 ", \"incomingMessages\":" + incomingMessages +
                 ", \"friendRequestsIn\":" + friendRequestsIn +
                 ", \"friendRequestOut\":" + friendRequestOut +
-                ", \"friends\":" + friends +
-                ", \"allies\":" + allies +
                 ", \"roles\":" + roles +
                 '}';
     }
