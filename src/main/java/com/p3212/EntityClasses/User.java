@@ -1,7 +1,7 @@
 package com.p3212.EntityClasses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.springframework.http.codec.json.Jackson2JsonEncoder;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 import java.io.Serializable;
@@ -38,7 +38,7 @@ public class User implements Serializable {
      */
     @NotNull
     @NotEmpty
-    @JsonIgnore
+    @JsonProperty
     private String password;
 
     /**
@@ -149,6 +149,7 @@ public class User implements Serializable {
     /**
      * Getter {@link User#password}
      */
+    @JsonIgnore
     public String getPassword() {
         return this.password;
     }
