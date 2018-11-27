@@ -69,8 +69,13 @@ public class PrivateMessage {
         return message;
     }
 
-    public PrivateMessage() {
+    public PrivateMessage(User receiver, User sender) {
+        this.sendingDate = new Date();
+        this.receiver = receiver;
+        this.sender = sender;
     }
+    
+    public PrivateMessage(){}
 
     public User getReceiver() {
         return receiver;

@@ -16,8 +16,8 @@ import com.p3212.EntityClasses.User;
  */
 @Repository
 public interface MessagesRepository extends CrudRepository<PrivateMessage, Integer> {
-    @Query("update PrivateMessage p set isRead = true where p.receiver = :receiver AND p.sender = :sender AND p.message_id.sendingDate = :date")
-    void setRead(@Param("sender") User sender, @Param("receiver") User receiver, @Param("date") Date date);
+    @Query("update PrivateMessage p set isRead = true where p.message_id = :id")
+    void setRead(@Param("id") int id);
     
     @Query("select p from PrivateMessage p where p.receiver = :first and p.sender = :second or p.receiver = :second and p.message_id.sender = :first")
     List<PrivateMessage> getAllFromDialog(@Param("first") User first, @Param("second") User second);

@@ -33,7 +33,7 @@ public class MessagesService {
         return repository.getUnreadMessages(user);
     }
     
-    public void setRead(User sender, User receiver, Date date) {
-        repository.setRead(sender, receiver, date);
+    public void setRead(int id) {
+        repository.setRead(id);
     }
 }

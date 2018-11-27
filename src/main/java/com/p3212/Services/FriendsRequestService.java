@@ -38,8 +38,7 @@ public class FriendsRequestService {
     }
     
     public ArrayList<User> requestingUsers(User user) {
-        String name = user.getLogin();
-        List<FriendsRequest> requests = repository.getIncomingRequests(name);
+        List<FriendsRequest> requests = repository.getIncomingRequests(user);
         ArrayList<User>requesters = new ArrayList<>();
         requests.forEach((req) -> {
             requesters.add(req.getRequestingUser());
@@ -48,8 +47,7 @@ public class FriendsRequestService {
     }
     
     public ArrayList<User> requestedUsers(User user) {
-        String name = user.getLogin();
-        List<FriendsRequest> requests = repository.getOutgoingRequests(name);
+        List<FriendsRequest> requests = repository.getOutgoingRequests(user);
         ArrayList<User>requesters = new ArrayList<>();
         requests.forEach((req) -> {
             requesters.add(req.getFriendUser());

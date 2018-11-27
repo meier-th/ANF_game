@@ -25,11 +25,12 @@ public class FriendsRequest {
     @ManyToOne
     @JoinColumn(name = "requesting_user")
     User requestingUser;
-
-    public FriendsRequest(int key) {
-        this.request_id = key;
+    
+    public FriendsRequest(User sender, User receiver){
+        this.friendUser = receiver;
+        this.requestingUser = sender;
     }
-
+    
     public FriendsRequest() {
     }
 
