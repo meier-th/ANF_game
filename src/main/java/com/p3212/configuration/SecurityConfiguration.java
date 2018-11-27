@@ -4,29 +4,60 @@ import javax.sql.DataSource;
 
 import com.p3212.EntityClasses.User;
 import com.p3212.Repositories.UserRepository;
+import javax.servlet.Filter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth2Sso;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.PrincipalExtractor;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
+import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
+import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 
 @Configuration
 @EnableWebSecurity
-//@EnableOAuth2Sso
+@EnableOAuth2Client
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
-
+    @Autowired
+    private UserDetailsService udService;
+    
+    @Autowired
+    private UserDetailsService userDetailsService;
+    
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
     private DataSource dataSource;
+
+    @Autowired
+    private AuthenticationSuccessHandler successHandler;
+    
+    @Autowired
+    private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    
+    private final SimpleUrlAuthenticationFailureHandler failureHandler = new SimpleUrlAuthenticationFailureHandler();
+    
+    @Autowired
+    OAuth2ClientContext oauth2ClientContext;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth)
@@ -48,24 +79,31 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 //                .anyRequest().authenticated()
 //                .and().csrf().disable();
         http.csrf().disable()
+                .exceptionHandling()
+                .authenticationEntryPoint(restAuthenticationEntryPoint)
+                .and()
                 .authorizeRequests()
-                .antMatchers("/users").permitAll()
+                .antMatchers("/users").authenticated()
                 .antMatchers("/registerVk").permitAll()
                 .antMatchers("/authVk").permitAll()
                 .antMatchers("/getVkCode").permitAll()
                 .antMatchers("/").permitAll()
                 .antMatchers("/login").permitAll()
+                .antMatchers("/login/vk").permitAll()
                 .antMatchers("/registration").permitAll()
-                .antMatchers("/admin/**").hasAuthority("ADMIN").anyRequest()
-                .authenticated().and().csrf().disable().formLogin()
-                .loginPage("/login").failureUrl("/login?error=true")
-                .defaultSuccessUrl("/users")
-                .usernameParameter("login")
-                .passwordParameter("password")
-                .and().logout()
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .antMatchers("/me").authenticated()
+                .antMatchers("/admin/**").hasAuthority("ADMIN")
+                .anyRequest().authenticated()
+                .and()
+                .formLogin()
+                .successHandler(successHandler)
+                .failureHandler(failureHandler)
+                .and()
+                .logout().deleteCookies("JSESSIONID");
+                /*.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                 .logoutSuccessUrl("/").and().exceptionHandling()
-                .accessDeniedPage("/access-denied");
+                .accessDeniedPage("/access-denied");*/
+               // .and().addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
         /*http.csrf().disable().
                 authorizeRequests()
                 .antMatchers("*").permitAll()
@@ -76,6 +114,49 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                 .logoutSuccessUrl("/").and().exceptionHandling()
                 .accessDeniedPage("/access-denied");*/
+       /* http.oauth2Login()
+                .authorizationEndpoint();*/
+               // .authorizationRequestRepository(new AuthorizationRequestRepository<>());
+        
+
+    }
+
+   private Filter ssoFilter() {
+        OAuth2ClientAuthenticationProcessingFilter vkFilter =
+                new OAuth2ClientAuthenticationProcessingFilter("/login/vk");
+        OAuth2RestTemplate vkTemplate = new OAuth2RestTemplate(vk(), oauth2ClientContext);
+        vkFilter.setRestTemplate(vkTemplate);
+        UserInfoTokenServices tokenServices =
+                new UserInfoTokenServices(vkResource().getUserInfoUri(), vk().getClientId());
+        tokenServices.setRestTemplate(vkTemplate);
+        vkFilter.setTokenServices(tokenServices);
+        return vkFilter;
+    }
+
+    @Bean
+    @ConfigurationProperties("vk.client")
+    public AuthorizationCodeResourceDetails vk() {
+        return new AuthorizationCodeResourceDetails();
+    }
+
+    @Bean
+    public FilterRegistrationBean oauth2ClientFilterRegistration(
+            OAuth2ClientContextFilter filter) {
+        FilterRegistrationBean registration = new FilterRegistrationBean();
+        registration.setFilter(filter);
+        registration.setOrder(-100);
+        return registration;
+    }
+
+    /*@Bean
+    public ClientRegistrationRepository clientRegistrationRepository(){
+        return new InMemoryClientRegistrationRepository(new ClientRegistration[1]);
+    }*/
+    
+    @Bean
+    @ConfigurationProperties("vk.resource")
+    public ResourceServerProperties vkResource() {
+        return new ResourceServerProperties();
     }
 
     @Override
@@ -93,5 +174,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             if (id == 137651826) return repo.findById("Pr0p1k");
             return null;
         };
+    }
+
+    @Override
+    @Bean
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+    
+    public User kek(UserDetailsService ud) {
+        return null;
     }
 }
