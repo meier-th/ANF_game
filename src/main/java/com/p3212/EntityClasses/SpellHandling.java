@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 import java.util.ArrayList;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -27,7 +28,7 @@ public class SpellHandling {
      * Character
      */
     @ManyToOne
-    @JoinColumn(name = "character")
+    @JoinColumn(name = "character", nullable=false)
     @JsonIgnore
     private Character characterHandler;
 
@@ -36,12 +37,13 @@ public class SpellHandling {
      */
 
     @ManyToOne
-    @JoinColumn(name = "spell")
+    @JoinColumn(name = "spell", nullable=false)
     private Spell spellUse;
 
     /**
      * Level of the spell
      */
+    @Column(nullable=false)
     private int spellLevel;
 
     /**

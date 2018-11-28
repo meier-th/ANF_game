@@ -27,23 +27,26 @@ public class NinjaAnimal extends Creature implements Serializable {
     /**
      * The required level to summon the animal
      */
+    @Column(nullable=false)
     private int requiredLevel;
 
     /**
      * HP
      */
+    @Column(nullable=false)
     private int hp;
 
     /**
      * Damage
      */
+    @Column(nullable=false)
     private int damage;
 
     /**
      * Race of the animal
      */
     @ManyToOne
-    @JoinColumn(name = "race")
+    @JoinColumn(name = "race", nullable=false)
     private NinjaAnimalRace race;
 
     /**

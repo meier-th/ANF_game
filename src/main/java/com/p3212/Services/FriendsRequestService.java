@@ -5,6 +5,8 @@ import com.p3212.EntityClasses.User;
 import com.p3212.Repositories.FriendsRequestRepository;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,18 +30,22 @@ public class FriendsRequestService {
         repository.save(request);
     }
 
+    public Optional<FriendsRequest> getRequest(int id) {
+        return repository.findById(id);
+    }
+    
     /**
      * Remove request (when accepted or denied)
      *
      * @param id id of the request
      */
+    @Transactional
     public void removeRequest(User friend, User requester) {
         repository.deleteRequest(friend, requester);
     }
     
     public ArrayList<User> requestingUsers(User user) {
-        String name = user.getLogin();
-        List<FriendsRequest> requests = repository.getIncomingRequests(name);
+        List<FriendsRequest> requests = repository.getIncomingRequests(user);
         ArrayList<User>requesters = new ArrayList<>();
         requests.forEach((req) -> {
             requesters.add(req.getRequestingUser());
@@ -48,8 +54,7 @@ public class FriendsRequestService {
     }
     
     public ArrayList<User> requestedUsers(User user) {
-        String name = user.getLogin();
-        List<FriendsRequest> requests = repository.getOutgoingRequests(name);
+        List<FriendsRequest> requests = repository.getOutgoingRequests(user);
         ArrayList<User>requesters = new ArrayList<>();
         requests.forEach((req) -> {
             requesters.add(req.getFriendUser());

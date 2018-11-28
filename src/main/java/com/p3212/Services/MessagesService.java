@@ -3,8 +3,8 @@ package com.p3212.Services;
 import com.p3212.EntityClasses.PrivateMessage;
 import com.p3212.EntityClasses.User;
 import com.p3212.Repositories.MessagesRepository;
-import java.util.Date;
 import java.util.List;
+import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +33,8 @@ public class MessagesService {
         return repository.getUnreadMessages(user);
     }
     
-    public void setRead(User sender, User receiver, Date date) {
-        repository.setRead(sender, receiver, date);
+    @Transactional
+    public void setRead(int id) {
+        repository.setRead(id);
     }
 }

@@ -21,6 +21,7 @@ public class Spell implements Serializable {
      * The base damage of a spell
      * negative damage = heal
      */
+    @Column(nullable=false)
     private int baseDamage;
 
     /**
@@ -33,28 +34,31 @@ public class Spell implements Serializable {
     /**
      * additional damage acquired on each level
      */
+    @Column(nullable=false)
     private int damagePerLevel;
 
     /**
      * The base chakra consumption of a spell
      */
+    @Column(nullable=false)
     private int baseChakraConsumption;
 
     /**
      * additional chalra consumption acquired on each level
      */
+    @Column(nullable=false)
     private int chakraConsumptionPerLevel;
 
     /**
      * Name of a spell
      */
-    @Column(length=20)
+    @Column(length=20, nullable=false)
     private String name;
 
     /**
      * Description of a spell
      */
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition="TEXT", nullable=false)
     private String description;
 
     /**

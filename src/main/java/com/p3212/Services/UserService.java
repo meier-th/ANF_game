@@ -31,14 +31,14 @@ public class UserService {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
-    void addFriend(User user1, User user2) {
+    public void addFriend(User user1, User user2) {
         user1.getFriends().add(user2);
         user2.getFriends().add(user1);
         saveUser(user1);
         saveUser(user2);
     }
 
-    void removeFriend(User user1, User user2) {
+    public void removeFriend(User user1, User user2) {
         user1.getFriends().remove(user2);
         user2.getFriends().remove(user1);
         saveUser(user1);

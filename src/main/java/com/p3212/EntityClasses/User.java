@@ -2,6 +2,7 @@ package com.p3212.EntityClasses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import java.util.List;
 import java.io.Serializable;
@@ -38,7 +39,7 @@ public class User implements Serializable {
      */
     @NotNull
     @NotEmpty
-    @JsonProperty
+    @JsonProperty(access=Access.WRITE_ONLY)
     private String password;
 
     /**
@@ -66,11 +67,13 @@ public class User implements Serializable {
 
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JsonProperty(access=Access.WRITE_ONLY)
     @JoinTable(name = "friends", joinColumns = {
             @JoinColumn(name = "user1", referencedColumnName = "login", nullable = false)}, inverseJoinColumns = {
             @JoinColumn(name = "user2", referencedColumnName = "login", nullable = false)})
     private List<User> friends;
 
+    @JsonProperty(access=Access.WRITE_ONLY)
     @ManyToMany(mappedBy = "friends")
     private List<User> allies;
 
@@ -152,7 +155,7 @@ public class User implements Serializable {
     /**
      * Getter {@link User#password}
      */
-    @JsonIgnore
+
     public String getPassword() {
         return this.password;
     }
@@ -210,8 +213,6 @@ public class User implements Serializable {
                 ", \"incomingMessages\":" + incomingMessages +
                 ", \"friendRequestsIn\":" + friendRequestsIn +
                 ", \"friendRequestOut\":" + friendRequestOut +
-                ", \"friends\":" + friends +
-                ", \"allies\":" + allies +
                 ", \"roles\":" + roles +
                 '}';
     }
