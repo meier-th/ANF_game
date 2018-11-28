@@ -74,9 +74,12 @@ public class User implements Serializable {
     @ManyToMany(mappedBy = "friends")
     private List<User> allies;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "login"), inverseJoinColumns = @JoinColumn(name = "role"))
     private Set<Role> roles;
+
+    @Column(name = "vk_id", nullable = true)
+    private int vkId;
 
     public User() {
     }
@@ -187,6 +190,14 @@ public class User implements Serializable {
      */
     public void setCharacter(Character character) {
         this.character = character;
+    }
+
+    public int getVkId() {
+        return vkId;
+    }
+
+    public void setVkId(int vkId) {
+        this.vkId = vkId;
     }
 
     @Override
