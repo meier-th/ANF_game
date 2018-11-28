@@ -1,9 +1,15 @@
 package com.p3212.configuration;
 
+import com.p3212.EntityClasses.Role;
 import com.p3212.EntityClasses.Stats;
 import com.p3212.EntityClasses.User;
+import com.p3212.EntityClasses.Character;
+import com.p3212.Repositories.RoleRepository;
+import com.p3212.Services.CharacterService;
 import com.p3212.Services.StatsService;
 import com.p3212.Services.UserService;
+import java.util.Arrays;
+import java.util.HashSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +22,6 @@ import org.springframework.web.servlet.view.RedirectView;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -26,12 +31,13 @@ public class AuthController {
     private UserService userService;
 
     @Autowired
+    private RoleRepository roleRepository;
+    
+    @Autowired
+    private CharacterService charServ;
+    
+    @Autowired
     private StatsService statsService;
-
-    @GetMapping(value = "/registration")
-    public String registrationRequest(User user) {
-        return "registration";
-    }
     
     @PostMapping(value = "/registration")
     public ResponseEntity createNewUser(@RequestBody @Valid User user, BindingResult bindingResult) {
@@ -45,6 +51,11 @@ public class AuthController {
         Stats stats = new Stats(50, 0, 0, 0, 0, 0, 1, 3);
         user.setStats(stats);
         statsService.addStats(stats);
+        Role userRole = roleRepository.findById("USER").get();
+        user.setRoles(new HashSet<>(Arrays.asList(userRole)));
+        Character ch = new Character(0.05f, 100, 10, 30);
+        charServ.addCharacter(ch);
+        user.setCharacter(ch);
         userService.saveUser(user);
         return ResponseEntity.status(HttpStatus.CREATED).body("User successfully registered!");
     }

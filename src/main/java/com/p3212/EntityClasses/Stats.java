@@ -78,13 +78,6 @@ public class Stats {
     public Stats() {
     }
 
-    public Stats(int r, int f, int w, int l, int d) {
-        this.deaths = d;
-        this.fights = f;
-        this.losses = l;
-        this.rating = r;
-        this.wins = w;
-    }
 
     public Stats(int rating, int fights, int wins, int losses, int deaths, int experience, int level, int points) {
         this.deaths = deaths;

@@ -82,7 +82,7 @@ public class User implements Serializable {
     private Set<Role> roles;
 
     @Column(name = "vk_id", nullable = true)
-    private int vkId;
+    private Integer vkId;
 
     public User() {
     }
@@ -195,11 +195,11 @@ public class User implements Serializable {
         this.character = character;
     }
 
-    public int getVkId() {
+    public Integer getVkId() {
         return vkId;
     }
 
-    public void setVkId(int vkId) {
+    public void setVkId(Integer vkId) {
         this.vkId = vkId;
     }
 

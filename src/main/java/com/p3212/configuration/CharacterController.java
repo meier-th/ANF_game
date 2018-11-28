@@ -3,13 +3,9 @@ package com.p3212.configuration;
 import com.p3212.EntityClasses.*;
 import com.p3212.EntityClasses.Character;
 import com.p3212.Services.*;
-
 import java.util.List;
-
 import com.p3212.Repositories.RoleRepository;
-
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,9 +29,6 @@ public class CharacterController {
 
     @Autowired
     RoleRepository roleRep;
-
-    @Autowired
-    StatsService statServ;
 
     @Autowired
     UserService userServ;
@@ -75,7 +68,7 @@ public class CharacterController {
     }
 
     @GetMapping("/profile/character/animals")
-    public ResponseEntity<List<NinjaAnimal>> getAvailableAnimals() {
+    public ResponseEntity<?> getAvailableAnimals() {
         try {
             User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             Character character = user.getCharacter();
@@ -89,7 +82,7 @@ public class CharacterController {
                 .collect(Collectors.toList());
             return ResponseEntity.status(HttpStatus.OK).body(animals);
         } catch (Throwable error) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
         }
     }
 
@@ -105,19 +98,28 @@ public class CharacterController {
 
     @PostMapping("/profile/character")
     @ResponseBody
-    public ResponseEntity<String> addCharacter() {
-        try {
-            Character ch = new Character(0.05f, 100, 10, 30);
-            charServ.addCharacter(ch);
+    public ResponseEntity<String> updateCharacter(@RequestBody Character ch) {
+        try { 
             User us = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             us.setCharacter(ch);
             userServ.saveUser(us);
-            return ResponseEntity.status(HttpStatus.OK).body("Character is created.");
+            return ResponseEntity.status(HttpStatus.OK).body("Character is updated.");
+        } catch (Throwable error) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error.getMessage());
+        }
+    }
+
+    @GetMapping("/profile/character")
+    @ResponseBody
+    public ResponseEntity<?> getCharacter() {
+        try {
+            User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
+            return ResponseEntity.status(HttpStatus.OK).body(user.getCharacter());
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
         }
     }
-
+    
     @GetMapping("/users/{login}/character")
     @ResponseBody
     public ResponseEntity<?> getCharacter(@PathVariable String login) {
@@ -130,7 +132,7 @@ public class CharacterController {
     }
 
 
-    @PostMapping("/admin/users/{login}/grantAdmin") //RETURNS OK, BUT DOESN'T WORK
+    @PostMapping("/admin/users/{login}/grantAdmin")
     @ResponseBody
     public ResponseEntity<String> grantAdmin(@PathVariable String login) {
         try {
@@ -148,7 +150,8 @@ public class CharacterController {
     @ResponseBody
     public ResponseEntity<?> getAllUsers() {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(userServ.getAllUsers());
+            List users = userServ.getAllUsers();
+            return ResponseEntity.status(HttpStatus.OK).body(users);
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
@@ -158,13 +161,14 @@ public class CharacterController {
     @ResponseBody
     public ResponseEntity<?> getUser(@PathVariable String login) {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(userServ.getUser(login));
+            User user = userServ.getUser(login);
+            return ResponseEntity.status(HttpStatus.OK).body(user);
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
         }
     }
 
-    @DeleteMapping("/users") 
+    @DeleteMapping("/profile")
     @ResponseBody
     public ResponseEntity<String> deleteUser() {
         try {
@@ -194,7 +198,8 @@ public class CharacterController {
     @ResponseBody
     public ResponseEntity<?> getStats(@PathVariable String login) {
         try {
-        return ResponseEntity.status(HttpStatus.OK).body(userServ.getUser(login).getStats());
+            Stats stats = userServ.getUser(login).getStats();
+        return ResponseEntity.status(HttpStatus.OK).body(stats);
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
         }
