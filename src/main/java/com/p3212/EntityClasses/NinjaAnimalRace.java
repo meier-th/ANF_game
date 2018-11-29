@@ -15,7 +15,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "Ninja_animal_races")
 public class NinjaAnimalRace {
-    static enum races {
+    public static enum races {
     Snake,
     VILKOY,
     GOVNO;
@@ -24,4 +24,19 @@ public class NinjaAnimalRace {
     @Column(length=20)
     @Enumerated(EnumType.STRING)
     private races raceName;
+
+    public races getRaceName() {
+        return raceName;
+    }
+    
+    public NinjaAnimalRace(String race) {
+        this.raceName = races.valueOf(race);
+    }
+    
+    public NinjaAnimalRace(){}
+
+    public void setRaceName(races raceName) {
+        this.raceName = raceName;
+    }
+    
 }

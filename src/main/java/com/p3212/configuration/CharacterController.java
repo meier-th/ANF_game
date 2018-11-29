@@ -5,7 +5,6 @@ import com.p3212.EntityClasses.Character;
 import com.p3212.Services.*;
 import java.util.List;
 import com.p3212.Repositories.RoleRepository;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,9 +35,6 @@ public class CharacterController {
     @Autowired
     StatsService statsServ;
 
-    @Autowired
-    NinjaAnimalService ninjaAnimalServ;
-
     @GetMapping("/profile")
     public ResponseEntity<String> myAccount() {
         try {
@@ -62,25 +58,6 @@ public class CharacterController {
             ch.setAppearance(appear);
             charServ.addCharacter(ch);
             return ResponseEntity.status(HttpStatus.OK).body("Appearance is created.");
-        } catch (Throwable error) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
-        }
-    }
-
-    @GetMapping("/profile/character/animals")
-    public ResponseEntity<?> getAvailableAnimals() {
-        try {
-            User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
-            Character character = user.getCharacter();
-            if (character == null) return null;
-            final int lvl = character.getUser().getStats().getLevel();
-            NinjaAnimalRace race = character.getAnimalRace();
-            List<NinjaAnimal> animals =  ninjaAnimalServ.list()
-                .stream()
-                .filter(animal -> animal.getRequiredLevel() <= lvl)
-                .filter(animal -> animal.getRace().equals(race))
-                .collect(Collectors.toList());
-            return ResponseEntity.status(HttpStatus.OK).body(animals);
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
         }

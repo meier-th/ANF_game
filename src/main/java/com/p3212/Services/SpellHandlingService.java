@@ -16,17 +16,12 @@ public class SpellHandlingService {
     @Autowired
     SpellHandlingRepository repository;
 
-    public void addHandling(SpellHandling sh) {
-        repository.save(sh);
-    }
-
-    public void updateHandling(SpellHandling sh) {
+    public void addOrUpdateHandling(SpellHandling sh) {
         repository.save(sh);
     }
 
     public List<SpellHandling> getPersonsHandling(Character ch) {
-        int id = ch.getId();
-        return repository.getCharactersHandlings(id);
+        return repository.getCharactersHandlings(ch);
     }
 
     public SpellHandling getSpellHandling(Character character, Spell spell) {
