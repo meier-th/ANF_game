@@ -84,6 +84,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         return vkOauthFilter;
     }
 
+    @Bean
+    public VkRegistrationFilter vkRegistrationFilter() {
+        VkRegistrationFilter vrf = new VkRegistrationFilter("/register/vk");
+        vrf.setRestTemplate(vkRestTemplate);
+        vrf.setAuthService(authService);
+        return vrf;
+    }
+
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -96,6 +105,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .addFilterAfter(new RequestContextFilter(), CsrfFilter.class)
                 .httpBasic()
                 .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login/vk"));
+
+        http.addFilterAfter(new OAuth2ClientContextFilter(), AbstractPreAuthenticatedProcessingFilter.class)
+                .addFilterAfter(vkRegistrationFilter(), OAuth2ClientContextFilter.class)
+                .httpBasic().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/register/vk"));
+
+        http
+                .addFilterAfter(new RequestContextFilter(), CsrfFilter.class)
+                .httpBasic()
+                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/register/vk"));
 
         http.csrf().disable()
                 .exceptionHandling()
@@ -119,24 +137,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .failureHandler(failureHandler)
                 .and()
                 .logout().deleteCookies("JSESSIONID");
-                /*.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                .logoutSuccessUrl("/").and().exceptionHandling()
-                .accessDeniedPage("/access-denied");*/
-        // .and().addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
-        /*http.csrf().disable().
-                authorizeRequests()
-                .antMatchers("*").permitAll()
-                .antMatchers("/registerVk").permitAll()
-                .antMatchers("/authVk").permitAll()
-                .antMatchers("/getVkCode").permitAll()
-                .and().logout()
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                .logoutSuccessUrl("/").and().exceptionHandling()
-                .accessDeniedPage("/access-denied");*/
-       /* http.oauth2Login()
-                .authorizationEndpoint();*/
-        // .authorizationRequestRepository(new AuthorizationRequestRepository<>());
-
 
     }
 

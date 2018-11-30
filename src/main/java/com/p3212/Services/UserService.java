@@ -54,12 +54,15 @@ public class UserService {
         return lst;
     }
 
+    public boolean exists(String login) {
+        return userRepository.existsById(login);
+    }
+
     public void saveUser(User usr) {
         usr.setPassword(bCryptPasswordEncoder.encode(usr.getPassword()));
 
         Role usRole = roleRepository.findById("USER").get();
         usr.setRoles(new HashSet<>(Arrays.asList(usRole)));
-
         userRepository.save(usr);
     }
 
