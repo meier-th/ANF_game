@@ -14,8 +14,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SpellHandlingRepository extends CrudRepository<SpellHandling, Integer> {
-    @Query("select s from SpellHandling s where s.characterHandler = :id")
-    List<SpellHandling> getCharactersHandlings(@Param("id") int id);
+    @Query("select s from SpellHandling s where s.characterHandler = :ch")
+    List<SpellHandling> getCharactersHandlings(@Param("ch") Character ch);
 
     Optional<SpellHandling> findByCharacterHandlerAndSpellUse(Character character, Spell spell);
 }

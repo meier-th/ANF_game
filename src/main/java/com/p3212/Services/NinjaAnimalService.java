@@ -29,8 +29,7 @@ public class NinjaAnimalService {
      */
 
     public List<NinjaAnimal> getRaceAnimals(NinjaAnimalRace race) {
-        String rc = race.toString();
-        return repository.getRaceAnimals(rc);
+        return repository.getRaceAnimals(race);
     }
 
     public void addAnimal(NinjaAnimal animal) {

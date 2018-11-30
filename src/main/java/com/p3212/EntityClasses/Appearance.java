@@ -72,7 +72,7 @@ public class Appearance {
     @Enumerated(EnumType.STRING)
     private HairColour hairColour;
     
-    @OneToOne(mappedBy="appearance", cascade = CascadeType.REMOVE)
+    @OneToOne(mappedBy="appearance", cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JsonIgnore
     private Character charact;
     

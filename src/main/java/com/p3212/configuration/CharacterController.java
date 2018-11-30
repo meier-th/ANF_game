@@ -3,20 +3,12 @@ package com.p3212.configuration;
 import com.p3212.EntityClasses.*;
 import com.p3212.EntityClasses.Character;
 import com.p3212.Services.*;
-
 import java.util.List;
-
 import com.p3212.Repositories.RoleRepository;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.stream.Collectors;
-
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.codec.json.Jackson2JsonEncoder;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,135 +30,156 @@ public class CharacterController {
     RoleRepository roleRep;
 
     @Autowired
-    StatsService statServ;
-
-    @Autowired
     UserService userServ;
 
     @Autowired
     StatsService statsServ;
 
-    @Autowired
-    NinjaAnimalService ninjaAnimalServ;
-
     @GetMapping("/profile")
-    public String myAccount() {
-        return userServ.getUser(SecurityContextHolder
+    public ResponseEntity<String> myAccount() {
+        try {
+            String response = userServ.getUser(SecurityContextHolder
                                 .getContext()
                                 .getAuthentication()
                                 .getName()).toString();
-    }
-
-    @PostMapping("/characters/{id}/appearance")
-    @ResponseBody
-    public String addAppearance(@RequestBody Appearance appear, @PathVariable int id) {
-        try {
-            appearanceServ.addAppearance(appear);
-            Character ch = charServ.getCharacter(id);
-            ch.setAppearance(appear);
-            charServ.addCharacter(ch);
-            return "OK";
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Throwable error) {
-            return error.getMessage();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error.getMessage());
         }
     }
 
-    @GetMapping("/characters/{id}/animals")
-    public List<NinjaAnimal> getAvailableAnimals(@PathVariable int id) {
-        Character character = charServ.getCharacter(id);
-        if (character == null) return null;
-        final int lvl = character.getUser().getStats().getLevel();
-        NinjaAnimalRace race = character.getAnimalRace();
-        return ninjaAnimalServ.list()
-                .stream()
-                .filter(animal -> animal.getRequiredLevel() <= lvl)
-                .collect(Collectors.toList());
+    @PostMapping("/profile/character/appearance")
+    @ResponseBody
+    public ResponseEntity<String> addAppearance(@RequestBody Appearance appear) {
+        try {
+            appearanceServ.addAppearance(appear);
+            User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
+            Character ch = user.getCharacter();
+            ch.setAppearance(appear);
+            charServ.addCharacter(ch);
+            return ResponseEntity.status(HttpStatus.OK).body("Appearance is created.");
+        } catch (Throwable error) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
+        }
     }
 
     @GetMapping("/admin/characters")
     @ResponseBody
-    public List<Character> getAllCharacters() {
-        return charServ.getAllCharacters();
-    }
-
-    @PostMapping("/profile/character") // after adding : /admin/users fails with Could not write JSON: (was java.lang.NullPointerException); nested exception is com.fasterxml.jackson.databind.JsonMappingException: (was java.lang.NullPointerException) (through reference chain: java.util.ArrayList[5]->com.p3212.EntityClasses.User[\"character\"]->com.p3212.EntityClass
-    @ResponseBody
-    public String addCharacter() {
+    public ResponseEntity<List<Character>> getAllCharacters() {
         try {
-            Character ch = new Character(0.05f, 100, 10, 30);
-            charServ.addCharacter(ch);
-            User us = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
-            us.setCharacter(ch);
-            userServ.saveUser(us);
-            return "OK";
+            return ResponseEntity.status(HttpStatus.OK).body(charServ.getAllCharacters());
         } catch (Throwable error) {
-            return error.getMessage();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
+    @PostMapping("/profile/character")
+    @ResponseBody
+    public ResponseEntity<String> updateCharacter(@RequestBody Character ch) {
+        try { 
+            User us = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
+            us.setCharacter(ch);
+            userServ.saveUser(us);
+            return ResponseEntity.status(HttpStatus.OK).body("Character is updated.");
+        } catch (Throwable error) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error.getMessage());
+        }
+    }
+
+    @GetMapping("/profile/character")
+    @ResponseBody
+    public ResponseEntity<?> getCharacter() {
+        try {
+            User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
+            return ResponseEntity.status(HttpStatus.OK).body(user.getCharacter());
+        } catch (Throwable error) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
+        }
+    }
+    
     @GetMapping("/users/{login}/character")
     @ResponseBody
-    public Character getCharacter(@PathVariable String login) {
-    	User user = userServ.getUser(login);
-        return user.getCharacter();
+    public ResponseEntity<?> getCharacter(@PathVariable String login) {
+        try {
+            User user = userServ.getUser(login);
+            return ResponseEntity.status(HttpStatus.OK).body(user.getCharacter());
+        } catch (Throwable error) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
+        }
     }
 
 
-    @PostMapping("/admin/users/{login}/grantAdmin") //RETURNS OK, BUT DOESN'T WORK
+    @PostMapping("/admin/users/{login}/grantAdmin")
     @ResponseBody
-    public String grantAdmin(@PathVariable String login) {
+    public ResponseEntity<String> grantAdmin(@PathVariable String login) {
         try {
             User user = userServ.getUser(login);
-            user.addRole(new Role("ADMIN"));
+            Role admin = roleRep.findById("ADMIN").get();
+            user.addRole(admin);
             userServ.saveUser(user);
-            return "OK";
+            return ResponseEntity.status(HttpStatus.OK).body("ADMIN role is granted for User "+user.getLogin()+".");
         } catch (Throwable error) {
-            return error.getMessage();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
         }
     }
 
     @GetMapping("/admin/users")
     @ResponseBody
-    public List<User> getAllUsers() {
-        return userServ.getAllUsers();
+    public ResponseEntity<?> getAllUsers() {
+        try {
+            List users = userServ.getAllUsers();
+            return ResponseEntity.status(HttpStatus.OK).body(users);
+        } catch (Throwable error) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
+        }
     }
 
     @GetMapping("/users/{login}")
     @ResponseBody
-    public User getUser(@PathVariable String login) {
-        return userServ.getUser(login);
+    public ResponseEntity<?> getUser(@PathVariable String login) {
+        try {
+            User user = userServ.getUser(login);
+            return ResponseEntity.status(HttpStatus.OK).body(user);
+        } catch (Throwable error) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
+        }
     }
 
-    @DeleteMapping("/users") 
+    @DeleteMapping("/profile")
     @ResponseBody
-    public String deleteUser() {
+    public ResponseEntity<String> deleteUser() {
         try {
-        	String login = SecurityContextHolder.getContext().getAuthentication().getName();
+            String login = SecurityContextHolder.getContext().getAuthentication().getName();
             userServ.removeUser(login);
-            return "OK";
+            return ResponseEntity.status(HttpStatus.OK).body("User is deleted.");
         } catch (Throwable error) {
-            return error.getMessage();
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error.getMessage());
         }
     }
 
     @PostMapping("/profile/stats")
     @ResponseBody
-    public String addOrUpdateStats(@RequestBody Stats sts) {
+    public ResponseEntity<String> addOrUpdateStats(@RequestBody Stats sts) {
         try {
             statsServ.addStats(sts);
             User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             user.setStats(sts);
             userServ.saveUser(user);
-            return "OK"; 
+            return ResponseEntity.status(HttpStatus.OK).body("Stats are altered."); 
         } catch (Throwable error) {
-            return error.getMessage();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
         }
     }
 
     @GetMapping("/users/{login}/stats")
     @ResponseBody
-    public Stats getStats(@PathVariable String login) {
-        return userServ.getUser(login).getStats();
+    public ResponseEntity<?> getStats(@PathVariable String login) {
+        try {
+            Stats stats = userServ.getUser(login).getStats();
+        return ResponseEntity.status(HttpStatus.OK).body(stats);
+        } catch (Throwable error) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
+        }
     }
 
 }

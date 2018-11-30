@@ -25,4 +25,8 @@ public class AppearanceService {
         appearanceRepository.save(appearance);
     }
 
+    public void removeAppearance(int id) {
+        appearanceRepository.deleteById(id);
+    }
+    
 }

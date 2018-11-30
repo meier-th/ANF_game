@@ -67,20 +67,13 @@ public class SpellHandling {
         this.spellLevel = spellLevel;
     }
 
-    /**
-     * Default constructor
-     * Used for dependency injection
-     */
     public SpellHandling() {
     }
 
-    /**
-     * To be used when retrieved from database
-     *
-     * @param level
-     */
-    public SpellHandling(int level) {
+    public SpellHandling(int level, Spell spell, Character user) {
         this.spellLevel = level;
+        this.spellUse = spell;
+        this.characterHandler = user;
     }
 
     public int getHandlingId() {
