@@ -53,7 +53,7 @@ public class UserService {
         }
         return lst;
     }
-
+    
     public boolean exists(String login) {
         return userRepository.existsById(login);
     }

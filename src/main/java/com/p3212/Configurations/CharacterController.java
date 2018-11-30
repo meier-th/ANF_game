@@ -1,4 +1,4 @@
-package com.p3212.configuration;
+package com.p3212.Configurations;
 
 import com.p3212.EntityClasses.*;
 import com.p3212.EntityClasses.Character;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,6 +36,11 @@ public class CharacterController {
     @Autowired
     StatsService statsServ;
 
+    @RequestMapping("/")
+    public String greeting() {
+        return "start page";
+    }
+    
     @GetMapping("/profile")
     public ResponseEntity<String> myAccount() {
         try {
@@ -75,10 +81,37 @@ public class CharacterController {
 
     @PostMapping("/profile/character")
     @ResponseBody
-    public ResponseEntity<String> updateCharacter(@RequestBody Character ch) {
+    public ResponseEntity<String> updateCharacter(@RequestBody String quality) {
         try { 
             User us = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
-            us.setCharacter(ch);
+            if (us.getStats().getUpgradePoints() == 0)
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User doesn't have upgrade points.");
+            Character ch = us.getCharacter();
+            switch (quality) {
+                case "damage" : {
+                    ch.setPhysicalDamage(ch.getPhysicalDamage() + 4);
+                    break;
+                }
+                case "hp" : {
+                    ch.setMaxHP(ch.getMaxHp() + 15);
+                    break;
+                }
+                case "resistance" : {
+                    ch.setResistance(ch.getResistance() + (1 - ch.getResistance())/4);
+                    break;
+                }
+                case "chakra" : {
+                    ch.setMaxChakraAmount(ch.getCurrentChakra() + 7);
+                    break;
+                }
+                default : {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Quality "+quality+" doesn't exist.");
+                }
+            }
+            charServ.addCharacter(ch);
+            Stats stats = us.getStats();
+            stats.setUpgradePoints(stats.getUpgradePoints()-1);
+            statsServ.addStats(stats);
             userServ.saveUser(us);
             return ResponseEntity.status(HttpStatus.OK).body("Character is updated.");
         } catch (Throwable error) {

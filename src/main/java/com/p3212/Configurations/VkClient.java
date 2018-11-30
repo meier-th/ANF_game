@@ -1,4 +1,4 @@
-package com.p3212.configuration;
+package com.p3212.Configurations;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

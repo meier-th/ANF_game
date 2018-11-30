@@ -1,8 +1,10 @@
-package com.p3212.configuration;
+package com.p3212.Configurations;
 
 import com.p3212.EntityClasses.*;
 import com.p3212.EntityClasses.Character;
+import com.p3212.Repositories.StatsRepository;
 import com.p3212.Services.*;
+import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -11,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @RestController
 @RequestMapping("/fight")
@@ -34,6 +39,12 @@ public class FightController {
 
     @Autowired
     SpellHandlingService spellHandlingService;
+    
+    @Autowired
+    private StatsRepository statsRep;
+    
+    @Autowired
+    private NotificationService notifServ;
 
     private HashMap<Integer, Fight> fights;
     private HashSet<String> usersInFight;
@@ -177,6 +188,11 @@ public class FightController {
     }
 
     private void stopFight(int fightId) {
+        ArrayList<User> usersBefore = new ArrayList<>();
+        Page<Stats> stts = statsRep.getTopStats(new PageRequest(0, 10));
+        for (Stats st : stts){
+            usersBefore.add(st.getUser());
+        }
         Fight fight = fights.get(fightId);
         if (fight instanceof FightPVP) {
             int lvlDiff = ((FightPVP) fight).getFirstFighter().getLevel() -
@@ -195,7 +211,27 @@ public class FightController {
                 usersInFight.remove(String.valueOf(((Boss) fighter.getValue()).getId()));
             else usersInFight.remove(((Character) fighter.getValue()).getUser().getLogin());
         });
+        ArrayList<User> usersAfter = new ArrayList<>();
+        Page<Stats> stats = statsRep.getTopStats(new PageRequest(0, 10));
+        for (Stats st : stats){
+            usersAfter.add(st.getUser());
+        }
+        compareStats(usersBefore, usersAfter);
     }
 
+    private void compareStats(ArrayList<User>before, ArrayList<User> after) {
+        String report = "";
+        for (int i = 0; i < 10; ++i) {
+            if (!(before.get(i).equals(after.get(i))))
+                report += "User "+after.get(i).getLogin()+" is now on the "+i+" place.\n";
+        }
+        if (report.equals(""))
+            return;
+        Message warning = new Message();
+        warning.setFrom("SYSTEM");
+        warning.setText("Users in top-10 have changed their positions:\n"+report);
+        notifServ.notify(warning);
+    }
 
+    
 }

@@ -1,6 +1,7 @@
-package com.p3212.configuration;
+package com.p3212.Configurations;
 
 import com.p3212.EntityClasses.FriendsRequest;
+import com.p3212.EntityClasses.Message;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,10 +16,12 @@ import com.p3212.EntityClasses.PrivateMessage;
 import com.p3212.EntityClasses.User;
 import com.p3212.Services.FriendsRequestService;
 import com.p3212.Services.MessagesService;
+import com.p3212.Services.NotificationService;
 import com.p3212.Services.UserService;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 public class CommunicationController {
@@ -29,6 +32,8 @@ public class CommunicationController {
     private UserService userServ;
     @Autowired
     private FriendsRequestService requestServ;
+    @Autowired
+    private NotificationService notifServ;
 
     /*
      * Sends a message. Receives two Strings (receiver login and Message itself), takes sender object from SecurityContext
@@ -198,4 +203,13 @@ public class CommunicationController {
         }
     }
 
+    @PostMapping("/admin/chat")
+    public ResponseEntity<String> sendAdminWarning(@RequestBody String warning) {
+        Message notif = new Message();
+        notif.setFrom("SYSTEM");
+        notif.setText(warning);
+        notifServ.notify(notif);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Warning is sent.");
+    }
+    
 }

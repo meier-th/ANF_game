@@ -1,4 +1,4 @@
-package com.p3212.configuration;
+package com.p3212.Configurations;
 
 import java.io.IOException;
 import javax.servlet.ServletException;

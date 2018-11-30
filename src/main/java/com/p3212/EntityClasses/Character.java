@@ -17,7 +17,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import com.p3212.Services.StatsService;
+import javax.persistence.Transient;
 
 /**
  * Represents Person entity
@@ -27,6 +29,11 @@ import javax.persistence.TemporalType;
 @Table(name = "persons")
 public class Character extends Creature implements Serializable {
 
+    @Autowired
+    @Transient
+    @JsonIgnore
+    private StatsService statsServ;
+    
     /**
      * The date of creating a character
      */
@@ -270,12 +277,22 @@ public class Character extends Creature implements Serializable {
     }
 
     public void changeXP(int change) {
-        user.getStats().setExperience(user.getStats().getExperience() + change);
+        int previousXP = user.getStats().getExperience();
+        int newXP = previousXP + change;
+        int levelsAcquired = (newXP % 1000 - newXP % 100 - previousXP % 1000 - previousXP % 100)/100;
+        int pointsAcquired = levelsAcquired * 3;
+        user.getStats().setExperience(newXP);
+        user.getStats().setLevel(user.getStats().getLevel() + levelsAcquired);
+        user.getStats().setUpgradePoints(user.getStats().getUpgradePoints() + pointsAcquired);
+        statsServ.addStats(user.getStats());
     }
 
     public void changeRating(int change) {
         user.getStats().setRating(user.getStats().getRating() + change);
-
+        statsServ.addStats(user.getStats());
     }
+    
+    
+    
 }
 

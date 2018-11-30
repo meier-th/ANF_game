@@ -1,4 +1,4 @@
-package com.p3212.configuration;
+package com.p3212.Configurations;
 
 import javax.sql.DataSource;
 
@@ -60,21 +60,20 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public VkOauthFilter vkOauthFilter() {
-        VkOauthFilter vkOauthFilter = new VkOauthFilter("/login/vk");
-        vkOauthFilter.setRestTemplate(vkRestTemplate);
-        vkOauthFilter.setAuthService(authService);
-        return vkOauthFilter;
-    }
-
-    @Bean
     public VkRegistrationFilter vkRegistrationFilter() {
         VkRegistrationFilter vrf = new VkRegistrationFilter("/register/vk");
         vrf.setRestTemplate(vkRestTemplate);
         vrf.setAuthService(authService);
         return vrf;
     }
-
+    
+    @Bean
+    public VkOauthFilter vkOauthFilter() {
+        VkOauthFilter vkOauthFilter = new VkOauthFilter("/login/vk");
+        vkOauthFilter.setRestTemplate(vkRestTemplate);
+        vkOauthFilter.setAuthService(authService);
+        return vkOauthFilter;
+    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -97,7 +96,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .addFilterAfter(new RequestContextFilter(), CsrfFilter.class)
                 .httpBasic()
                 .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/register/vk"));
-
+        
         http.csrf().disable()
                 .exceptionHandling()
                 .authenticationEntryPoint(restAuthenticationEntryPoint)
@@ -118,7 +117,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .failureHandler(failureHandler)
                 .and()
                 .logout().deleteCookies("JSESSIONID");
-
     }
 
     @Override
