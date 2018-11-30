@@ -25,6 +25,6 @@ public class SpellHandlingService {
     }
 
     public SpellHandling getSpellHandling(Character character, Spell spell) {
-        return repository.findByCharacterHandlerAndSpellUse(character, spell).get();
+        return repository.findByCharacterHandlerAndSpellUse(character, spell).orElse(null);
     }
 }

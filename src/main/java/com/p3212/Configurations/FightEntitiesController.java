@@ -1,4 +1,4 @@
-package com.p3212.configuration;
+package com.p3212.Configurations;
 
 import com.p3212.EntityClasses.Boss;
 import com.p3212.EntityClasses.Character;
@@ -6,6 +6,7 @@ import com.p3212.EntityClasses.NinjaAnimal;
 import com.p3212.EntityClasses.NinjaAnimalRace;
 import com.p3212.EntityClasses.Spell;
 import com.p3212.EntityClasses.SpellHandling;
+import com.p3212.EntityClasses.Stats;
 import com.p3212.EntityClasses.User;
 import com.p3212.Repositories.NinjaAnimalRaceRepository;
 import com.p3212.Services.BossService;
@@ -13,6 +14,7 @@ import com.p3212.Services.CharacterService;
 import com.p3212.Services.NinjaAnimalService;
 import com.p3212.Services.SpellHandlingService;
 import com.p3212.Services.SpellService;
+import com.p3212.Services.StatsService;
 import com.p3212.Services.UserService;
 import java.util.List;
 import java.util.Optional;
@@ -48,6 +50,9 @@ public class FightEntitiesController {
 	
         @Autowired
         private NinjaAnimalService ninjaAnimalServ;
+        
+        @Autowired
+        private StatsService statsServ;
         
         @Autowired
         private CharacterService charServ;
@@ -97,11 +102,24 @@ public class FightEntitiesController {
         }
         
         @PostMapping("/fight/spell/my")
-        public ResponseEntity<String> addOrUpdateSpellHandling(@RequestBody Spell spell, @RequestParam int level) {
+        public ResponseEntity<String> acquireSpellHandling(@RequestBody Spell spell) {
             try {
                 User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
+                if (user.getStats().getUpgradePoints() == 0)
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User doesn't have upgrade points");
                 Character ch = user.getCharacter();
-                spellHandServ.addOrUpdateHandling(new SpellHandling(level, spell, ch));
+                int currLvl = 0;
+                if (spellHandServ.getSpellHandling(ch, spell) != null) {
+                    SpellHandling handl = spellHandServ.getSpellHandling(ch, spell);
+                    currLvl = handl.getSpellLevel();
+                    handl.setSpellLevel(currLvl + 1);
+                    spellHandServ.addOrUpdateHandling(handl);
+                } else {
+                    spellHandServ.addOrUpdateHandling(new SpellHandling(currLvl + 1, spell, ch));
+                }
+                Stats stats = user.getStats();
+                stats.setUpgradePoints(stats.getUpgradePoints() - 1);
+                statsServ.addStats(stats);
                 return ResponseEntity.status(HttpStatus.CREATED).body("Spell handling is updated.");
             } catch (Throwable error) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
@@ -113,7 +131,8 @@ public class FightEntitiesController {
         try {
             User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             Character character = user.getCharacter();
-            if (character == null) return null;
+            if (character == null) 
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No character was found.");
             final int lvl = character.getUser().getStats().getLevel();
             NinjaAnimalRace race = character.getAnimalRace();
             List<NinjaAnimal> animals =  ninjaAnimalServ.list()
@@ -143,7 +162,7 @@ public class FightEntitiesController {
             User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             Character ch = user.getCharacter();
             if (ch.getAnimalRace() != null)
-               return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Use can not change his character's ninja animal's race.");
+               return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User can not change his character's ninja animal's race.");
             Optional<NinjaAnimalRace> raceOP = raceRepository.findById(NinjaAnimalRace.races.valueOf(racename));
             if (!raceOP.isPresent())
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Such a race doesn't exist.");

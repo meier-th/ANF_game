@@ -84,14 +84,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         return vrf;
     }
 
-    @Bean
-    public GoogleOauthFilter googleOauthFilter() {
-        GoogleOauthFilter googleOauthFilter = new GoogleOauthFilter("/login/google");
-        googleOauthFilter.setRestTemplate(googleRestTemplate);
-        googleOauthFilter.setAuthService(authService);
-        return googleOauthFilter;
-    }
-
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
