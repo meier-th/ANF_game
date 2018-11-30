@@ -4,7 +4,11 @@ import javax.sql.DataSource;
 
 
 import com.p3212.Services.AuthService;
+import com.p3212.configuration.filters.GoogleOauthFilter;
+import com.p3212.configuration.filters.VkOauthFilter;
+import com.p3212.configuration.filters.VkRegistrationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -43,10 +47,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final SimpleUrlAuthenticationFailureHandler failureHandler = new SimpleUrlAuthenticationFailureHandler();
 
     @Autowired
+    @Qualifier("vkRestTemplate")
     private OAuth2RestTemplate vkRestTemplate;
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    @Qualifier("googleRestTemplate")
+    public OAuth2RestTemplate googleRestTemplate;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth)
@@ -75,6 +84,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         return vrf;
     }
 
+    @Bean
+    public GoogleOauthFilter googleOauthFilter() {
+        GoogleOauthFilter googleOauthFilter = new GoogleOauthFilter("/login/google");
+        googleOauthFilter.setRestTemplate(googleRestTemplate);
+        googleOauthFilter.setAuthService(authService);
+        return googleOauthFilter;
+    }
+
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -98,17 +115,27 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .httpBasic()
                 .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/register/vk"));
 
+        http
+                .addFilterAfter(new OAuth2ClientContextFilter(), AbstractPreAuthenticatedProcessingFilter.class)
+                .addFilterAfter(googleOauthFilter(), OAuth2ClientContextFilter.class)
+                .httpBasic()
+                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login/google"));
+
+
+        http
+                .addFilterAfter(new RequestContextFilter(), CsrfFilter.class)
+                .httpBasic()
+                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login/google"));
+
         http.csrf().disable()
                 .exceptionHandling()
                 .authenticationEntryPoint(restAuthenticationEntryPoint)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/registerVk").permitAll()
-                .antMatchers("/authVk").permitAll()
-                .antMatchers("/getVkCode").permitAll()
                 .antMatchers("/").permitAll()
                 .antMatchers("/login").permitAll()
                 .antMatchers("/login/vk").permitAll()
+                .antMatchers("/login/google").permitAll()
                 .antMatchers("/registration").permitAll()
                 .anyRequest().authenticated()
                 .antMatchers("/admin/**").hasRole("ADMIN")

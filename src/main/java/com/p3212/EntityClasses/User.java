@@ -39,7 +39,7 @@ public class User implements Serializable {
      */
     @NotNull
     @NotEmpty
-    @JsonProperty(access=Access.WRITE_ONLY)
+    @JsonProperty(access = Access.WRITE_ONLY)
     private String password;
 
     /**
@@ -67,13 +67,13 @@ public class User implements Serializable {
 
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JsonProperty(access=Access.WRITE_ONLY)
+    @JsonProperty(access = Access.WRITE_ONLY)
     @JoinTable(name = "friends", joinColumns = {
             @JoinColumn(name = "user1", referencedColumnName = "login", nullable = false)}, inverseJoinColumns = {
             @JoinColumn(name = "user2", referencedColumnName = "login", nullable = false)})
     private List<User> friends;
 
-    @JsonProperty(access=Access.WRITE_ONLY)
+    @JsonProperty(access = Access.WRITE_ONLY)
     @ManyToMany(mappedBy = "friends")
     private List<User> allies;
 
@@ -83,6 +83,9 @@ public class User implements Serializable {
 
     @Column(name = "vk_id", nullable = true)
     private Integer vkId;
+
+    @Column(name = "email", nullable = true)
+    private String email;
 
     public User() {
     }
@@ -150,6 +153,14 @@ public class User implements Serializable {
 
     public void setStats(Stats stats) {
         this.stats = stats;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     /**

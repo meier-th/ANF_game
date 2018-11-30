@@ -23,4 +23,8 @@ public class AuthService {
         return userRepository.findUserByVkId(vkId);
 
     }
+
+    public Optional<User> signIn(String email) {
+        return userRepository.findUserByEmail(email);
+    }
 }
