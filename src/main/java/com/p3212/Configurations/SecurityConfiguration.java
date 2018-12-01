@@ -1,12 +1,12 @@
-package com.p3212.configuration;
+package com.p3212.Configurations;
 
+import com.p3212.Configurations.filters.GoogleOauthFilter;
 import javax.sql.DataSource;
 
 
 import com.p3212.Services.AuthService;
-import com.p3212.configuration.filters.GoogleOauthFilter;
-import com.p3212.configuration.filters.VkOauthFilter;
-import com.p3212.configuration.filters.VkRegistrationFilter;
+import com.p3212.Configurations.filters.VkOauthFilter;
+import com.p3212.Configurations.filters.VkRegistrationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -52,7 +52,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private AuthService authService;
-
+    
     @Autowired
     @Qualifier("googleRestTemplate")
     public OAuth2RestTemplate googleRestTemplate;
@@ -84,6 +84,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         return vrf;
     }
 
+    @Bean
+    public GoogleOauthFilter googleOauthFilter() {
+        GoogleOauthFilter googleOauthFilter = new GoogleOauthFilter("/login/google");
+        googleOauthFilter.setRestTemplate(googleRestTemplate);
+        googleOauthFilter.setAuthService(authService);
+        return googleOauthFilter;
+    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {

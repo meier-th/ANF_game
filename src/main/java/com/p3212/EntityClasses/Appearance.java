@@ -160,6 +160,10 @@ public class Appearance {
         this.charact = charact;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     
 
 }

@@ -19,7 +19,7 @@ public class SpellService {
     }
 
     public Spell get(int id) {
-        return repository.findById(id).get();
+        return repository.findById(id).orElse(null);
     }
 
     public void update(Spell spell) {

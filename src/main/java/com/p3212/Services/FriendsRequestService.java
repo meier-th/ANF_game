@@ -44,6 +44,10 @@ public class FriendsRequestService {
         repository.deleteRequest(friend, requester);
     }
     
+    public void removeById(int id) {
+        repository.deleteById(id);
+    }
+    
     public ArrayList<User> requestingUsers(User user) {
         List<FriendsRequest> requests = repository.getIncomingRequests(user);
         ArrayList<User>requesters = new ArrayList<>();

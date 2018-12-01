@@ -55,32 +55,32 @@ public class CharacterController {
     }
 
     @PostMapping("/profile/character/appearance")
-    @ResponseBody
     public ResponseEntity<String> addAppearance(@RequestBody Appearance appear) {
         try {
-            appearanceServ.addAppearance(appear);
             User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             Character ch = user.getCharacter();
+            int id = ch.getAppearance().getId();
+            appear.setId(id);
+            appearanceServ.addAppearance(appear);
             ch.setAppearance(appear);
             charServ.addCharacter(ch);
             return ResponseEntity.status(HttpStatus.OK).body("Appearance is created.");
+            
         } catch (Throwable error) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error.getMessage());
         }
     }
 
     @GetMapping("/admin/characters")
-    @ResponseBody
-    public ResponseEntity<List<Character>> getAllCharacters() {
+    public ResponseEntity<?> getAllCharacters() {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(charServ.getAllCharacters());
         } catch (Throwable error) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
     }
 
     @PostMapping("/profile/character")
-    @ResponseBody
     public ResponseEntity<String> updateCharacter(@RequestBody String quality) {
         try { 
             User us = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
@@ -120,7 +120,6 @@ public class CharacterController {
     }
 
     @GetMapping("/profile/character")
-    @ResponseBody
     public ResponseEntity<?> getCharacter() {
         try {
             User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
@@ -131,33 +130,36 @@ public class CharacterController {
     }
     
     @GetMapping("/users/{login}/character")
-    @ResponseBody
     public ResponseEntity<?> getCharacter(@PathVariable String login) {
         try {
             User user = userServ.getUser(login);
+            if (user == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User "+login+" doesn't exist.");
             return ResponseEntity.status(HttpStatus.OK).body(user.getCharacter());
         } catch (Throwable error) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
     }
 
 
     @PostMapping("/admin/users/{login}/grantAdmin")
-    @ResponseBody
     public ResponseEntity<String> grantAdmin(@PathVariable String login) {
         try {
             User user = userServ.getUser(login);
+            if (user == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User "+login+" doesn't exist.");
             Role admin = roleRep.findById("ADMIN").get();
+            if (user.getRoles().contains(admin))
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("User "+login+" is already an administrator.");
             user.addRole(admin);
             userServ.saveUser(user);
             return ResponseEntity.status(HttpStatus.OK).body("ADMIN role is granted for User "+user.getLogin()+".");
         } catch (Throwable error) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
     }
 
     @GetMapping("/admin/users")
-    @ResponseBody
     public ResponseEntity<?> getAllUsers() {
         try {
             List users = userServ.getAllUsers();
@@ -168,18 +170,18 @@ public class CharacterController {
     }
 
     @GetMapping("/users/{login}")
-    @ResponseBody
     public ResponseEntity<?> getUser(@PathVariable String login) {
         try {
             User user = userServ.getUser(login);
+            if (user == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User "+login+" doesn't exist.");
             return ResponseEntity.status(HttpStatus.OK).body(user);
         } catch (Throwable error) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
     }
 
     @DeleteMapping("/profile")
-    @ResponseBody
     public ResponseEntity<String> deleteUser() {
         try {
             String login = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -190,28 +192,16 @@ public class CharacterController {
         }
     }
 
-    @PostMapping("/profile/stats")
-    @ResponseBody
-    public ResponseEntity<String> addOrUpdateStats(@RequestBody Stats sts) {
-        try {
-            statsServ.addStats(sts);
-            User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
-            user.setStats(sts);
-            userServ.saveUser(user);
-            return ResponseEntity.status(HttpStatus.OK).body("Stats are altered."); 
-        } catch (Throwable error) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
-        }
-    }
-
     @GetMapping("/users/{login}/stats")
-    @ResponseBody
     public ResponseEntity<?> getStats(@PathVariable String login) {
         try {
-            Stats stats = userServ.getUser(login).getStats();
+            User user = userServ.getUser(login);
+            if (user == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User "+login+" doesn't exist.");
+            Stats stats = user.getStats();
         return ResponseEntity.status(HttpStatus.OK).body(stats);
         } catch (Throwable error) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
     }
 

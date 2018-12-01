@@ -1,4 +1,4 @@
-package com.p3212.configuration.filters;
+package com.p3212.Configurations.filters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.p3212.Repositories.UserRepository;
