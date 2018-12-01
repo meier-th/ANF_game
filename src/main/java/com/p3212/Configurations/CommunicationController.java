@@ -2,6 +2,7 @@ package com.p3212.Configurations;
 
 import com.p3212.EntityClasses.FriendsRequest;
 import com.p3212.EntityClasses.Message;
+import com.p3212.main.BotListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,7 +17,9 @@ import com.p3212.Services.FriendsRequestService;
 import com.p3212.Services.MessagesService;
 import com.p3212.Services.NotificationService;
 import com.p3212.Services.UserService;
+
 import java.util.Optional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,6 +36,9 @@ public class CommunicationController {
     @Autowired
     private NotificationService notifServ;
 
+    @Autowired
+    BotListener botListener;
+
     /*
      * Sends a message. Receives two Strings (receiver login and Message itself), takes sender object from SecurityContext
      */
@@ -41,7 +47,7 @@ public class CommunicationController {
         try {
             User recvr = userServ.getUser(receiver);
             if (recvr == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User "+receiver+" wasn't found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User " + receiver + " wasn't found.");
             User sender = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             PrivateMessage msg = new PrivateMessage(recvr, sender);
             msg.setIsRead(false);
@@ -72,7 +78,7 @@ public class CommunicationController {
             User sen = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             User rec = userServ.getUser(secondName);
             if (rec == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with name "+secondName+" wasn't found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with name " + secondName + " wasn't found.");
             return ResponseEntity.status(HttpStatus.OK).body(messageServ.getAllFromDialog(sen, rec));
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
@@ -88,7 +94,7 @@ public class CommunicationController {
             User applier = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             PrivateMessage msg = messageServ.getMessage(id);
             if (msg == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Message with id = "+id+" wasn't found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Message with id = " + id + " wasn't found.");
             if (msg.getSender().equals(applier)) {
                 messageServ.removeMessage(id);
             } else {
@@ -109,7 +115,7 @@ public class CommunicationController {
             User recvr = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             PrivateMessage message = messageServ.getMessage(id);
             if (message == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Message with id "+id+" wasn't found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Message with id " + id + " wasn't found.");
             if (message.getReceiver().equals(recvr)) {
                 messageServ.setRead(id);
                 return ResponseEntity.status(HttpStatus.OK).body("Message 'is read' state is confirmed.");
@@ -129,10 +135,10 @@ public class CommunicationController {
         try {
             User sendr = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             User recvr = userServ.getUser(username);
-            if (!(requestServ.requestedUsers(sendr).contains(recvr)||(requestServ.requestingUsers(sendr).contains(recvr))))
+            if (!(requestServ.requestedUsers(sendr).contains(recvr) || (requestServ.requestingUsers(sendr).contains(recvr))))
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Request wasn't found.");
             if (recvr == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with name "+username+" wasn't found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with name " + username + " wasn't found.");
             requestServ.removeRequest(recvr, sendr);
             return ResponseEntity.status(HttpStatus.OK).body("Request is deleted.");
         } catch (Throwable error) {
@@ -165,7 +171,7 @@ public class CommunicationController {
         try {
             User receiver = userServ.getUser(username);
             if (receiver == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with name "+username+" wasn't found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with name " + username + " wasn't found.");
             User sender = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             FriendsRequest request = new FriendsRequest(sender, receiver);
             requestServ.addRequest(request);
@@ -181,9 +187,9 @@ public class CommunicationController {
             User acceptor = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             Optional<FriendsRequest> opRequest = requestServ.getRequest(requestId);
             if (!(opRequest.isPresent()))
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No friend request with id = "+requestId+" was found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No friend request with id = " + requestId + " was found.");
             if (!(acceptor.equals(opRequest.get().getFriendUser())))
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Friend request with id = "+requestId+" was not sent to current user.");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Friend request with id = " + requestId + " was not sent to current user.");
             User friend = opRequest.get().getFriendUser();
             userServ.addFriend(acceptor, friend);
             requestServ.removeById(requestId);
@@ -199,9 +205,9 @@ public class CommunicationController {
             User remover = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             User removed = userServ.getUser(username);
             if (removed == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with name "+username+" wasn't found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with name " + username + " wasn't found.");
             if (!(remover.getFriends().contains(removed)))
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User "+username+" is not a friend of a user "+remover.getLogin()+".");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User " + username + " is not a friend of a user " + remover.getLogin() + ".");
             userServ.removeFriend(remover, removed);
             return ResponseEntity.status(HttpStatus.OK).body("Friends relationship is removed.");
         } catch (Throwable error) {
@@ -217,5 +223,5 @@ public class CommunicationController {
         notifServ.notify(notif);
         return ResponseEntity.status(HttpStatus.CREATED).body("Warning is sent.");
     }
-    
+
 }
