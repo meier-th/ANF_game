@@ -18,7 +18,7 @@ public class MessagesService {
     }
 
     public PrivateMessage getMessage(int id) {
-        return repository.findById(id).get();
+        return repository.findById(id).orElse(null);
     }
 
     public void removeMessage(int id) {

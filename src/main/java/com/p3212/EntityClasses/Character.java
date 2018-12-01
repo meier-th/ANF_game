@@ -292,7 +292,5 @@ public class Character extends Creature implements Serializable {
         statsServ.addStats(user.getStats());
     }
     
-    
-    
 }
 

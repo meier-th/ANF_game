@@ -19,6 +19,6 @@ public class BossService {
     }
     
     public Boss getBoss(int id) {
-        return bossRepository.findById(id).get();
+        return bossRepository.findById(id).orElse(null);
     }
 }

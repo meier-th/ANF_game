@@ -61,9 +61,11 @@ public class FightEntitiesController {
 	public ResponseEntity<?> getBoss(@RequestParam int id) {
 		try {
 			Boss boss = bossServ.getBoss(id);
+                        if (boss == null)
+                            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Boss with id = "+id+" doesn't exist.");
 			return ResponseEntity.status(HttpStatus.OK).body(boss);
 		} catch (Throwable error) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
 		}
 	}
 	
@@ -71,9 +73,11 @@ public class FightEntitiesController {
 	public ResponseEntity<?> getSpell(@RequestParam int id) {
 		try {
 			Spell spell = spelServ.get(id);
+                        if (spell == null)
+                            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Spell with id = "+id+" doesn't exist");
 			return ResponseEntity.status(HttpStatus.OK).body(spell);
 		} catch (Throwable error) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
 		}
 	}
 	
@@ -85,7 +89,7 @@ public class FightEntitiesController {
 			List<SpellHandling> spellHandlings = spellHandServ.getPersonsHandling(ch);
 			return ResponseEntity.status(HttpStatus.OK).body(spellHandlings);
 		} catch (Throwable error) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
 		}
 	}
 	
@@ -95,9 +99,11 @@ public class FightEntitiesController {
                 User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
                 Character ch = user.getCharacter();
                 SpellHandling spellHandl = spellHandServ.getSpellHandling(ch, spell);
+                if (spellHandl == null)
+                    return ResponseEntity.status(HttpStatus.LOCKED).body("User can't handle this spell yet.");
                 return ResponseEntity.status(HttpStatus.OK).body(spellHandl);
             } catch (Throwable error) {
-                return ResponseEntity.status(HttpStatus.LOCKED).body(error.getMessage());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
             }
         }
         
@@ -122,7 +128,7 @@ public class FightEntitiesController {
                 statsServ.addStats(stats);
                 return ResponseEntity.status(HttpStatus.CREATED).body("Spell handling is updated.");
             } catch (Throwable error) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
             }
         }
         
@@ -135,6 +141,8 @@ public class FightEntitiesController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No character was found.");
             final int lvl = character.getUser().getStats().getLevel();
             NinjaAnimalRace race = character.getAnimalRace();
+            if (race == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User doesn't have any animal race connected to his character.");
             List<NinjaAnimal> animals =  ninjaAnimalServ.list()
                 .stream()
                 .filter(animal -> animal.getRequiredLevel() <= lvl)
@@ -142,7 +150,7 @@ public class FightEntitiesController {
                 .collect(Collectors.toList());
             return ResponseEntity.status(HttpStatus.OK).body(animals);
         } catch (Throwable error) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
     }
     
@@ -171,7 +179,7 @@ public class FightEntitiesController {
             charServ.addCharacter(ch);
             return ResponseEntity.status(HttpStatus.CREATED).body("Animal race is set for user.");
         } catch (Throwable error) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
     }
     
