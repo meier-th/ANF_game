@@ -53,13 +53,14 @@ public class UserService {
         }
         return lst;
     }
-    
+
     public boolean exists(String login) {
         return userRepository.existsById(login);
     }
 
     public void saveUser(User usr) {
-        usr.setPassword(bCryptPasswordEncoder.encode(usr.getPassword()));
+        if (usr.getPassword() != null)
+            usr.setPassword(bCryptPasswordEncoder.encode(usr.getPassword()));
         userRepository.save(usr);
     }
 

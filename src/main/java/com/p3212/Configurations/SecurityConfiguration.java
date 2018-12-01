@@ -1,12 +1,13 @@
-package com.p3212.configuration;
+package com.p3212.Configurations;
 
 import javax.sql.DataSource;
 
 
+import com.p3212.Configurations.filters.GoogleOauthFilter;
+import com.p3212.Configurations.filters.GoogleRegistrationFilter;
 import com.p3212.Services.AuthService;
-import com.p3212.configuration.filters.GoogleOauthFilter;
-import com.p3212.configuration.filters.VkOauthFilter;
-import com.p3212.configuration.filters.VkRegistrationFilter;
+import com.p3212.Configurations.filters.VkOauthFilter;
+import com.p3212.Configurations.filters.VkRegistrationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -84,6 +85,21 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         return vrf;
     }
 
+    @Bean
+    public GoogleRegistrationFilter googleRegistrationFilter() {
+        GoogleRegistrationFilter filter = new GoogleRegistrationFilter("/register/google");
+        filter.setRestTemplate(googleRestTemplate);
+        filter.setAuthService(authService);
+        return filter;
+    }
+
+    @Bean
+    public GoogleOauthFilter googleOauthFilter() {
+        GoogleOauthFilter googleOauthFilter = new GoogleOauthFilter("/login/google");
+        googleOauthFilter.setRestTemplate(googleRestTemplate);
+        googleOauthFilter.setAuthService(authService);
+        return googleOauthFilter;
+    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -98,7 +114,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .httpBasic()
                 .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login/vk"));
 
-        http.addFilterAfter(new OAuth2ClientContextFilter(), AbstractPreAuthenticatedProcessingFilter.class)
+        http
+                .addFilterAfter(new OAuth2ClientContextFilter(), AbstractPreAuthenticatedProcessingFilter.class)
                 .addFilterAfter(vkRegistrationFilter(), OAuth2ClientContextFilter.class)
                 .httpBasic().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/register/vk"));
 
@@ -118,6 +135,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .addFilterAfter(new RequestContextFilter(), CsrfFilter.class)
                 .httpBasic()
                 .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login/google"));
+
+        http
+                .addFilterAfter(new OAuth2ClientContextFilter(), AbstractPreAuthenticatedProcessingFilter.class)
+                .addFilterAfter(googleRegistrationFilter(), OAuth2ClientContextFilter.class)
+                .httpBasic().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/register/google"));
+
+        http
+                .addFilterAfter(new RequestContextFilter(), CsrfFilter.class)
+                .httpBasic()
+                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/register/google"));
 
         http.csrf().disable()
                 .exceptionHandling()

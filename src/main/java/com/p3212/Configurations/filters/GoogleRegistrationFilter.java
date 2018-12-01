@@ -1,5 +1,6 @@
 package com.p3212.Configurations.filters;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.p3212.Services.AuthService;
 import com.p3212.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.jwt.Jwt;
+import org.springframework.security.jwt.JwtHelper;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
@@ -22,8 +25,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public class VkRegistrationFilter extends AbstractAuthenticationProcessingFilter {
+public class GoogleRegistrationFilter extends AbstractAuthenticationProcessingFilter {
 
     @Autowired
     UserService service;
@@ -32,7 +36,7 @@ public class VkRegistrationFilter extends AbstractAuthenticationProcessingFilter
 
     private AuthService authService;
 
-    public VkRegistrationFilter(String defaultFilterProcessesUrl) {
+    public GoogleRegistrationFilter(String defaultFilterProcessesUrl) {
         super(defaultFilterProcessesUrl);
         setAuthenticationManager(authenticationManagerNone());
     }
@@ -44,12 +48,18 @@ public class VkRegistrationFilter extends AbstractAuthenticationProcessingFilter
 
                 OAuth2AccessToken accessToken = restTemplate.getAccessToken();
 
-                int vkId = Integer.parseInt(accessToken.getAdditionalInformation().get("user_id").toString());
+                String idToken = accessToken.getAdditionalInformation().get("id_token").toString();
+
+                Jwt token = JwtHelper.decode(idToken);
+
+                Map<String, String> authInfo = new ObjectMapper().readValue(token.getClaims(), Map.class);
+
+                String email = authInfo.get("email");
 
                 List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-                authorities.add(new SimpleGrantedAuthority("NEWVK"));
+                authorities.add(new SimpleGrantedAuthority("NEWGoogle"));
 
-                org.springframework.security.core.userdetails.User user = new User("tmp" + vkId, "", authorities);
+                org.springframework.security.core.userdetails.User user = new User("tmp" + email, "", authorities);
 
                 System.out.println(user.getUsername());
                 return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());

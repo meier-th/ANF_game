@@ -10,14 +10,20 @@ import com.p3212.Services.CharacterService;
 import com.p3212.Services.NotificationService;
 import com.p3212.Services.StatsService;
 import com.p3212.Services.UserService;
+
 import java.util.Arrays;
 import java.util.HashSet;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,16 +37,16 @@ public class AuthController {
 
     @Autowired
     private RoleRepository roleRepository;
-    
+
     @Autowired
     private CharacterService charServ;
-    
+
     @Autowired
     private StatsService statsService;
-    
+
     @Autowired
     private NotificationService notifServ;
-    
+
     @PostMapping(value = "/registration")
     public ResponseEntity createNewUser(@RequestBody @Valid User user, BindingResult bindingResult) {
         User userExists = userService.getUser(user.getLogin());
@@ -61,23 +67,32 @@ public class AuthController {
         userService.saveUser(user);
         Message warning = new Message();
         warning.setFrom("SYSTEM");
-        warning.setText("A user "+user.getLogin()+" has registered!");
+        warning.setText("A user " + user.getLogin() + " has registered!");
         notifServ.notify(warning);
         return ResponseEntity.status(HttpStatus.CREATED).body("User successfully registered!");
     }
 
-   @PostMapping("/confirmVk")
-    public ResponseEntity confirmVk(@RequestParam(name = "login") String login, @RequestParam(name = "password") String password) {
+    @PostMapping("/confirm")
+    public ResponseEntity confirm(@RequestParam(name = "login") String login, @RequestParam(name = "password") String password) {
         if (!userService.exists(login)) {
-            if (password.length() >= 6) {
-                User user = new User(login, password);
+            if (password.length() >= 6 || password.isEmpty()) {
+                User user = new User(login, password.isEmpty() ? null : password);
                 String tmpName = SecurityContextHolder.getContext().getAuthentication().getName();
-                int vkId = Integer.parseInt(tmpName.substring(3));
-                user.setVkId(vkId);
+                if (SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("NEWGoogle"))) {
+                    String email = tmpName.substring(3);
+                    user.setEmail(email);
+                } else {
+                    int vkId = Integer.parseInt(tmpName.substring(3));
+                    user.setVkId(vkId);
+                }
+
                 Stats stats = new Stats(50, 0, 0, 0, 0, 0, 1, 3);
                 user.setStats(stats);
                 statsService.addStats(stats);
                 userService.saveUser(user);
+
+//                SecurityContextHolder.getContext().setAuthentication(//choose class);
+                //TODO There's a possibility to set authentication via context
                 return ResponseEntity.status(HttpStatus.CREATED).body("User successfully registered!");
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Password is too short.");
