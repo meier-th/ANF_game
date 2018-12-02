@@ -1,7 +1,6 @@
 package com.p3212.EntityClasses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;

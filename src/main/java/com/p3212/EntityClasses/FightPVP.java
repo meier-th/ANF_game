@@ -12,6 +12,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 
 @Entity
@@ -45,6 +46,28 @@ public class FightPVP extends Fight {
 
     @Column(nullable=false)
     private int ratingChange;
+    
+    @Transient
+    private int biggerRatingChange;
+    
+    @Transient
+    private int lessRatingChange;
+
+    public int getBiggerRatingChange() {
+        return biggerRatingChange;
+    }
+
+    public void setBiggerRatingChange(int biggerRatingChange) {
+        this.biggerRatingChange = biggerRatingChange;
+    }
+
+    public int getLessRatingChange() {
+        return lessRatingChange;
+    }
+
+    public void setLessRatingChange(int lessRatingChange) {
+        this.lessRatingChange = lessRatingChange;
+    }
 
     public boolean isFirstWon() {
         return firstWon;

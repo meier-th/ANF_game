@@ -70,7 +70,12 @@ public class FightController {
         fighter2.prepareForFight();
         fight.addFighter(fighter1, 1);
         fight.addFighter(fighter2, 2);
-        fight.setRatingChange(5); //TODO
+        int biggerRating = 15 + Math.abs(fighter1.getUser().getStats().getRating() - fighter2.getUser().getStats().getRating())/4;
+        int lesserRating = 15 - Math.abs(fighter1.getUser().getStats().getRating() - fighter2.getUser().getStats().getRating())/8;
+        if (lesserRating < 5)
+            lesserRating = 5;
+        fight.setBiggerRatingChange(biggerRating);
+        fight.setLessRatingChange(lesserRating);
         fights.put(fight.getId(), fight);
         return fight.toString();
     }
@@ -200,8 +205,13 @@ public class FightController {
             int lvlDiff = ((FightPVP) fight).getFirstFighter().getLevel() -
                     ((FightPVP) fight).getSecondFighter().getLevel();
             boolean isFirstWon = ((FightPVP) fight).isFirstWon();
-            int rating = isFirstWon ?
-                    5 + (lvlDiff < 0 ? -lvlDiff * 5 : 0) : 5 + (lvlDiff > 0 ? lvlDiff * 5 : 0);
+            int firstFighterPreviousRating = ((FightPVP)fight).getFirstFighter().getUser().getStats().getRating();
+            int secondFighterPreviousRating = ((FightPVP)fight).getSecondFighter().getUser().getStats().getRating();
+            int rating;
+            if (firstFighterPreviousRating >= secondFighterPreviousRating && isFirstWon || secondFighterPreviousRating >= firstFighterPreviousRating && !isFirstWon)
+                rating = ((FightPVP)fight).getLessRatingChange();
+            else
+                rating = ((FightPVP)fight).getBiggerRatingChange();
             ((FightPVP) fight).setRatingChange(rating);
             ((FightPVP) fight).getFirstFighter().changeRating(isFirstWon ? rating : -rating);
             ((FightPVP) fight).getSecondFighter().changeRating(isFirstWon ? -rating : rating);
