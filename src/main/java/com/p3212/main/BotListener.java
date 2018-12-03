@@ -34,9 +34,9 @@ public class BotListener {
         try {
             con = factory.createConnection();
             session = con.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            consumer = session.createConsumer(session.createQueue("bot"));
+            consumer = session.createConsumer(session.createQueue("botReq"));
             con.start();
-            producer = session.createProducer(session.createQueue("botResponse"));
+            producer = session.createProducer(session.createQueue("botResp"));
             listen();
         } catch (JMSException e) {
             e.printStackTrace();
