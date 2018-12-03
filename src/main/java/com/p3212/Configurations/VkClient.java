@@ -1,5 +1,6 @@
 package com.p3212.Configurations;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
@@ -22,8 +23,8 @@ public class VkClient {
     private final String redirectUri = "http://localhost:31480/login/vk";
 
 
-    @Bean
-    public OAuth2ProtectedResourceDetails vkResourceDetails(){
+    @Bean(name = "vkResourceDetails")
+    public OAuth2ProtectedResourceDetails vkResourceDetails() {
         AuthorizationCodeResourceDetails details = new AuthorizationCodeResourceDetails();
         details.setClientId(clientId);
         details.setClientSecret(clientSecret);
@@ -34,8 +35,8 @@ public class VkClient {
         return details;
     }
 
-    @Bean
-    public OAuth2RestTemplate vkRestTemplate(OAuth2ProtectedResourceDetails googleResourceDetails, OAuth2ClientContext context){
-        return new OAuth2RestTemplate(googleResourceDetails, context);
+    @Bean(name = "vkRestTemplate")
+    public OAuth2RestTemplate vkRestTemplate(@Qualifier("vkResourceDetails") OAuth2ProtectedResourceDetails vkResourceDetails, OAuth2ClientContext context) {
+        return new OAuth2RestTemplate(vkResourceDetails, context);
     }
 }

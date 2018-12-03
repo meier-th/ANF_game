@@ -1,5 +1,6 @@
 package com.p3212.Configurations;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
@@ -14,13 +15,14 @@ import java.util.Arrays;
 @EnableOAuth2Client
 @Configuration
 public class GoogleClient {
-     private final String clientId = "1089042072438-o7navd9nnvtc15eduuvcseji15d2kjvo.apps.googleusercontent.com";
+    private final String clientId = "1089042072438-o7navd9nnvtc15eduuvcseji15d2kjvo.apps.googleusercontent.com";
     private final String clientSecret = "Wa2NxGcqUxNGwDRp7WC18Cnz";
     private final String accessTokenUri = "https://www.googleapis.com/oauth2/v3/token";
     private final String userAuthorizationUri = "https://accounts.google.com/o/oauth2/auth";
     private final String redirectUri = "http://localhost:31480/login/google";
-     @Bean
-    public OAuth2ProtectedResourceDetails googleResourceDetails(){
+
+    @Bean(name = "googleResourceDetails")
+    public OAuth2ProtectedResourceDetails googleResourceDetails() {
         AuthorizationCodeResourceDetails details = new AuthorizationCodeResourceDetails();
         details.setClientId(clientId);
         details.setClientSecret(clientSecret);
@@ -31,8 +33,9 @@ public class GoogleClient {
         details.setUseCurrentUri(false);
         return details;
     }
-     @Bean
-    public OAuth2RestTemplate googleRestTemplate(OAuth2ProtectedResourceDetails googleResourceDetails, OAuth2ClientContext context){
+
+    @Bean(name = "googleRestTemplate")
+    public OAuth2RestTemplate googleRestTemplate(@Qualifier("googleResourceDetails") OAuth2ProtectedResourceDetails googleResourceDetails, OAuth2ClientContext context) {
         OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(googleResourceDetails, context);
         return restTemplate;
     }

@@ -5,16 +5,15 @@ import com.p3212.EntityClasses.Character;
 import com.p3212.Repositories.StatsRepository;
 import com.p3212.Services.*;
 
-import java.util.ArrayList;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -50,42 +49,67 @@ public class FightController {
 
     private HashMap<Integer, Fight> fights;
     private HashSet<String> usersInFight;
+    private HashMap<Integer, Stack<String>> queues;
 
     {
         usersInFight = new HashSet<>();
         fights = new HashMap<>();
+        queues = new HashMap<>();
+    }
+
+    @RequestMapping("/acceptQueue")
+    public ResponseEntity<?> acceptQueue(@RequestParam(name = "fighter") String name,
+                                         @RequestParam(name = "queueId") int id) {
+        if (usersInFight.contains(name))
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");    // 7 - user is busy
+        if (!SecurityContextHolder.getContext().getAuthentication().getName().equals(name))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You aren't the user you claim to be");
+        if (!queues.containsKey(id)) queues.put(id, new Stack<>());
+        queues.get(id).push(name);
+        return ResponseEntity.status(HttpStatus.OK).body("Succeeded");
     }
 
     @RequestMapping("/startPvp")
-    public String startPvp(@RequestParam(name = "fighter1") String fighter1Name, @RequestParam(name = "fighter2") String fighter2Name) {
-        if (usersInFight.contains(fighter1Name) || usersInFight.contains(fighter2Name))
-            return "{ \"code\": 7}";    // 7 - user is busy
+    public ResponseEntity<?> startPvp(@RequestParam(name = "queueId") int queueId) {
+        if (!queues.containsKey(queueId))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Queue doesn't exist");
+        if (queues.get(queueId).size() != 2)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("The number of players should be equal to 2");
         FightPVP fight = new FightPVP();
+        String fighter2Name = queues.get(queueId).pop();
+        String fighter1Name = queues.get(queueId).pop();
         Character fighter1 = userService.getUser(fighter1Name).getCharacter();
         Character fighter2 = userService.getUser(fighter2Name).getCharacter();
-        if (fighter1 == null || fighter2 == null) return "{ \"code\": 3}"; //code 3 means fighter does't exist
+        if (fighter1 == null || fighter2 == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"code\": 3}"); //code 3 means fighter does't exist
         usersInFight.add(fighter1Name);
         usersInFight.add(fighter2Name);
         fighter1.prepareForFight();
         fighter2.prepareForFight();
         fight.addFighter(fighter1, 1);
         fight.addFighter(fighter2, 2);
-        int biggerRating = 15 + Math.abs(fighter1.getUser().getStats().getRating() - fighter2.getUser().getStats().getRating())/4;
-        int lesserRating = 15 - Math.abs(fighter1.getUser().getStats().getRating() - fighter2.getUser().getStats().getRating())/8;
+        int biggerRating = 15 + Math.abs(fighter1.getUser().getStats().getRating() - fighter2.getUser().getStats().getRating()) / 4;
+        int lesserRating = 15 - Math.abs(fighter1.getUser().getStats().getRating() - fighter2.getUser().getStats().getRating()) / 8;
         if (lesserRating < 5)
             lesserRating = 5;
         fight.setBiggerRatingChange(biggerRating);
         fight.setLessRatingChange(lesserRating);
         fights.put(fight.getId(), fight);
-        return fight.toString();
+        queues.remove(queueId);
+        return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
     }
 
     @RequestMapping("/startPve")
-    public String startPve(@RequestParam(name = "fighters") String[] fighters, @RequestParam(name = "bossId") int bossId) {
+    public ResponseEntity<?> startPve(@RequestParam(name = "queueId") int queueId, @RequestParam(name = "bossId") int bossId) {
+        if (!queues.containsKey(queueId))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Queue doesn't exist");
+        String[] fighters = (String[]) queues.get(queueId).toArray();
         for (String fighter : fighters) {
-            if (usersInFight.contains(fighter)) return "{ \"code\": 7}";
+            if (usersInFight.contains(fighter))
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");
         }
-        if (usersInFight.contains(String.valueOf(bossId))) return "{ \"code\": 7}";
+        if (usersInFight.contains(String.valueOf(bossId)))
+            ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");
         FightVsAI fight = new FightVsAI();
         for (String fighterName : fighters) {
             Character fighter = userService.getUser(fighterName).getCharacter();
@@ -99,19 +123,22 @@ public class FightController {
         Collections.addAll(usersInFight, fighters);
         usersInFight.add(String.valueOf(bossId));
         fights.put(fight.getId(), fight);
-        return fight.toString();
+        queues.remove(queueId);
+        return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
     }
 
     @RequestMapping("/attack")
-    public String attackHandler(@RequestParam(name = "enemyNumber") int enemyNumber,
-                                @RequestParam(name = "fightId") int fightId,
-                                @RequestParam(name = "spellId") int spellId) {
+    public ResponseEntity<?> attackHandler(@RequestParam(name = "enemyNumber") int enemyNumber,
+                                           @RequestParam(name = "fightId") int fightId,
+                                           @RequestParam(name = "spellId") int spellId) {
         Fight fight = fights.get(fightId);
-        if (fight == null) return "{\n\"code\": 2\n}";              //code 2 means fight doesn't exist
+        if (fight == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\n\"code\": 2\n}");              //code 2 means fight doesn't exist
         Attack attack = attack(fight.getCurrentAttacker(), enemyNumber, fightId, spellId);
-        if (attack.getCode() != 0) return attack.toString();
+
+        if (attack.getCode() != 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(attack.toString());
         fight.switchAttacker();
-        return attack.toString();
+        return ResponseEntity.status(HttpStatus.OK).body(attack.toString());
     }
 
     private Attack attack(int attackerNumber, int enemyNumber, int fightId, int spellId) {
@@ -130,7 +157,18 @@ public class FightController {
             attack.setCode(5);               //code 5 means there's no fighters with that number
             return attack;
         }
-        Spell spell = spellService.get(spellId);
+        Spell spell;
+        if (attacker instanceof Character) {
+            spell = spellService.get(spellId);
+            if (spell == null || spellHandlingService.getSpellHandling(((Character) attacker), spell) == null) {
+                attack.setCode(8); //8 means user can't use this spell
+                return attack;
+            }
+        } else {
+            int damage = attacker instanceof Boss ? ((Boss) attacker).getNumberOfTails() * 30 : ((NinjaAnimal) attacker).getDamage();
+            spell = new Spell("npc attack", "furious scratching", damage, 0);
+            spell.setBaseChakraConsumption(15);
+        }
         int spellLvl = attacker instanceof Character
                 ? spellHandlingService.getSpellHandling((Character) attacker, spell).getSpellLevel() : 1;
         attack = spell.performAttack(spellLvl, enemy.getResistance());
@@ -179,19 +217,19 @@ public class FightController {
     }
 
     @RequestMapping("/summon")
-    public String summonAnimal(@RequestParam(name = "summonerNumber") int summonerNumber,
-                               @RequestParam(name = "animalName") String name,
-                               @RequestParam(name = "fightId") int id) {
+    public ResponseEntity<?> summonAnimal(@RequestParam(name = "summonerNumber") int summonerNumber,
+                                          @RequestParam(name = "animalName") String name,
+                                          @RequestParam(name = "fightId") int id) {
         Fight fight = fights.get(id);
-        if (fight == null) return "{\n\"code\": 2\n}";
+        if (fight == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"code\": 2}");
         NinjaAnimal animal = ninjaAnimalService.get(name);
         Character summoner = (Character) fight.getFighters().get(summonerNumber).getValue();
         if (!summoner.getAnimalRace().equals(animal.getRace()) ||
                 summoner.getUser().getStats().getLevel() < animal.getRequiredLevel())
-            return "{\"code\": 4";                              //4 means user cannot summon this animal
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{ \"code\": 4}"); //4 means user cannot summon this animal
         animal.prepareForFight();
         fight.addFighter(animal, fight.getFighters().get(summonerNumber).getKey());
-        return "{ \"summoned\": true }";
+        return ResponseEntity.status(HttpStatus.OK).body("{ \"summoned\": true }");
     }
 
     private void stopFight(int fightId) {
@@ -205,13 +243,13 @@ public class FightController {
             int lvlDiff = ((FightPVP) fight).getFirstFighter().getLevel() -
                     ((FightPVP) fight).getSecondFighter().getLevel();
             boolean isFirstWon = ((FightPVP) fight).isFirstWon();
-            int firstFighterPreviousRating = ((FightPVP)fight).getFirstFighter().getUser().getStats().getRating();
-            int secondFighterPreviousRating = ((FightPVP)fight).getSecondFighter().getUser().getStats().getRating();
+            int firstFighterPreviousRating = ((FightPVP) fight).getFirstFighter().getUser().getStats().getRating();
+            int secondFighterPreviousRating = ((FightPVP) fight).getSecondFighter().getUser().getStats().getRating();
             int rating;
             if (firstFighterPreviousRating >= secondFighterPreviousRating && isFirstWon || secondFighterPreviousRating >= firstFighterPreviousRating && !isFirstWon)
-                rating = ((FightPVP)fight).getLessRatingChange();
+                rating = ((FightPVP) fight).getLessRatingChange();
             else
-                rating = ((FightPVP)fight).getBiggerRatingChange();
+                rating = ((FightPVP) fight).getBiggerRatingChange();
             ((FightPVP) fight).setRatingChange(rating);
             ((FightPVP) fight).getFirstFighter().changeRating(isFirstWon ? rating : -rating);
             ((FightPVP) fight).getSecondFighter().changeRating(isFirstWon ? -rating : rating);

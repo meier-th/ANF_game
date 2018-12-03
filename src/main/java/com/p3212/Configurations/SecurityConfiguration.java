@@ -1,6 +1,7 @@
 package com.p3212.Configurations;
 
 import com.p3212.Configurations.filters.GoogleOauthFilter;
+
 import javax.sql.DataSource;
 
 
@@ -73,6 +74,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     public VkOauthFilter vkOauthFilter() {
         VkOauthFilter vkOauthFilter = new VkOauthFilter("/login/vk");
+        System.out.println(vkRestTemplate.getResource().getClientId());
         vkOauthFilter.setRestTemplate(vkRestTemplate);
         vkOauthFilter.setAuthService(authService);
         return vkOauthFilter;
@@ -152,6 +154,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .authenticationEntryPoint(restAuthenticationEntryPoint)
                 .and()
                 .authorizeRequests()
+                .antMatchers("/confirm").hasAnyAuthority("NEWVK", "NEWGoogle")
                 .antMatchers("/").permitAll()
                 .antMatchers("/login").permitAll()
                 .antMatchers("/login/vk").permitAll()

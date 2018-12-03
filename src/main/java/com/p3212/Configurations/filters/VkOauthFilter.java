@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class VkOauthFilter extends AbstractAuthenticationProcessingFilter {
@@ -41,7 +42,11 @@ public class VkOauthFilter extends AbstractAuthenticationProcessingFilter {
 
                 int vkId = Integer.parseInt(accessToken.getAdditionalInformation().get("user_id").toString());
 
-                User userEntity = authService.signIn(vkId).get();       //TODO raise error if doesn't exist
+                Optional<User> potential = authService.signIn(vkId);
+
+                if (!potential.isPresent()) return null;
+
+                User userEntity = potential.get();
 
                 List<SimpleGrantedAuthority> authorities = userEntity
                         .getRoles()
