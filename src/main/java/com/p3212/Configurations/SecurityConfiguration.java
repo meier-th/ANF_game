@@ -1,5 +1,6 @@
 package com.p3212.Configurations;
 
+import com.google.common.collect.ImmutableList;
 import com.p3212.Configurations.filters.GoogleOauthFilter;
 
 import javax.sql.DataSource;
@@ -26,8 +27,13 @@ import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilt
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.filter.RequestContextFilter;
 
 @Configuration
@@ -72,6 +78,18 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        final CorsConfiguration corsConfiguration = new CorsConfiguration();
+        corsConfiguration.setAllowedOrigins(ImmutableList.of("*")); // * because I dunno my url after forwarding
+        corsConfiguration.setAllowedMethods(ImmutableList.of("POST", "GET", "DELETE"));
+        corsConfiguration.setAllowCredentials(true);
+        corsConfiguration.setAllowedHeaders(ImmutableList.of("*"));
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfiguration);
+        return source;
+    }
+
+    @Bean
     public VkOauthFilter vkOauthFilter() {
         VkOauthFilter vkOauthFilter = new VkOauthFilter("/login/vk");
         System.out.println(vkRestTemplate.getResource().getClientId());
@@ -106,6 +124,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        // CORS
+        http
+                .addFilterAfter(new CorsFilter(corsConfigurationSource()), UsernamePasswordAuthenticationFilter.class)
+                .httpBasic()
+                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/**"));
+
+
         http
                 .addFilterAfter(new OAuth2ClientContextFilter(), AbstractPreAuthenticatedProcessingFilter.class)
                 .addFilterAfter(vkOauthFilter(), OAuth2ClientContextFilter.class)

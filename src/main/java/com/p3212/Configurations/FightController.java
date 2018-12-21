@@ -6,6 +6,8 @@ import com.p3212.Repositories.StatsRepository;
 import com.p3212.Services.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+
+import javax.annotation.PostConstruct;
 
 @RestController
 @RequestMapping("/fight")
@@ -47,24 +51,26 @@ public class FightController {
     @Autowired
     private NotificationService notifServ;
 
-    private HashMap<Integer, Fight> fights;
-    private HashSet<String> usersInFight;
-    private HashMap<Integer, Stack<String>> queues;
+    @Autowired
+    FightDataBean fightDataBean;
 
-    {
-        usersInFight = new HashSet<>();
-        fights = new HashMap<>();
-        queues = new HashMap<>();
+    private ConcurrentHashMap<Integer, Fight> fights;
+    private ConcurrentSkipListSet<String> usersInFight;
+    private ConcurrentHashMap<Integer, ArrayDeque<String>> queues;
+
+    @PostConstruct
+    private void init() {
+        fights = fightDataBean.getFights();
+        usersInFight = fightDataBean.getUsersInFight();
+        queues = fightDataBean.getQueues();
     }
 
     @RequestMapping("/acceptQueue")
-    public ResponseEntity<?> acceptQueue(@RequestParam(name = "fighter") String name,
-                                         @RequestParam(name = "queueId") int id) {
+    public ResponseEntity<?> acceptQueue(@RequestParam(name = "queueId") int id) {
+        String name = SecurityContextHolder.getContext().getAuthentication().getName();
         if (usersInFight.contains(name))
             return ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");    // 7 - user is busy
-        if (!SecurityContextHolder.getContext().getAuthentication().getName().equals(name))
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You aren't the user you claim to be");
-        if (!queues.containsKey(id)) queues.put(id, new Stack<>());
+        if (!queues.containsKey(id)) queues.put(id, new ArrayDeque<>());
         queues.get(id).push(name);
         return ResponseEntity.status(HttpStatus.OK).body("Succeeded");
     }
@@ -134,7 +140,7 @@ public class FightController {
         Fight fight = fights.get(fightId);
         if (fight == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\n\"code\": 2\n}");              //code 2 means fight doesn't exist
-        Attack attack = attack(fight.getCurrentAttacker(), enemyNumber, fightId, spellId);
+        Attack attack = attack(fight.getCurrentAttacker() + 1, enemyNumber, fightId, spellId);
 
         if (attack.getCode() != 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(attack.toString());
         fight.switchAttacker();

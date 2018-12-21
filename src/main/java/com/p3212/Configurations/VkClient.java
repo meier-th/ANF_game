@@ -1,6 +1,7 @@
 package com.p3212.Configurations;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
@@ -8,15 +9,13 @@ import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationManager;
 
-import java.util.Arrays;
 
 @EnableOAuth2Client
 @Configuration
 public class VkClient {
 
-    private final String clientId = "6751264";
+    private String clientId = "6751264";
     private final String clientSecret = "YqVhWS11S17pz670MHzG";
     private final String accessTokenUri = "https://oauth.vk.com/access_token";
     private final String userAuthorizationUri = "https://oauth.vk.com/authorize";
