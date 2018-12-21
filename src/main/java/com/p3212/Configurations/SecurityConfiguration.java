@@ -35,6 +35,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.filter.RequestContextFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 @Configuration
 @EnableWebSecurity
@@ -125,10 +126,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         // CORS
-        http
-                .addFilterAfter(new CorsFilter(corsConfigurationSource()), UsernamePasswordAuthenticationFilter.class)
-                .httpBasic()
-                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/**"));
+        http.cors();
 
 
         http
@@ -181,6 +179,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/confirm").hasAnyAuthority("NEWVK", "NEWGoogle")
                 .antMatchers("/").permitAll()
+                .antMatchers("/*").permitAll()
+                .antMatchers("/public/**").permitAll()
                 .antMatchers("/login").permitAll()
                 .antMatchers("/login/vk").permitAll()
                 .antMatchers("/login/google").permitAll()

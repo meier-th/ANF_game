@@ -36,9 +36,9 @@ public class CharacterController {
     @Autowired
     StatsService statsServ;
 
-    @RequestMapping("/")
+    @RequestMapping(value = "/")
     public String greeting() {
-        return "start page";
+        return "index";
     }
     
     @GetMapping("/profile")
