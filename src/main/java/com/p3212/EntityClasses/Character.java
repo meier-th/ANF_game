@@ -1,6 +1,7 @@
 package com.p3212.EntityClasses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -16,8 +17,12 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.p3212.Services.StatsService;
+
 import javax.persistence.Transient;
 
 /**
@@ -32,7 +37,7 @@ public class Character extends Creature implements Serializable {
     @Transient
     @JsonIgnore
     private StatsService statsServ;
-    
+
     /**
      * The date of creating a character
      */
@@ -43,7 +48,7 @@ public class Character extends Creature implements Serializable {
     @JoinColumn(name = "animal_race")
     private NinjaAnimalRace animalRace;
 
-    @OneToMany(mappedBy = "fighter",  fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "fighter", fetch = FetchType.LAZY)
     private List<UserAIFight> fights;
 
 
@@ -78,11 +83,11 @@ public class Character extends Creature implements Serializable {
      */
     private int maxChakraAmount;
 
-    @OneToMany(mappedBy = "firstFighter",  fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "firstFighter", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<FightPVP> pvpFightsAsFirst;
 
-    @OneToMany(mappedBy = "secondFighter",  fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "secondFighter", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<FightPVP> pvpFightsAsSecond;
 
@@ -278,7 +283,7 @@ public class Character extends Creature implements Serializable {
     public void changeXP(int change) {
         int previousXP = user.getStats().getExperience();
         int newXP = previousXP + change;
-        int levelsAcquired = (newXP % 1000 - newXP % 100 - previousXP % 1000 - previousXP % 100)/100;
+        int levelsAcquired = (newXP % 1000 - newXP % 100 - previousXP % 1000 - previousXP % 100) / 100;
         int pointsAcquired = levelsAcquired * 3;
         user.getStats().setExperience(newXP);
         user.getStats().setLevel(user.getStats().getLevel() + levelsAcquired);
@@ -290,6 +295,29 @@ public class Character extends Creature implements Serializable {
         user.getStats().setRating(user.getStats().getRating() + change);
         statsServ.addStats(user.getStats());
     }
-    
+
+    // TODO
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            return "";
+        }
+//        return "Character{" +
+//                ", \"animalRace\":\"" + animalRace.getRaceName().toString() +
+//                "\", \"fights\":" + fights +
+//                ", \"spellsKnown\":" + spellsKnown +
+//                ", id=" + id +
+//                ", maxChakraAmount=" + maxChakraAmount +
+//                ", pvpFightsAsFirst=" + pvpFightsAsFirst +
+//                ", pvpFightsAsSecond=" + pvpFightsAsSecond +
+//                ", user=" + user +
+//                ", appearance=" + appearance +
+//                ", maxHP=" + maxHP +
+//                ", physicalDamage=" + physicalDamage +
+//                ", resistance=" + resistance +
+//                '}';
+    }
 }
 

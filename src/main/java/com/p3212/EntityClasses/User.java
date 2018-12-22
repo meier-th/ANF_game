@@ -214,12 +214,13 @@ public class User implements Serializable {
         this.vkId = vkId;
     }
 
+    // TODO
     @Override
     public String toString() {
         return "{" +
                 "\"login\":\"" + login + '\"' +
-                ", \"character\":" + character +
-                ", \"stats\":" + stats +
+                 ", \"character\":" + character.toString() +
+                ", \"stats\":" + stats.toString() +
                 ", \"outgoingMessages\":" + outgoingMessages +
                 ", \"incomingMessages\":" + incomingMessages +
                 ", \"friendRequestsIn\":" + friendRequestsIn +

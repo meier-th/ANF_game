@@ -6,6 +6,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import javax.persistence.CascadeType;
 
 import javax.persistence.Column;
@@ -33,46 +36,47 @@ public class Stats {
     public String getLogin() {
         return user.getLogin();
     }
-    @Column(nullable=false)
+
+    @Column(nullable = false)
     private int rating;
     /**
      * Number of fights user took part in
      */
-    @Column(nullable=false)
+    @Column(nullable = false)
     private int fights;
     /**
      * Number of fights user won
      */
-    @Column(nullable=false)
+    @Column(nullable = false)
     private int wins;
     /**
      * Number of fights user lost
      */
-    @Column(nullable=false)
+    @Column(nullable = false)
     private int losses;
     /**
      * Number of fights during which user died
      * Death occurs when a character died in battle against AI, but his team won
      */
-    @Column(nullable=false)
+    @Column(nullable = false)
     private int deaths;
 
     /**
      * Level
      */
-    @Column(name = "lvl", nullable=false)
+    @Column(name = "lvl", nullable = false)
     private int level;
 
     /**
      * Experience
      */
-    @Column(nullable=false)
+    @Column(nullable = false)
     private int experience;
 
     /**
      * Number of available upgrade points
      */
-    @Column(nullable=false)
+    @Column(nullable = false)
     private int upgradePoints;
 
     public Stats() {
@@ -213,14 +217,19 @@ public class Stats {
     }
 
 
-
     @Override
     public String toString() {
-        return "Username: " + user.getLogin() +
-                ",\n  rating=" + rating +
-                ",\n  fights=" + fights +
-                ",\n  wins=" + wins +
-                ",\n  losses=" + losses +
-                ",\n  deaths=" + deaths;
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            return "";
+        }
+//        return "\"{ username\": \"" + user.getLogin() +
+//                "\",\n  \"rating\":" + rating +
+//                ",\n  \"fights\":" + fights +
+//                ",\n  \"wins\":" + wins +
+//                ",\n  \"losses\":" + losses +
+//                ",\n  \"deaths\":" + deaths + " }";
     }
 }
