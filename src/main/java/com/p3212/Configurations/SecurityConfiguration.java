@@ -93,7 +93,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     public VkOauthFilter vkOauthFilter() {
         VkOauthFilter vkOauthFilter = new VkOauthFilter("/login/vk");
-        System.out.println(vkRestTemplate.getResource().getClientId());
+        System.out.println("Vk: " + vkRestTemplate.getResource().getClientId());
         vkOauthFilter.setRestTemplate(vkRestTemplate);
         vkOauthFilter.setAuthService(authService);
         return vkOauthFilter;
@@ -118,6 +118,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     public GoogleOauthFilter googleOauthFilter() {
         GoogleOauthFilter googleOauthFilter = new GoogleOauthFilter("/login/google");
+        System.out.println("Google: " + googleRestTemplate.getResource().getClientId());
         googleOauthFilter.setRestTemplate(googleRestTemplate);
         googleOauthFilter.setAuthService(authService);
         return googleOauthFilter;
@@ -177,16 +178,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .authenticationEntryPoint(restAuthenticationEntryPoint)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/confirm").hasAnyAuthority("NEWVK", "NEWGoogle")
-                .antMatchers("/").permitAll()
-                .antMatchers("/*").permitAll()
-                .antMatchers("/public/**").permitAll()
-                .antMatchers("/login").permitAll()
-                .antMatchers("/login/vk").permitAll()
-                .antMatchers("/login/google").permitAll()
+//                .antMatchers("/confirm").hasAnyAuthority("NEWVK", "NEWGoogle")
                 .antMatchers("/registration").permitAll()
                 .anyRequest().authenticated()
                 .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/").permitAll()
                 .and()
                 .formLogin()
                 .successHandler(successHandler)

@@ -302,7 +302,7 @@ public class Character extends Creature implements Serializable {
         try {
             return new ObjectMapper().writeValueAsString(this);
         } catch (JsonProcessingException e) {
-            return "";
+            return "{}";
         }
 //        return "Character{" +
 //                ", \"animalRace\":\"" + animalRace.getRaceName().toString() +

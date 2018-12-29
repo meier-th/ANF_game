@@ -43,7 +43,9 @@ public class VkRegistrationFilter extends AbstractAuthenticationProcessingFilter
             try {
 
                 OAuth2AccessToken accessToken = restTemplate.getAccessToken();
-
+                System.out.println("Access token object: " + accessToken);
+                System.out.println("Additional info: " + accessToken.getAdditionalInformation());
+                System.out.println("id: " + accessToken.getAdditionalInformation().get("user_id"));
                 int vkId = Integer.parseInt(accessToken.getAdditionalInformation().get("user_id").toString());
 
                 List<SimpleGrantedAuthority> authorities = new ArrayList<>();

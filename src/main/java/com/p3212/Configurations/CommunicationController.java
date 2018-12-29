@@ -39,7 +39,7 @@ public class CommunicationController {
     @Autowired
     BotListener botListener;
 
-    /*
+    /**
      * Sends a message. Receives two Strings (receiver login and Message itself), takes sender object from SecurityContext
      */
     @PostMapping("/profile/messages")
@@ -62,6 +62,7 @@ public class CommunicationController {
     @GetMapping("/profile/messages/unread")
     public ResponseEntity<?> getUnreadMessages() {
         try {
+            // TODO упадёт, если без авторизации
             User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             return ResponseEntity.status(HttpStatus.OK).body(messageServ.getUnreadMessages(user));
         } catch (Throwable error) {
@@ -69,7 +70,9 @@ public class CommunicationController {
         }
     }
 
-    /*
+
+
+    /**
      * Returns all messages between User from SecurityContext and User with username provided
      */
     @GetMapping("/profile/messages/dialog")
@@ -85,7 +88,7 @@ public class CommunicationController {
         }
     }
 
-    /*
+    /**
      * Deletes a message. User can only delete his own messages.
      */
     @DeleteMapping("/profile/messages/{id}")
@@ -106,7 +109,7 @@ public class CommunicationController {
         }
     }
 
-    /*
+    /**
      * Sets message as read. Takes receiver from SecurityContext.
      */
     @PostMapping("/profile/messages/{id}/read")
@@ -126,7 +129,7 @@ public class CommunicationController {
         }
     }
 
-    /*
+    /**
      * Takes a user from SecurityContext and a User from username and removes either request from *username*
      * to current User or from current User to *username*. See @Query in FriendsRequestRepository
      */

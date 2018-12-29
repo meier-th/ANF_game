@@ -223,7 +223,7 @@ public class Stats {
         try {
             return mapper.writeValueAsString(this);
         } catch (JsonProcessingException e) {
-            return "";
+            return "{}";
         }
 //        return "\"{ username\": \"" + user.getLogin() +
 //                "\",\n  \"rating\":" + rating +

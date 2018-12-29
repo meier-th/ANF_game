@@ -3,6 +3,8 @@ package com.p3212.EntityClasses;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.io.Serializable;
@@ -217,15 +219,20 @@ public class User implements Serializable {
     // TODO
     @Override
     public String toString() {
-        return "{" +
-                "\"login\":\"" + login + '\"' +
-                 ", \"character\":" + character.toString() +
-                ", \"stats\":" + stats.toString() +
-                ", \"outgoingMessages\":" + outgoingMessages +
-                ", \"incomingMessages\":" + incomingMessages +
-                ", \"friendRequestsIn\":" + friendRequestsIn +
-                ", \"friendRequestOut\":" + friendRequestOut +
-                ", \"roles\":" + roles +
-                '}';
+        try {
+            return new ObjectMapper().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            return "{}";
+        }
+//        return "{" +
+//                "\"login\":\"" + login + '\"' +
+//                 ", \"character\":" + character.toString() +
+//                ", \"stats\":" + stats.toString() +
+//                ", \"outgoingMessages\":" + outgoingMessages +
+//                ", \"incomingMessages\":" + incomingMessages +
+//                ", \"friendRequestsIn\":" + friendRequestsIn +
+//                ", \"friendRequestOut\":" + friendRequestOut +
+//                ", \"roles\":" + roles +
+//                '}';
     }
 }

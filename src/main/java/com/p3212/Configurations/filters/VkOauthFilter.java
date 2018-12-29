@@ -2,6 +2,8 @@ package com.p3212.Configurations.filters;
 
 import com.p3212.EntityClasses.User;
 import com.p3212.Services.AuthService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,6 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class VkOauthFilter extends AbstractAuthenticationProcessingFilter {
+    private final Logger logger = LoggerFactory.getLogger(VkOauthFilter.class);
 
     private OAuth2RestTemplate restTemplate;
 
@@ -39,12 +42,17 @@ public class VkOauthFilter extends AbstractAuthenticationProcessingFilter {
             try {
 
                 OAuth2AccessToken accessToken = restTemplate.getAccessToken();
-
+                System.out.println("Access token object: " + accessToken);
+                System.out.println("Additional info: " + accessToken.getAdditionalInformation());
+                System.out.println("id: " + accessToken.getAdditionalInformation().get("user_id"));
                 int vkId = Integer.parseInt(accessToken.getAdditionalInformation().get("user_id").toString());
 
                 Optional<User> potential = authService.signIn(vkId);
 
-                if (!potential.isPresent()) return null;
+                if (!potential.isPresent()) {
+                    System.out.println("User not found!");
+                    return null;
+                }
 
                 User userEntity = potential.get();
 
