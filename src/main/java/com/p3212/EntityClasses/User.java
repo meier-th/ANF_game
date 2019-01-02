@@ -6,9 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.List;
+import java.util.*;
 import java.io.Serializable;
-import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -224,15 +223,5 @@ public class User implements Serializable {
         } catch (JsonProcessingException e) {
             return "{}";
         }
-//        return "{" +
-//                "\"login\":\"" + login + '\"' +
-//                 ", \"character\":" + character.toString() +
-//                ", \"stats\":" + stats.toString() +
-//                ", \"outgoingMessages\":" + outgoingMessages +
-//                ", \"incomingMessages\":" + incomingMessages +
-//                ", \"friendRequestsIn\":" + friendRequestsIn +
-//                ", \"friendRequestOut\":" + friendRequestOut +
-//                ", \"roles\":" + roles +
-//                '}';
     }
 }

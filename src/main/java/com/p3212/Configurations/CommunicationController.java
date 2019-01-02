@@ -18,6 +18,9 @@ import com.p3212.Services.MessagesService;
 import com.p3212.Services.NotificationService;
 import com.p3212.Services.UserService;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
@@ -62,7 +65,6 @@ public class CommunicationController {
     @GetMapping("/profile/messages/unread")
     public ResponseEntity<?> getUnreadMessages() {
         try {
-            // TODO упадёт, если без авторизации
             User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             return ResponseEntity.status(HttpStatus.OK).body(messageServ.getUnreadMessages(user));
         } catch (Throwable error) {
@@ -70,7 +72,12 @@ public class CommunicationController {
         }
     }
 
-
+    @GetMapping("/profile/dialogs")
+    public ResponseEntity<?> getDialogs() {
+        User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
+        List<String> list = messageServ.getDialogs(user);
+        return ResponseEntity.status(HttpStatus.OK).body(list);
+    }
 
     /**
      * Returns all messages between User from SecurityContext and User with username provided

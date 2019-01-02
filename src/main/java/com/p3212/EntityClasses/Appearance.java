@@ -164,6 +164,10 @@ public class Appearance {
         this.id = id;
     }
 
-    
-
+    public Appearance(Gender gender, SkinColour skinColour, HairColour hairColour, ClothesColour clothesColour) {
+        this.gender = gender;
+        this.skinColour = skinColour;
+        this.hairColour = hairColour;
+        this.clothesColour = clothesColour;
+    }
 }

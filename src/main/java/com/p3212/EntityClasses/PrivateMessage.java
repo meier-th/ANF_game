@@ -1,5 +1,9 @@
 package com.p3212.EntityClasses;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.codec.json.Jackson2JsonEncoder;
+
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -27,22 +31,26 @@ public class PrivateMessage {
      */
 
     @ManyToOne
-    @JoinColumn(name = "receiver", nullable=false)
-    User receiver;
+    @JoinColumn(name = "receiver", nullable = false)
+    private User receiver;
 
     @ManyToOne
-    @JoinColumn(name = "sender", nullable=false)
+    @JoinColumn(name = "sender", nullable = false)
+    private
     User sender;
 
 
-    @Column(name = "sending_time", nullable=false)
+    @Column(name = "sending_time", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
+    private
     Date sendingDate;
 
-    @Column(name="message", columnDefinition="TEXT", nullable=false)
+    @Column(name = "message", columnDefinition = "TEXT", nullable = false)
+    private
     String message;
-    
-    @Column(name="is_read", nullable=false)
+
+    @Column(name = "is_read", nullable = false)
+    private
     boolean isRead;
 
     public PrivateMessage(int key, String text) {
@@ -75,8 +83,9 @@ public class PrivateMessage {
         this.receiver = receiver;
         this.sender = sender;
     }
-    
-    public PrivateMessage(){}
+
+    public PrivateMessage() {
+    }
 
     public User getReceiver() {
         return receiver;
@@ -116,13 +125,18 @@ public class PrivateMessage {
 
     @Override
     public String toString() {
-        return "{" +
-                "\"message_id\":" + message_id +
-                ", \"receiver\":" + receiver.getLogin() +
-                ", \"sender\":" + sender.getLogin() +
-                ", \"sendingDate\":" + sendingDate +
-                ", \"message\":\"" + message + '\"' +
-                ", \"isRead\":" + isRead +
-                '}';
+        try {
+            return new ObjectMapper().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            return "{}";
+        }
+//        return "{" +
+//                "\"message_id\":" + message_id +
+//                ", \"receiver\":" + receiver.getLogin() +
+//                ", \"sender\":" + sender.getLogin() +
+//                ", \"sendingDate\":" + sendingDate +
+//                ", \"message\":\"" + message + '\"' +
+//                ", \"isRead\":" + isRead +
+//                '}';
     }
 }

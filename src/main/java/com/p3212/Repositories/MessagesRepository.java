@@ -19,10 +19,15 @@ public interface MessagesRepository extends CrudRepository<PrivateMessage, Integ
     @Modifying
     @Query("update PrivateMessage p set isRead = true where p.message_id = :id")
     void setRead(@Param("id") int id);
-    
-    @Query("select p from PrivateMessage p where p.receiver = :first and p.sender = :second or p.receiver = :second and p.message_id.sender = :first")
+
+    @Query("select p from PrivateMessage p where (p.receiver = :first " +
+            "and p.sender = :second) or (p.receiver = :second and p.message_id.sender = :first)")
     List<PrivateMessage> getAllFromDialog(@Param("first") User first, @Param("second") User second);
-    
+
     @Query("select p from PrivateMessage p where p.receiver = :user and p.isRead = false")
     List<PrivateMessage> getUnreadMessages(@Param("user") User user);
+
+    @Query("SELECT DISTINCT CASE WHEN p.receiver = :user THEN p.sender.login ELSE p.receiver.login end " +
+            "from PrivateMessage p where p.receiver = :user or p.sender = :user")
+    List<String> getDialogs(@Param("user") User user);
 }
