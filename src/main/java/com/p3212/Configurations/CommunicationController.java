@@ -141,10 +141,17 @@ public class CommunicationController {
      * to current User or from current User to *username*. See @Query in FriendsRequestRepository
      */
     @DeleteMapping("/profile/friends/requests")
-    public ResponseEntity<String> deleteRequest(@RequestParam String username) {
+    public ResponseEntity<String> deleteRequest(@RequestParam String username, @RequestParam String type) {
         try {
-            User sendr = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
-            User recvr = userServ.getUser(username);
+            User sendr;
+            User recvr;
+            if (type.equalsIgnoreCase("in")) {
+                sendr = userServ.getUser(username);
+                recvr = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
+            } else {
+                sendr = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
+                recvr = userServ.getUser(username);
+            }
             if (!(requestServ.requestedUsers(sendr).contains(recvr) || (requestServ.requestingUsers(sendr).contains(recvr))))
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Request wasn't found.");
             if (recvr == null)
