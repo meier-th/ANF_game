@@ -15,11 +15,8 @@ import com.p3212.EntityClasses.PrivateMessage;
 import com.p3212.EntityClasses.User;
 import com.p3212.Services.FriendsRequestService;
 import com.p3212.Services.MessagesService;
-import com.p3212.Services.NotificationService;
 import com.p3212.Services.UserService;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,7 +34,7 @@ public class CommunicationController {
     @Autowired
     private FriendsRequestService requestServ;
     @Autowired
-    private NotificationService notifServ;
+    private WebSocketsController notifServ;
 
     @Autowired
     BotListener botListener;
@@ -234,10 +231,11 @@ public class CommunicationController {
 
     @PostMapping("/admin/chat")
     public ResponseEntity<String> sendAdminWarning(@RequestBody String warning) {
-        Message notif = new Message();
-        notif.setFrom("SYSTEM");
+        /*Message notif = new Message();
+        notif.setAuthor("SYSTEM");
         notif.setText(warning);
-        notifServ.notify(notif);
+        notifServ.notify(notif);*/
+        notifServ.notify("SYSTEM:"+warning);
         return ResponseEntity.status(HttpStatus.CREATED).body("Warning is sent.");
     }
 

@@ -84,6 +84,8 @@ public class Appearance {
     private ClothesColour clothesColour;
 
 
+    public Appearance(){}
+    
     /**
      * Getter
      * {@link Appearance#gender}

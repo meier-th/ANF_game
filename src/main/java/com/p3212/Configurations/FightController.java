@@ -49,7 +49,7 @@ public class FightController {
     private StatsRepository statsRep;
 
     @Autowired
-    private NotificationService notifServ;
+    private WebSocketsController notifServ;
 
     @Autowired
     FightDataBean fightDataBean;
@@ -283,9 +283,11 @@ public class FightController {
         }
         if (report.equals(""))
             return;
-        Message warning = new Message();
-        warning.setFrom("SYSTEM");
+        /*Message warning = new Message();
+        warning.setAuthor("SYSTEM");
         warning.setText("Users in top-10 have changed their positions:\n" + report);
+        notifServ.notify(warning);*/
+        String warning = "SYSTEM:Users in top-10 have changed their positions:\n"+report;
         notifServ.notify(warning);
     }
 

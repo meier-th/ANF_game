@@ -7,7 +7,6 @@ import com.p3212.EntityClasses.Character;
 import com.p3212.EntityClasses.Message;
 import com.p3212.Repositories.RoleRepository;
 import com.p3212.Services.CharacterService;
-import com.p3212.Services.NotificationService;
 import com.p3212.Services.StatsService;
 import com.p3212.Services.UserService;
 
@@ -46,7 +45,7 @@ public class AuthController {
     private StatsService statsService;
 
     @Autowired
-    private NotificationService notifServ;
+    private WebSocketsController notifServ;
 
     @Autowired
     private AuthenticationManager authManager;
@@ -72,9 +71,11 @@ public class AuthController {
         charServ.addCharacter(ch);
         user.setCharacter(ch);
         userService.saveUser(user);
-        Message warning = new Message();
-        warning.setFrom("SYSTEM");
+        /*Message warning = new Message();
+        warning.setAuthor("SYSTEM");
         warning.setText("A user " + user.getLogin() + " has registered!");
+        notifServ.notify(warning);*/
+        String warning = "SYSTEM: A user " + user.getLogin() + " has registered!";
         notifServ.notify(warning);
 //        UsernamePasswordAuthenticationToken authReq
 //                = new UsernamePasswordAuthenticationToken(user, user.getPassword());

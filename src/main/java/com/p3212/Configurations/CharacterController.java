@@ -64,7 +64,7 @@ public class CharacterController {
             ch.setAppearance(appearance);
             appearanceServ.addAppearance(appearance);
             charServ.addCharacter(ch);
-            return ResponseEntity.status(HttpStatus.OK).body("Appearance is created.");
+            return ResponseEntity.status(HttpStatus.OK).body("{ \"msg\": \"Appearance is created\" }");
 
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());

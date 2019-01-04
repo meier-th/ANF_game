@@ -3,15 +3,15 @@ package com.p3212.EntityClasses;
 
 public class Message {
     
-    private String from;
+    private String author;
     private String text;
 
-    public String getFrom() {
-        return from;
+    public String getAuthor() {
+        return author;
     }
 
-    public void setFrom(String from) {
-        this.from = from;
+    public void setAuthor(String from) {
+        this.author = from;
     }
 
     public String getText() {
