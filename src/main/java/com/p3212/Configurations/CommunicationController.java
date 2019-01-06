@@ -1,7 +1,6 @@
 package com.p3212.Configurations;
 
 import com.p3212.EntityClasses.FriendsRequest;
-import com.p3212.EntityClasses.Message;
 import com.p3212.main.BotListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.p3212.EntityClasses.PrivateMessage;
+import com.p3212.EntityClasses.StompPrincipal;
 import com.p3212.EntityClasses.User;
 import com.p3212.Services.FriendsRequestService;
 import com.p3212.Services.MessagesService;
@@ -38,6 +38,9 @@ public class CommunicationController {
 
     @Autowired
     BotListener botListener;
+    
+    @Autowired
+    WebSocketsController wsController;
 
     /**
      * Sends a message. Receives two Strings (receiver login and Message itself), takes sender object from SecurityContext
@@ -53,6 +56,8 @@ public class CommunicationController {
             msg.setIsRead(false);
             msg.setMessage(message);
             messageServ.addMessage(msg);
+            String wsmessage = SecurityContextHolder.getContext().getAuthentication().getName() + ":" + message;
+            wsController.send(new StompPrincipal(receiver), wsmessage);
             return ResponseEntity.status(HttpStatus.OK).body(msg.getSendingDate().toString());
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
