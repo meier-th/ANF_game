@@ -1,5 +1,6 @@
 package com.p3212.Configurations;
 
+import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,11 @@ public class WebSocketsController {
     @MessageMapping("/send/message")
     public void notify(String message) {
         messagingTemplate.convertAndSend("/chat", message+" - "+ new SimpleDateFormat("HH:mm:ss").format(new Date()));
+    }
+    
+    @MessageMapping("/send/msg")
+    public void send(Principal principal, String message) {
+        messagingTemplate.convertAndSendToUser(principal.getName(), "/msg", message);
     }
     
 }
