@@ -7,6 +7,9 @@ import com.p3212.Services.*;
 import java.util.List;
 
 import com.p3212.Repositories.RoleRepository;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +34,12 @@ public class CharacterController {
     @Autowired
     StatsService statsServ;
 
+    @Autowired
+    FightDataBean dataBean;
+    
+    @Autowired
+    WebSocketsController wsController;
+    
     @RequestMapping(value = "/")
     public String greeting() {
         return "index";
@@ -204,5 +213,60 @@ public class CharacterController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
     }
+    
+    @GetMapping("/friends")
+    public ResponseEntity<?> getFriends() {
+        try {
+            User usr = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
+            ArrayList<User> list = (ArrayList)usr.getFriends();
+            return ResponseEntity.status(HttpStatus.OK).body(list);
+        } catch (Throwable error) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
+        }
+    }
 
+    @GetMapping("/ready")
+    public ResponseEntity<?> getOnlineUsernames() {
+        try {
+            ArrayList<String> toRet = new ArrayList<>();
+            FightDataBean.onlineUsers.stream().forEach(pair -> {
+                toRet.add(pair.getKey());
+            });
+            return ResponseEntity.status(HttpStatus.OK).body(toRet);
+        } catch (Throwable exc) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exc.getMessage());
+        }
+    }
+    
+    @GetMapping("/profile/online")
+    public ResponseEntity<String> setOnline() {
+        try {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            FightDataBean.onlineUsers.add(new Pair<String, Date>(username, new Date()));
+            String msg = username+":online";
+            wsController.sendOnline(msg);
+            return ResponseEntity.status(HttpStatus.OK).body("{\"response\":\"ok\"}");
+        } catch (Throwable exc) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exc.getMessage());
+        }
+    }
+    
+    @GetMapping("/profile/offline")
+    public ResponseEntity<String> setOffline() {
+        try {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            Iterator<Pair<String, Date>> iterator = FightDataBean.onlineUsers.iterator();
+            while (iterator.hasNext()) {
+                Pair<String, Date> element = iterator.next();
+                if (element.getKey().equals(username))
+                    iterator.remove();
+            }
+            String msg = username+":offline";
+            wsController.sendOnline(msg);
+            return ResponseEntity.status(HttpStatus.OK).body("{\"response\":\"ok\"}");
+        } catch (Throwable exc) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exc.getMessage());
+        }
+    }
+    
 }

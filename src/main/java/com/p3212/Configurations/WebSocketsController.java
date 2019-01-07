@@ -24,4 +24,9 @@ public class WebSocketsController {
         messagingTemplate.convertAndSendToUser(principal.getName(), "/msg", message);
     }
     
+    @MessageMapping("/send/online")
+    public void sendOnline(String message) {
+        messagingTemplate.convertAndSend("/online", message);
+    }
+    
 }
