@@ -242,7 +242,7 @@ public class CharacterController {
     public ResponseEntity<String> setOnline() {
         try {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            FightDataBean.onlineUsers.add(new Pair<String, Date>(username, new Date()));
+            FightDataBean.setOnline(username);
             String msg = username+":online";
             wsController.sendOnline(msg);
             return ResponseEntity.status(HttpStatus.OK).body("{\"response\":\"ok\"}");
@@ -255,12 +255,7 @@ public class CharacterController {
     public ResponseEntity<String> setOffline() {
         try {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            Iterator<Pair<String, Date>> iterator = FightDataBean.onlineUsers.iterator();
-            while (iterator.hasNext()) {
-                Pair<String, Date> element = iterator.next();
-                if (element.getKey().equals(username))
-                    iterator.remove();
-            }
+            FightDataBean.setOffline(username);
             String msg = username+":offline";
             wsController.sendOnline(msg);
             return ResponseEntity.status(HttpStatus.OK).body("{\"response\":\"ok\"}");

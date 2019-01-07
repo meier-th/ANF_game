@@ -67,4 +67,18 @@ public class FightDataBean implements Serializable {
     public ConcurrentHashMap<Integer, ArrayDeque<String>> getQueues() {
         return queues;
     }
+    
+    public static synchronized void setOffline(String username) {
+        Iterator<Pair<String, Date>> iterator = onlineUsers.iterator();
+            while (iterator.hasNext()) {
+                Pair<String, Date> element = iterator.next();
+                if (element.getKey().equals(username))
+                    iterator.remove();
+            }
+    }
+   
+    public static synchronized void setOnline(String username) {
+        onlineUsers.add(new Pair<>(username, new Date()));
+    }
+    
 }
