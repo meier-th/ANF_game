@@ -13,7 +13,10 @@ import com.p3212.Services.UserService;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -49,6 +52,20 @@ public class AuthController {
 
     @Autowired
     private AuthenticationManager authManager;
+
+    private static Logger logger = LoggerFactory.getLogger(AuthController.class);
+
+    @GetMapping("/checkCookies")
+    public ResponseEntity checkCookies(@RequestParam String username) {
+        try {
+            if (SecurityContextHolder.getContext().getAuthentication().getName().equals(username))
+                return ResponseEntity.status(HttpStatus.OK).body("{\"authorized\": true}");
+            else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{\"authorized\": false}");
+        } catch (Exception e) {
+            logger.error("An exception occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{\"authorized\": false}");
+        }
+    }
 
     @PostMapping(value = "/registration")
     public ResponseEntity createNewUser(@RequestBody @Valid User user, BindingResult bindingResult) {

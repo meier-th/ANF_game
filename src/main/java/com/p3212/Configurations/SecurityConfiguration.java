@@ -179,6 +179,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
 //                .antMatchers("/confirm").hasAnyAuthority("NEWVK", "NEWGoogle")
+                .antMatchers("/checkCookies").permitAll()
                 .antMatchers("/registration").permitAll()
                 .anyRequest().authenticated()
                 .antMatchers("/admin/**").hasRole("ADMIN")
