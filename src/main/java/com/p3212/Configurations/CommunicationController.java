@@ -154,7 +154,7 @@ public class CommunicationController {
                 sendr = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
                 recvr = userServ.getUser(username);
             }
-            if (!(requestServ.requestedUsers(sendr).contains(recvr) || (requestServ.requestingUsers(sendr).contains(recvr))))
+            if (!(requestServ.requestedUsers(sendr).contains(recvr)))
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Request wasn't found.");
             if (recvr == null)
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with name " + username + " wasn't found.");
@@ -165,7 +165,7 @@ public class CommunicationController {
         }
     }
 
-    @GetMapping("/profile/friends/requests/outgoing")
+    @GetMapping("/friends/requests/outgoing")
     public ResponseEntity<?> getOutgoingRequests() {
         try {
             User sender = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
@@ -201,17 +201,22 @@ public class CommunicationController {
     }
 
     @PostMapping("/profile/friends")
-    public ResponseEntity<String> addFriend(@RequestParam int requestId) {
+    public ResponseEntity<String> addFriend(@RequestParam String login) {
         try {
             User acceptor = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
-            Optional<FriendsRequest> opRequest = requestServ.getRequest(requestId);
-            if (!(opRequest.isPresent()))
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No friend request with id = " + requestId + " was found.");
-            if (!(acceptor.equals(opRequest.get().getFriendUser())))
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Friend request with id = " + requestId + " was not sent to current user.");
-            User friend = opRequest.get().getFriendUser();
-            userServ.addFriend(acceptor, friend);
-            requestServ.removeById(requestId);
+            User sender = userServ.getUser(login);
+            int reqId = -1;
+            for (FriendsRequest req: acceptor.getFriendRequestsIn()) {
+                if (req.getRequestingUser().getLogin().equals(login)) {
+                    reqId = req.request_id;
+                    break;
+                }
+            }
+            if (reqId!=-1)
+                userServ.addFriend(acceptor, sender);
+            else
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No friend request was found.");
+            requestServ.removeById(reqId);
             return ResponseEntity.status(HttpStatus.CREATED).body("Friends relationship is created.");
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());

@@ -218,7 +218,7 @@ public class CharacterController {
     public ResponseEntity<?> getFriends() {
         try {
             User usr = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
-            ArrayList<User> list = (ArrayList)usr.getFriends();
+            List<User> list = usr.getFriends();
             return ResponseEntity.status(HttpStatus.OK).body(list);
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
