@@ -29,4 +29,9 @@ public class WebSocketsController {
         messagingTemplate.convertAndSend("/online", message);
     }
     
+    @MessageMapping("/send/social")
+    public void sendSocial(Principal principal, String message) {
+        messagingTemplate.convertAndSendToUser(principal.getName(), "/social", message);
+    }
+    
 }

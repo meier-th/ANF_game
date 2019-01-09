@@ -50,7 +50,7 @@ public class CommunicationController {
         try {
             User recvr = userServ.getUser(receiver);
             if (recvr == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User " + receiver + " wasn't found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"User " + receiver + " wasn't found.\"}");
             User sender = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             PrivateMessage msg = new PrivateMessage(recvr, sender);
             msg.setIsRead(false);
@@ -90,7 +90,7 @@ public class CommunicationController {
             User sen = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             User rec = userServ.getUser(secondName);
             if (rec == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with name " + secondName + " wasn't found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"User with name " + secondName + " wasn't found.\"}");
             return ResponseEntity.status(HttpStatus.OK).body(messageServ.getAllFromDialog(sen, rec));
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
@@ -106,13 +106,13 @@ public class CommunicationController {
             User applier = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             PrivateMessage msg = messageServ.getMessage(id);
             if (msg == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Message with id = " + id + " wasn't found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"Message with id = " + id + " wasn't found.\"}");
             if (msg.getSender().equals(applier)) {
                 messageServ.removeMessage(id);
             } else {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User can only remove his own messages.");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"User can only remove his own messages.\"}");
             }
-            return ResponseEntity.status(HttpStatus.OK).body("Message is deleted.");
+            return ResponseEntity.status(HttpStatus.OK).body("{\"Message is deleted.\"}");
         } catch (Exception error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
@@ -127,12 +127,12 @@ public class CommunicationController {
             User recvr = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             PrivateMessage message = messageServ.getMessage(id);
             if (message == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Message with id " + id + " wasn't found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"Message with id " + id + " wasn't found.\"}");
             if (message.getReceiver().equals(recvr)) {
                 messageServ.setRead(id);
-                return ResponseEntity.status(HttpStatus.OK).body("Message 'is read' state is confirmed.");
+                return ResponseEntity.status(HttpStatus.OK).body("{\"Message 'is read' state is confirmed.\"}");
             }
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User can only set read status on messages (s)he received.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"User can only set read status on messages (s)he received.\"}");
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.getMessage());
         }
@@ -145,21 +145,25 @@ public class CommunicationController {
     @DeleteMapping("/profile/friends/requests")
     public ResponseEntity<String> deleteRequest(@RequestParam String username, @RequestParam String type) {
         try {
+            String wsMessage = SecurityContextHolder.getContext().getAuthentication().getName();
             User sendr;
             User recvr;
             if (type.equalsIgnoreCase("in")) {
                 sendr = userServ.getUser(username);
                 recvr = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
+                wsMessage = "decline:" + wsMessage;
             } else {
                 sendr = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
                 recvr = userServ.getUser(username);
+                wsMessage = "request:-" + wsMessage;
             }
             if (!(requestServ.requestedUsers(sendr).contains(recvr)))
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Request wasn't found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"Request wasn't found.\"}");
             if (recvr == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with name " + username + " wasn't found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"User with name " + username + " wasn't found.\"}");
             requestServ.removeRequest(recvr, sendr);
-            return ResponseEntity.status(HttpStatus.OK).body("Request is deleted.");
+            wsController.sendSocial(new StompPrincipal(username), wsMessage);
+            return ResponseEntity.status(HttpStatus.OK).body("{\"Request is deleted.\"}");
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
@@ -188,13 +192,15 @@ public class CommunicationController {
     @PostMapping("/profile/friends/requests")
     public ResponseEntity<String> sendRequest(@RequestParam String username) {
         try {
+            String wsMessage = "request:+" + SecurityContextHolder.getContext().getAuthentication().getName();
             User receiver = userServ.getUser(username);
             if (receiver == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with name " + username + " wasn't found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"User with name " + username + " wasn't found.\"}");
             User sender = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             FriendsRequest request = new FriendsRequest(sender, receiver);
             requestServ.addRequest(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Friend request created!");
+            wsController.sendSocial(new StompPrincipal(username), wsMessage);
+            return ResponseEntity.status(HttpStatus.CREATED).body("{\"Friend request created!\"}");
         } catch (Throwable th) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(th.getMessage());
         }
@@ -203,6 +209,7 @@ public class CommunicationController {
     @PostMapping("/profile/friends")
     public ResponseEntity<String> addFriend(@RequestParam String login) {
         try {
+            String wsMessage = "friend:+" + SecurityContextHolder.getContext().getAuthentication().getName();
             User acceptor = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             User sender = userServ.getUser(login);
             int reqId = -1;
@@ -215,9 +222,10 @@ public class CommunicationController {
             if (reqId!=-1)
                 userServ.addFriend(acceptor, sender);
             else
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No friend request was found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"No friend request was found.\"}");
             requestServ.removeById(reqId);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Friends relationship is created.");
+            wsController.sendSocial(new StompPrincipal(login), wsMessage);
+            return ResponseEntity.status(HttpStatus.CREATED).body("{\"Friends relationship is created.\"}");
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
@@ -226,14 +234,16 @@ public class CommunicationController {
     @DeleteMapping("/profile/friends")
     public ResponseEntity<String> removeFriend(@RequestParam String username) {
         try {
+            String wsMessage = "friend:-" + SecurityContextHolder.getContext().getAuthentication().getName();
             User remover = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             User removed = userServ.getUser(username);
             if (removed == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with name " + username + " wasn't found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"User with name " + username + " wasn't found.\"}");
             if (!(remover.getFriends().contains(removed)))
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User " + username + " is not a friend of a user " + remover.getLogin() + ".");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"User " + username + " is not a friend of a user " + remover.getLogin() + ".\"}");
             userServ.removeFriend(remover, removed);
-            return ResponseEntity.status(HttpStatus.OK).body("Friends relationship is removed.");
+            wsController.sendSocial(new StompPrincipal(username), wsMessage);
+            return ResponseEntity.status(HttpStatus.OK).body("{\"Friends relationship is removed.\"}");
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());
         }
@@ -246,7 +256,7 @@ public class CommunicationController {
         notif.setText(warning);
         notifServ.notify(notif);*/
         notifServ.notify("SYSTEM:"+warning);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Warning is sent.");
+        return ResponseEntity.status(HttpStatus.CREATED).body("{\"Warning is sent.\"}");
     }
 
 }

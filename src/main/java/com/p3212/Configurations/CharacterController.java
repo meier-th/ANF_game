@@ -94,7 +94,7 @@ public class CharacterController {
         try {
             User us = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             if (us.getStats().getUpgradePoints() == 0)
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User doesn't have upgrade points.");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"User doesn't have upgrade points.\"}");
             Character ch = us.getCharacter();
             switch (quality) {
                 case "damage": {
@@ -114,7 +114,7 @@ public class CharacterController {
                     break;
                 }
                 default: {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Quality " + quality + " doesn't exist.");
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"Quality " + quality + " doesn't exist.\"}");
                 }
             }
             charServ.addCharacter(ch);
@@ -122,7 +122,7 @@ public class CharacterController {
             stats.setUpgradePoints(stats.getUpgradePoints() - 1);
             statsServ.addStats(stats);
             userServ.saveUser(us);
-            return ResponseEntity.status(HttpStatus.OK).body("Character is updated.");
+            return ResponseEntity.status(HttpStatus.OK).body("{\"Character is updated.\"}");
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error.getMessage());
         }
@@ -143,7 +143,7 @@ public class CharacterController {
         try {
             User user = userServ.getUser(login);
             if (user == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User " + login + " doesn't exist.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"User " + login + " doesn't exist.\"}");
             return ResponseEntity.status(HttpStatus.OK).body(user.getCharacter());
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
@@ -156,13 +156,13 @@ public class CharacterController {
         try {
             User user = userServ.getUser(login);
             if (user == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User " + login + " doesn't exist.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"User " + login + " doesn't exist.\"}");
             Role admin = roleRep.findById("ADMIN").get();
             if (user.getRoles().contains(admin))
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("User " + login + " is already an administrator.");
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"User " + login + " is already an administrator.\"}");
             user.addRole(admin);
             userServ.saveUser(user);
-            return ResponseEntity.status(HttpStatus.OK).body("ADMIN role is granted for User " + user.getLogin() + ".");
+            return ResponseEntity.status(HttpStatus.OK).body("{\"ADMIN role is granted for User " + user.getLogin() + ".\"}");
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
@@ -183,7 +183,7 @@ public class CharacterController {
         try {
             User user = userServ.getUser(login);
             if (user == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User " + login + " doesn't exist.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"User " + login + " doesn't exist.\"}");
             return ResponseEntity.status(HttpStatus.OK).body(user);
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
@@ -195,7 +195,7 @@ public class CharacterController {
         try {
             String login = SecurityContextHolder.getContext().getAuthentication().getName();
             userServ.removeUser(login);
-            return ResponseEntity.status(HttpStatus.OK).body("User is deleted.");
+            return ResponseEntity.status(HttpStatus.OK).body("{\"User is deleted.\"}");
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error.getMessage());
         }
@@ -206,7 +206,7 @@ public class CharacterController {
         try {
             User user = userServ.getUser(login);
             if (user == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User " + login + " doesn't exist.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"User " + login + " doesn't exist.\"}");
             Stats stats = user.getStats();
             return ResponseEntity.status(HttpStatus.OK).body(stats);
         } catch (Throwable error) {

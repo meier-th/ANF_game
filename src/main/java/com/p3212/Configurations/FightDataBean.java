@@ -43,7 +43,7 @@ public class FightDataBean implements Serializable {
                     Iterator<Pair<String, Date>> iterator = onlineUsers.iterator();
                     while (iterator.hasNext()) {
                         Pair<String, Date> element = iterator.next();
-                        if(element.getValue().getTime() - currDate.getTime() > 300000) {
+                        if(currDate.getTime() - element.getValue().getTime() > 300000) {
                             String msg = element.getKey() + ":offline";
                             wsController.sendOnline(msg);
                             iterator.remove();
