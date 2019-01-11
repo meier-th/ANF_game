@@ -161,14 +161,15 @@ public class CharacterController {
             if (user.getRoles().contains(admin))
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"User " + login + " is already an administrator.\"}");
             user.addRole(admin);
-            userServ.saveUser(user);
+            userServ.saveUserWithoutBCrypt(user);
+            wsController.sendAdmin(login);
             return ResponseEntity.status(HttpStatus.OK).body("{\"ADMIN role is granted for User " + user.getLogin() + ".\"}");
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
     }
 
-    @GetMapping("/admin/users")
+    @GetMapping("/users")
     public ResponseEntity<?> getAllUsers() {
         try {
             List users = userServ.getAllUsers();

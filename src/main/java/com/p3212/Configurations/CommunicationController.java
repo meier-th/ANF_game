@@ -152,10 +152,12 @@ public class CommunicationController {
                 sendr = userServ.getUser(username);
                 recvr = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
                 wsMessage = "decline:" + wsMessage;
+                wsController.sendSocial(new StompPrincipal(recvr.getLogin()), "request:-"+username);
             } else {
                 sendr = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
                 recvr = userServ.getUser(username);
                 wsMessage = "request:-" + wsMessage;
+                wsController.sendSocial(new StompPrincipal(sendr.getLogin()), "request:/"+username);
             }
             if (!(requestServ.requestedUsers(sendr).contains(recvr)))
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"Request wasn't found.\"}");
@@ -200,6 +202,7 @@ public class CommunicationController {
             FriendsRequest request = new FriendsRequest(sender, receiver);
             requestServ.addRequest(request);
             wsController.sendSocial(new StompPrincipal(username), wsMessage);
+            wsController.sendSocial(new StompPrincipal(sender.getLogin()), "request:o"+username);
             return ResponseEntity.status(HttpStatus.CREATED).body("{\"Friend request created!\"}");
         } catch (Throwable th) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(th.getMessage());
@@ -225,6 +228,7 @@ public class CommunicationController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"No friend request was found.\"}");
             requestServ.removeById(reqId);
             wsController.sendSocial(new StompPrincipal(login), wsMessage);
+            wsController.sendSocial(new StompPrincipal(acceptor.getLogin()), "friend:o"+login);
             return ResponseEntity.status(HttpStatus.CREATED).body("{\"Friends relationship is created.\"}");
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
@@ -243,6 +247,7 @@ public class CommunicationController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"User " + username + " is not a friend of a user " + remover.getLogin() + ".\"}");
             userServ.removeFriend(remover, removed);
             wsController.sendSocial(new StompPrincipal(username), wsMessage);
+            wsController.sendSocial(new StompPrincipal(remover.getLogin()), "friend:/"+username);
             return ResponseEntity.status(HttpStatus.OK).body("{\"Friends relationship is removed.\"}");
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());

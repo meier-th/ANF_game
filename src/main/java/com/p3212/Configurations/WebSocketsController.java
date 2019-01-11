@@ -34,4 +34,8 @@ public class WebSocketsController {
         messagingTemplate.convertAndSendToUser(principal.getName(), "/social", message);
     }
     
+    public void sendAdmin(String username) {
+        messagingTemplate.convertAndSend("/admin/admins", username);
+    }
+    
 }
