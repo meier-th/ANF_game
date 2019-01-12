@@ -46,6 +46,9 @@ public class AuthController {
 
     @Autowired
     private StatsService statsService;
+    
+    @Autowired
+    private WebSocketsController wsController;
 
     @Autowired
     private WebSocketsController notifServ;
@@ -99,6 +102,7 @@ public class AuthController {
 //        Authentication auth = authManager.authenticate(authReq);
 //        SecurityContextHolder.getContext().setAuthentication(auth);
         // TODO set auth
+        wsController.sendOnline("new:"+user.getLogin());
         return ResponseEntity.status(HttpStatus.CREATED).body("{\"text\":\"User successfully registered!\"}");
     }
 

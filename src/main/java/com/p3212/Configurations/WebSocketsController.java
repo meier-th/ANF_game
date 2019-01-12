@@ -1,5 +1,6 @@
 package com.p3212.Configurations;
 
+import com.p3212.EntityClasses.StompPrincipal;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -19,23 +20,26 @@ public class WebSocketsController {
         messagingTemplate.convertAndSend("/chat", message+" - "+ new SimpleDateFormat("HH:mm:ss").format(new Date()));
     }
     
-    @MessageMapping("/send/msg")
     public void send(Principal principal, String message) {
         messagingTemplate.convertAndSendToUser(principal.getName(), "/msg", message);
     }
     
-    @MessageMapping("/send/online")
     public void sendOnline(String message) {
         messagingTemplate.convertAndSend("/online", message);
     }
     
-    @MessageMapping("/send/social")
     public void sendSocial(Principal principal, String message) {
         messagingTemplate.convertAndSendToUser(principal.getName(), "/social", message);
     }
     
     public void sendAdmin(String username) {
         messagingTemplate.convertAndSend("/admin/admins", username);
+    }
+    
+    public void sendInvitation(String username, String author, String type) {
+        String message = type+":"+author;
+        Principal principal = new StompPrincipal(username);
+        messagingTemplate.convertAndSendToUser(principal.getName(), "/invite", message);
     }
     
 }
