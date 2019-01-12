@@ -72,15 +72,15 @@ public class FightController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");    // 7 - user is busy
         if (!queues.containsKey(id)) queues.put(id, new ArrayDeque<>());
         queues.get(id).push(name);
-        return ResponseEntity.status(HttpStatus.OK).body("Succeeded");
+        return ResponseEntity.status(HttpStatus.OK).body("{\"answer\":\"Succeeded\"}");
     }
 
     @RequestMapping("/startPvp")
     public ResponseEntity<?> startPvp(@RequestParam(name = "queueId") int queueId) {
         if (!queues.containsKey(queueId))
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Queue doesn't exist");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\":\"Queue doesn't exist\"}");
         if (queues.get(queueId).size() != 2)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("The number of players should be equal to 2");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\":\"The number of players should be equal to 2\"}");
         FightPVP fight = new FightPVP();
         String fighter2Name = queues.get(queueId).pop();
         String fighter1Name = queues.get(queueId).pop();
@@ -108,7 +108,7 @@ public class FightController {
     @RequestMapping("/startPve")
     public ResponseEntity<?> startPve(@RequestParam(name = "queueId") int queueId, @RequestParam(name = "bossId") int bossId) {
         if (!queues.containsKey(queueId))
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Queue doesn't exist");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\":\"Queue doesn't exist\"}");
         String[] fighters = (String[]) queues.get(queueId).toArray();
         for (String fighter : fighters) {
             if (usersInFight.contains(fighter))

@@ -216,7 +216,6 @@ public class User implements Serializable {
         this.vkId = vkId;
     }
 
-    // TODO
     @Override
     public String toString() {
         try {
