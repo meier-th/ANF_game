@@ -65,15 +65,40 @@ public class FightController {
         queues = fightDataBean.getQueues();
     }
 
-    @RequestMapping("/acceptQueue")
-    public ResponseEntity<?> acceptQueue(@RequestParam(name = "queueId") int id) {
+    @RequestMapping("/createQueue")
+    public ResponseEntity<?> createQueue() {
         String name = SecurityContextHolder.getContext().getAuthentication().getName();
         if (usersInFight.contains(name))
             return ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");    // 7 - user is busy
-        if (!queues.containsKey(id)) queues.put(id, new ArrayDeque<>());
-        queues.get(id).push(name);
-        return ResponseEntity.status(HttpStatus.OK).body("{\"answer\":\"Succeeded\"}");
+        queues.put(queues.size(), new ArrayDeque<>());
+        return ResponseEntity.status(HttpStatus.OK).body("{\"queueId\":" + (queues.size() - 1) + "}");
     }
+
+    @RequestMapping("/invite")
+    public void invite(@RequestParam String username, @RequestParam String type, @RequestParam int id) {
+        notifServ.sendInvitation(username,
+                SecurityContextHolder.getContext().getAuthentication().getName(), type, id);
+    }
+
+    @RequestMapping("/join")
+    public ResponseEntity join(@RequestParam String author, @RequestParam int id) {
+        String name = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (usersInFight.contains(name))
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");    // 7 - user is busy
+        queues.get(id).add(name);
+        notifServ.sendApproval(author, name, id);
+        return ResponseEntity.status(HttpStatus.OK).body("{\"answer\": \"OK\"}");
+    }
+
+//    @RequestMapping("/acceptQueue")
+//    public ResponseEntity<?> acceptQueue(@RequestParam(name = "queueId") int id) {
+//        String name = SecurityContextHolder.getContext().getAuthentication().getName();
+//        if (usersInFight.contains(name))
+//            return ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");    // 7 - user is busy
+//        if (!queues.containsKey(id)) queues.put(id, new ArrayDeque<>());
+//        queues.get(id).push(name);
+//        return ResponseEntity.status(HttpStatus.OK).body("{\"answer\":\"Succeeded\"}");
+//    }
 
     @RequestMapping("/startPvp")
     public ResponseEntity<?> startPvp(@RequestParam(name = "queueId") int queueId) {
@@ -287,7 +312,7 @@ public class FightController {
         warning.setAuthor("SYSTEM");
         warning.setText("Users in top-10 have changed their positions:\n" + report);
         notifServ.notify(warning);*/
-        String warning = "SYSTEM:Users in top-10 have changed their positions:\n"+report;
+        String warning = "SYSTEM:Users in top-10 have changed their positions:\n" + report;
         notifServ.notify(warning);
     }
 

@@ -264,11 +264,11 @@ public class CommunicationController {
         return ResponseEntity.status(HttpStatus.CREATED).body("{\"Warning is sent.\"}");
     }
 
-    @GetMapping("/sendinvite")
-    public ResponseEntity<String> inviteToFight(@RequestParam String type, @RequestParam String username) {
-        String author = SecurityContextHolder.getContext().getAuthentication().getName();
-        wsController.sendInvitation(username, author, type);
-        return ResponseEntity.ok().body("OK");
-    }
+//    @GetMapping("/sendinvite")
+//    public ResponseEntity<String> inviteToFight(@RequestParam String type, @RequestParam String username) {
+//        String author = SecurityContextHolder.getContext().getAuthentication().getName();
+//        wsController.sendInvitation(username, author, type);
+//        return ResponseEntity.ok().body("OK");
+//    }
     
 }
