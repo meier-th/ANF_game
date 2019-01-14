@@ -8,6 +8,8 @@ import com.p3212.Services.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -57,12 +59,14 @@ public class FightController {
     private ConcurrentHashMap<Integer, Fight> fights;
     private ConcurrentSkipListSet<String> usersInFight;
     private ConcurrentHashMap<Integer, ArrayDeque<String>> queues;
+    private AtomicInteger queueSequence;
 
     @PostConstruct
     private void init() {
         fights = fightDataBean.getFights();
         usersInFight = fightDataBean.getUsersInFight();
         queues = fightDataBean.getQueues();
+        queueSequence = new AtomicInteger();
     }
 
     @RequestMapping("/createQueue")
@@ -70,8 +74,13 @@ public class FightController {
         String name = SecurityContextHolder.getContext().getAuthentication().getName();
         if (usersInFight.contains(name))
             return ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");    // 7 - user is busy
-        queues.put(queues.size(), new ArrayDeque<>());
-        return ResponseEntity.status(HttpStatus.OK).body("{\"queueId\":" + (queues.size() - 1) + "}");
+        queues.put(queueSequence.getAndIncrement(), new ArrayDeque<>());
+        return ResponseEntity.status(HttpStatus.OK).body("{\"queueId\":" + (queueSequence.get() - 1) + "}");
+    }
+
+    @RequestMapping("/closeQueue")
+    public void closeQueue(@RequestParam int id) {
+        queues.remove(id);
     }
 
     @RequestMapping("/invite")
@@ -89,16 +98,6 @@ public class FightController {
         notifServ.sendApproval(author, name, id);
         return ResponseEntity.status(HttpStatus.OK).body("{\"answer\": \"OK\"}");
     }
-
-//    @RequestMapping("/acceptQueue")
-//    public ResponseEntity<?> acceptQueue(@RequestParam(name = "queueId") int id) {
-//        String name = SecurityContextHolder.getContext().getAuthentication().getName();
-//        if (usersInFight.contains(name))
-//            return ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");    // 7 - user is busy
-//        if (!queues.containsKey(id)) queues.put(id, new ArrayDeque<>());
-//        queues.get(id).push(name);
-//        return ResponseEntity.status(HttpStatus.OK).body("{\"answer\":\"Succeeded\"}");
-//    }
 
     @RequestMapping("/startPvp")
     public ResponseEntity<?> startPvp(@RequestParam(name = "queueId") int queueId) {
