@@ -3,11 +3,11 @@ package com.p3212.Configurations;
 import com.p3212.EntityClasses.Boss;
 import com.p3212.EntityClasses.Character;
 import com.p3212.EntityClasses.NinjaAnimal;
-import com.p3212.EntityClasses.NinjaAnimalRace;
 import com.p3212.EntityClasses.Spell;
 import com.p3212.EntityClasses.SpellHandling;
 import com.p3212.EntityClasses.Stats;
 import com.p3212.EntityClasses.User;
+import com.p3212.EntityClasses.NinjaAnimalRace;
 import com.p3212.Repositories.NinjaAnimalRaceRepository;
 import com.p3212.Services.BossService;
 import com.p3212.Services.CharacterService;
@@ -16,8 +16,8 @@ import com.p3212.Services.SpellHandlingService;
 import com.p3212.Services.SpellService;
 import com.p3212.Services.StatsService;
 import com.p3212.Services.UserService;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -143,12 +143,14 @@ public class FightEntitiesController {
             NinjaAnimalRace race = character.getAnimalRace();
             if (race == null)
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User doesn't have any animal race connected to his character.");
-            List<NinjaAnimal> animals =  ninjaAnimalServ.list()
-                .stream()
-                .filter(animal -> animal.getRequiredLevel() <= lvl)
-                .filter(animal -> animal.getRace().equals(race))
-                .collect(Collectors.toList());
-            return ResponseEntity.status(HttpStatus.OK).body(animals);
+            NinjaAnimal animal = new NinjaAnimal();
+            for (NinjaAnimal anim: NinjaAnimal.animals) {
+                if (anim.getRace().equals(race) && lvl >= 10 && anim.getLevel() == 10 || lvl < 10 && anim.getRace().equals(race) && anim.getLevel() == 1) {
+                    animal = anim;
+                    break;
+                }
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(animal);
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
@@ -157,7 +159,7 @@ public class FightEntitiesController {
     @GetMapping("/fight/animals")
     public ResponseEntity<?> getAllAnimals() {
         try {
-            List<NinjaAnimal> animals = ninjaAnimalServ.list();
+            List<NinjaAnimal> animals = NinjaAnimal.animals;
             return ResponseEntity.status(HttpStatus.OK).body(animals);
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
@@ -171,10 +173,12 @@ public class FightEntitiesController {
             Character ch = user.getCharacter();
             if (ch.getAnimalRace() != null)
                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User can not change his character's ninja animal's race.");
-            Optional<NinjaAnimalRace> raceOP = raceRepository.findById(NinjaAnimalRace.races.valueOf(racename));
-            if (!raceOP.isPresent())
+            try {
+            NinjaAnimalRace.races raceOP = NinjaAnimalRace.races.valueOf(racename);
+            } catch (IllegalArgumentException exc) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Such a race doesn't exist.");
-            NinjaAnimalRace race = raceOP.get();
+            }
+            NinjaAnimalRace race = new NinjaAnimalRace(NinjaAnimalRace.races.valueOf(racename).toString());
             ch.setAnimalRace(race);
             charServ.addCharacter(ch);
             return ResponseEntity.status(HttpStatus.CREATED).body("Animal race is set for user.");
@@ -187,7 +191,7 @@ public class FightEntitiesController {
     public ResponseEntity<?> getRaceAnimals(@PathVariable String racename) {
         try {
             NinjaAnimalRace race = new NinjaAnimalRace(racename);
-            List<NinjaAnimal> animals = ninjaAnimalServ.getRaceAnimals(race);
+            Object[] animals = NinjaAnimal.animals.stream().filter(animal -> animal.getRace().equals(race)).toArray();
             return ResponseEntity.status(HttpStatus.OK).body(animals);
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error.getMessage());

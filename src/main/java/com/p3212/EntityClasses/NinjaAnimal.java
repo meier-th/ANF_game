@@ -1,6 +1,7 @@
 package com.p3212.EntityClasses;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import javax.persistence.Column;
 import javax.persistence.Id;
 
@@ -17,6 +18,27 @@ import javax.persistence.Table;
 @Table(name = "Ninja_animals")
 public class NinjaAnimal extends Creature implements Serializable {
 
+    public static final ArrayList<NinjaAnimal> animals = new ArrayList<>();
+    
+    static {
+        NinjaAnimal veseliba1 = new NinjaAnimal("Vertet", new NinjaAnimalRace(NinjaAnimalRace.races.VESELIBA.toString()), 10, 200, 1);
+        NinjaAnimal veseliba2 = new NinjaAnimal("Ubele", new NinjaAnimalRace(NinjaAnimalRace.races.VESELIBA.toString()), 35, 500, 10);
+        NinjaAnimal bojajumus1 = new NinjaAnimal("Lauva", new NinjaAnimalRace(NinjaAnimalRace.races.BOJAJUMUS.toString()), 30, 50, 1);
+        NinjaAnimal bojajumus2 = new NinjaAnimal("Lusis", new NinjaAnimalRace(NinjaAnimalRace.races.BOJAJUMUS.toString()), 120, 150, 10);
+        NinjaAnimal lidzsvaru1 = new NinjaAnimal("Erglis", new NinjaAnimalRace(NinjaAnimalRace.races.LIDZSVARU.toString()), 20, 100, 1);
+        NinjaAnimal lidzsvaru2 = new NinjaAnimal("Lapsa", new NinjaAnimalRace(NinjaAnimalRace.races.LIDZSVARU.toString()), 70, 250, 10);
+        NinjaAnimal rodstvennik1 = new NinjaAnimal("Тётя Срака", new NinjaAnimalRace(NinjaAnimalRace.races.DALNIY_RODSTVENNIK.toString()), 18, 250, 1);
+        NinjaAnimal rodstvennik2 = new NinjaAnimal("Дядя Бафомет", new NinjaAnimalRace(NinjaAnimalRace.races.DALNIY_RODSTVENNIK.toString()), 55, 370, 10);
+        animals.add(veseliba1);
+        animals.add(veseliba2);
+        animals.add(bojajumus1);
+        animals.add(bojajumus2);
+        animals.add(lidzsvaru1);
+        animals.add(lidzsvaru2);
+        animals.add(rodstvennik1);
+        animals.add(rodstvennik2);
+    }
+    
     /**
      * Name of the ninja animal
      */

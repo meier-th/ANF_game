@@ -29,6 +29,7 @@ public class NinjaAnimalService {
      */
 
     public List<NinjaAnimal> getRaceAnimals(NinjaAnimalRace race) {
+        
         return repository.getRaceAnimals(race);
     }
 
