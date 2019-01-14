@@ -90,7 +90,7 @@ public class CharacterController {
     }
 
     @PostMapping("/profile/character")
-    public ResponseEntity<String> updateCharacter(@RequestBody String quality) {
+    public ResponseEntity<String> updateCharacter(@RequestParam String quality) {
         try {
             User us = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
             if (us.getStats().getUpgradePoints() == 0)
@@ -121,7 +121,7 @@ public class CharacterController {
             Stats stats = us.getStats();
             stats.setUpgradePoints(stats.getUpgradePoints() - 1);
             statsServ.addStats(stats);
-            userServ.saveUser(us);
+            userServ.saveUserWithoutBCrypt(us);
             return ResponseEntity.status(HttpStatus.OK).body("{\"Character is updated.\"}");
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error.getMessage());
