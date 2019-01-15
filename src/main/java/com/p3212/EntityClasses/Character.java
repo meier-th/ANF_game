@@ -22,6 +22,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.p3212.Services.StatsService;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 
 import javax.persistence.Transient;
 
@@ -44,8 +46,7 @@ public class Character extends Creature implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date creationDate;
 
-    @ManyToOne
-    @JoinColumn(name = "animal_race")
+    @Enumerated(EnumType.STRING)
     private NinjaAnimalRace animalRace;
 
     @OneToMany(mappedBy = "fighter", fetch = FetchType.LAZY)
