@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -74,8 +75,10 @@ public class FightController {
         String name = SecurityContextHolder.getContext().getAuthentication().getName();
         if (usersInFight.contains(name))
             return ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");    // 7 - user is busy
-        queues.put(queueSequence.getAndIncrement(), new ArrayDeque<>());
-        return ResponseEntity.status(HttpStatus.OK).body("{\"queueId\":" + (queueSequence.get() - 1) + "}");
+        final int id = queueSequence.getAndIncrement();
+        queues.put(id, new ArrayDeque<>());
+        queues.get(id).add(name);
+        return ResponseEntity.status(HttpStatus.OK).body("{\"queueId\":" + id + "}");
     }
 
     @RequestMapping("/closeQueue")
@@ -99,12 +102,17 @@ public class FightController {
         return ResponseEntity.status(HttpStatus.OK).body("{\"answer\": \"OK\"}");
     }
 
+    @PostMapping("info")
+    public ResponseEntity info(@RequestParam int id) {
+        return ResponseEntity.status(HttpStatus.OK).body(fights.get(id));
+    }
+
     @RequestMapping("/startPvp")
     public ResponseEntity<?> startPvp(@RequestParam(name = "queueId") int queueId) {
         if (!queues.containsKey(queueId))
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\":\"Queue doesn't exist\"}");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"code\": 2,\"error\":\"Queue doesn't exist\"}");
         if (queues.get(queueId).size() != 2)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\":\"The number of players should be equal to 2\"}");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"code\": 8,\"error\":\"The number of players should be equal to 2\"}");
         FightPVP fight = new FightPVP();
         String fighter2Name = queues.get(queueId).pop();
         String fighter1Name = queues.get(queueId).pop();
@@ -125,6 +133,11 @@ public class FightController {
         fight.setBiggerRatingChange(biggerRating);
         fight.setLessRatingChange(lesserRating);
         fights.put(fight.getId(), fight);
+        final String name = SecurityContextHolder.getContext().getAuthentication().getName();
+        queues.get(queueId).forEach((user) -> {
+            if (!user.equals(name))
+                notifServ.sendStart(name, user, fight.getId());
+        });
         queues.remove(queueId);
         return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
     }
@@ -153,6 +166,11 @@ public class FightController {
         Collections.addAll(usersInFight, fighters);
         usersInFight.add(String.valueOf(bossId));
         fights.put(fight.getId(), fight);
+        final String name = SecurityContextHolder.getContext().getAuthentication().getName();
+        queues.get(queueId).forEach((user) -> {
+            if (!user.equals(name))
+                notifServ.sendStart(name, user, fight.getId());
+        });
         queues.remove(queueId);
         return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
     }
