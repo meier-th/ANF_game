@@ -104,6 +104,7 @@ public class FightController {
 
     @PostMapping("info")
     public ResponseEntity info(@RequestParam int id) {
+        // TODO ЖОПА
         return ResponseEntity.status(HttpStatus.OK).body(fights.get(id));
     }
 
@@ -134,10 +135,8 @@ public class FightController {
         fight.setLessRatingChange(lesserRating);
         fights.put(fight.getId(), fight);
         final String name = SecurityContextHolder.getContext().getAuthentication().getName();
-        queues.get(queueId).forEach((user) -> {
-            if (!user.equals(name))
-                notifServ.sendStart(name, user, fight.getId());
-        });
+        String user = name.equals(fighter1Name) ? fighter2Name : fighter1Name;
+        notifServ.sendStart(name, user, fight.getId());
         queues.remove(queueId);
         return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
     }
@@ -280,7 +279,8 @@ public class FightController {
         return ResponseEntity.status(HttpStatus.OK).body("{ \"summoned\": true }");
     }
 
-    private void stopFight(int fightId) {
+    @RequestMapping("/stopFight")
+    public void stopFight(@RequestParam int fightId) {
         ArrayList<User> usersBefore = new ArrayList<>();
         Page<Stats> stts = statsRep.getTopStats(PageRequest.of(0, 10));
         for (Stats st : stts) {

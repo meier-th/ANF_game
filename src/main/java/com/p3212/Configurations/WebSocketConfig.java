@@ -23,7 +23,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.setApplicationDestinationPrefixes("/app").enableSimpleBroker("/chat", "/msg", "/online", "/social",
-                "/admin/admins", "/invite", "/approval", "/startFight");
+                "/admin/admins", "/invite", "/approval", "/start");
     }
 
     @Override

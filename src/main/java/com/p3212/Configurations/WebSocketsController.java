@@ -1,15 +1,14 @@
 package com.p3212.Configurations;
 
 import com.p3212.EntityClasses.StompPrincipal;
-
-import java.security.Principal;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+
+import java.security.Principal;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Controller
 public class WebSocketsController {
@@ -53,7 +52,7 @@ public class WebSocketsController {
     public void sendStart(String author, String username, int id) {
         String message = author + ":" + id;
         Principal principal = new StompPrincipal(username);
-        messagingTemplate.convertAndSendToUser(principal.getName(), "/startFight", message);
+        messagingTemplate.convertAndSendToUser(principal.getName(), "/start", message);
     }
 
 }
