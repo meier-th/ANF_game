@@ -104,8 +104,7 @@ public class FightController {
 
     @PostMapping("info")
     public ResponseEntity info(@RequestParam int id) {
-        // TODO ЖОПА
-        return ResponseEntity.status(HttpStatus.OK).body(fights.get(id));
+            return ResponseEntity.status(HttpStatus.OK).body(fights.get(id).toString());
     }
 
     @RequestMapping("/startPvp")

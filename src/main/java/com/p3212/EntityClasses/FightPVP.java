@@ -109,4 +109,10 @@ public class FightPVP extends Fight {
     public Character getSecondFighter() {
         return secondFighter;
     }
+
+    public String toString() {
+        return "{\"id\":" + id +
+                ", \"fighter1\":\"" + firstFighter.getUser().getLogin() +
+                "\", \"fighter2\":\"" + secondFighter.getUser().getLogin() + "\"}";
+    }
 }
