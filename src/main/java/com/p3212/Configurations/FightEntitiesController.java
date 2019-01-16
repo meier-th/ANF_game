@@ -63,17 +63,15 @@ public class FightEntitiesController {
 		}
 	}
 	
-	@GetMapping("/fight/spell")
-	public ResponseEntity<?> getSpell(@RequestParam int id) {
-		try {
-			Spell spell = spelServ.get(id);
-                        if (spell == null)
-                            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Spell with id = "+id+" doesn't exist");
-			return ResponseEntity.status(HttpStatus.OK).body(spell);
-		} catch (Throwable error) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
-		}
-	}
+        @GetMapping("/fight/spell")
+        public ResponseEntity<?> getAllSpells() {
+            try {
+                Iterable<Spell>spells = spelServ.getAllSpells();
+                return ResponseEntity.ok(spells);
+            } catch (Throwable exc) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("\""+exc.getMessage()+"\"");
+            }
+        }
 	
 	@GetMapping("/fight/spell/my/all")
         public ResponseEntity<?> getAvailableSpellHandlings() {
@@ -88,10 +86,11 @@ public class FightEntitiesController {
 	}
 	
         @GetMapping("/fight/spell/my")
-        public ResponseEntity<?> getMySpellHandling(@RequestBody Spell spell) {
+        public ResponseEntity<?> getMySpellHandling(@RequestParam String spellname) {
             try {
                 User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
                 Character ch = user.getCharacter();
+                Spell spell = spelServ.get(spellname);
                 SpellHandling spellHandl = spellHandServ.getSpellHandling(ch, spell);
                 if (spellHandl == null)
                     return ResponseEntity.status(HttpStatus.LOCKED).body("User can't handle this spell yet.");
@@ -102,13 +101,14 @@ public class FightEntitiesController {
         }
         
         @PostMapping("/fight/spell/my")
-        public ResponseEntity<String> acquireSpellHandling(@RequestBody Spell spell) {
+        public ResponseEntity<String> acquireSpellHandling(@RequestParam String spellname) {
             try {
                 User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
                 if (user.getStats().getUpgradePoints() == 0)
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User doesn't have upgrade points");
                 Character ch = user.getCharacter();
                 int currLvl = 0;
+                Spell spell = spelServ.get(spellname);
                 if (spellHandServ.getSpellHandling(ch, spell) != null) {
                     SpellHandling handl = spellHandServ.getSpellHandling(ch, spell);
                     currLvl = handl.getSpellLevel();

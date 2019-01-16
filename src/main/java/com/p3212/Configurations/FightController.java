@@ -176,18 +176,18 @@ public class FightController {
     @RequestMapping("/attack")
     public ResponseEntity<?> attackHandler(@RequestParam(name = "enemyNumber") int enemyNumber,
                                            @RequestParam(name = "fightId") int fightId,
-                                           @RequestParam(name = "spellId") int spellId) {
+                                           @RequestParam(name = "spellname") String spellname) {
         Fight fight = fights.get(fightId);
         if (fight == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\n\"code\": 2\n}");              //code 2 means fight doesn't exist
-        Attack attack = attack(fight.getCurrentAttacker() + 1, enemyNumber, fightId, spellId);
+        Attack attack = attack(fight.getCurrentAttacker() + 1, enemyNumber, fightId, spellname);
 
         if (attack.getCode() != 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(attack.toString());
         fight.switchAttacker();
         return ResponseEntity.status(HttpStatus.OK).body(attack.toString());
     }
 
-    private Attack attack(int attackerNumber, int enemyNumber, int fightId, int spellId) {
+    private Attack attack(int attackerNumber, int enemyNumber, int fightId, String spellname) {
         Fight fight = fights.get(fightId);
         Creature attacker;
         Creature enemy;
@@ -205,15 +205,15 @@ public class FightController {
         }
         Spell spell;
         if (attacker instanceof Character) {
-            spell = spellService.get(spellId);
+            spell = spellService.get(spellname);
             if (spell == null || spellHandlingService.getSpellHandling(((Character) attacker), spell) == null) {
                 attack.setCode(8); //8 means user can't use this spell
                 return attack;
             }
         } else {
             int damage = attacker instanceof Boss ? ((Boss) attacker).getNumberOfTails() * 30 : ((NinjaAnimal) attacker).getDamage();
-            spell = new Spell("npc attack", "furious scratching", damage, 0);
-            spell.setBaseChakraConsumption(15);
+            spell = new Spell("npc attack", damage, 0, 0, 15, 0);
+            //spell.setBaseChakraConsumption(15); in constructor
         }
         int spellLvl = attacker instanceof Character
                 ? spellHandlingService.getSpellHandling((Character) attacker, spell).getSpellLevel() : 1;

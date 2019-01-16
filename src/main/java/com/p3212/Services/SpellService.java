@@ -10,24 +10,13 @@ public class SpellService {
     @Autowired
     SpellRepository repository;
 
-    public void addSpell(Spell spell) {
-        repository.save(spell);
-    }
-
     public Iterable<Spell> getAllSpells() {
         return repository.findAll();
     }
 
-    public Spell get(int id) {
-        return repository.findById(id).orElse(null);
+    public Spell get (String name) {
+        return repository.findById(name).orElse(null);
     }
 
-    public void update(Spell spell) {
-        repository.save(spell);
-    }
-
-    public void removeSpell(int id) {
-        repository.deleteById(id);
-    }
 }
 

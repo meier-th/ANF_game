@@ -25,13 +25,6 @@ public class Spell implements Serializable {
     private int baseDamage;
 
     /**
-     * Identifier
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-
-    /**
      * additional damage acquired on each level
      */
     @Column(nullable=false)
@@ -49,17 +42,14 @@ public class Spell implements Serializable {
     @Column(nullable=false)
     private int chakraConsumptionPerLevel;
 
+    private int reqLevel;
+    
     /**
      * Name of a spell
      */
+    @Id
     @Column(length=20, nullable=false)
     private String name;
-
-    /**
-     * Description of a spell
-     */
-    @Column(columnDefinition="TEXT", nullable=false)
-    private String description;
 
     /**
      * Getter
@@ -69,28 +59,22 @@ public class Spell implements Serializable {
         return baseDamage;
     }
 
+    public int getReqLevel() {
+        return reqLevel;
+    }
+
+    public void setReqLevel(int reqLevel) {
+        this.reqLevel = reqLevel;
+    }
+
+    
+    
     /**
      * Setter
      * {@link Spell#baseDamage}
      */
     public void setBaseDamage(int baseDamage) {
         this.baseDamage = baseDamage;
-    }
-
-    /**
-     * Getter
-     * {@link Spell#id}
-     */
-    public int getId() {
-        return id;
-    }
-
-    /**
-     * Setter
-     * {@link Spell#id}
-     */
-    public void setId(int id) {
-        this.id = id;
     }
 
     /**
@@ -127,22 +111,6 @@ public class Spell implements Serializable {
 
     /**
      * Getter
-     * {@link Spell#description}
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * Setter
-     * {@link Spell#description}
-     */
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    /**
-     * Getter
      * {@link Spell#baseChakraConsumption}
      */
     public int getBaseChakraConsumption() {
@@ -173,25 +141,15 @@ public class Spell implements Serializable {
         this.chakraConsumptionPerLevel = chakraConsumptionPerLevel;
     }
 
-    /**
-     * Default constructor
-     * Used for dependency injection
-     */
     public Spell() {
     }
 
-    /**
-     * To be used when retrieved from database
-     *
-     * @param name
-     * @param description
-     * @param baseDamage
-     * @param lvldmg
-     */
-    public Spell(String name, String description, int baseDamage, int lvldmg) {
+    public Spell(String name, int baseDamage, int lvldmg, int reqlvl, int baseChCons, int chPerLevel) {
         this.name = name;
+        this.chakraConsumptionPerLevel = chPerLevel;
+        this.baseChakraConsumption = baseChCons;
+        this.reqLevel = reqlvl;
         this.baseDamage = baseDamage;
-        this.description = description;
         this.damagePerLevel = lvldmg;
     }
 
