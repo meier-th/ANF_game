@@ -29,7 +29,7 @@ public class FightVsAI extends Fight {
     /**
      * Date of a fight
      */
-    @Column(name = "fight_date", nullable=false)
+    @Column(name = "fight_date", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date fight_date;
 
@@ -39,7 +39,7 @@ public class FightVsAI extends Fight {
      */
 
     @ManyToOne
-    @JoinColumn(name = "boss", nullable=false)
+    @JoinColumn(name = "boss", nullable = false)
     private Boss boss;
 
     @OneToMany(mappedBy = "fight")
@@ -76,5 +76,16 @@ public class FightVsAI extends Fight {
 
     public void setBoss(Boss boss) {
         this.boss = boss;
+    }
+
+    public String toString() {
+        StringBuilder ret = new StringBuilder("{\"id\":" + id +
+                ", \"type\": \"pve\"" +
+                ", \"fighters1\": [");
+        for (int i = 0; i < setFighters.size(); i++) {
+            ret.append(setFighters.get(i).getFighter().getUser().toString());
+        }
+        ret.append("], \"fighters2:\":").append(getBoss().toString()).append("}");
+        return ret.toString();
     }
 }

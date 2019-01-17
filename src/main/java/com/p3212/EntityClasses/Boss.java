@@ -1,5 +1,8 @@
 package com.p3212.EntityClasses;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -132,5 +135,14 @@ public class Boss extends Creature implements Serializable {
     @Override
     public int getMaxChakra() {
         return numberOfTails * 1000;
+    }
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            return "{}";
+        }
     }
 }

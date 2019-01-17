@@ -30,26 +30,26 @@ public class FightPVP extends Fight {
     private int pvpId;
 
     @ManyToOne
-    @JoinColumn(name = "firstFighter", nullable=false)
+    @JoinColumn(name = "firstFighter", nullable = false)
     private Character firstFighter;
 
     @ManyToOne
-    @JoinColumn(name = "secondFighter", nullable=false)
+    @JoinColumn(name = "secondFighter", nullable = false)
     private Character secondFighter;
 
-    @Column(name = "fight_date", nullable=false)
+    @Column(name = "fight_date", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date fightDate;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     private boolean firstWon;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     private int ratingChange;
-    
+
     @Transient
     private int biggerRatingChange;
-    
+
     @Transient
     private int lessRatingChange;
 
@@ -112,7 +112,8 @@ public class FightPVP extends Fight {
 
     public String toString() {
         return "{\"id\":" + id +
-                ", \"fighter1\":\"" + firstFighter.getUser().getLogin() +
-                "\", \"fighter2\":\"" + secondFighter.getUser().getLogin() + "\"}";
+                ", \"type\": \"pvp\"" +
+                ", \"fighters1\":" + firstFighter.getUser().toString() +
+                ", \"fighters2\":" + secondFighter.getUser().toString() + "}";
     }
 }

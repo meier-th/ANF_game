@@ -124,8 +124,7 @@ public class FightController {
         usersInFight.add(fighter2Name);
         fighter1.prepareForFight();
         fighter2.prepareForFight();
-        fight.addFighter(fighter1, 1);
-        fight.addFighter(fighter2, 2);
+        fight.setFighters(fighter1, fighter2);
         int biggerRating = 15 + Math.abs(fighter1.getUser().getStats().getRating() - fighter2.getUser().getStats().getRating()) / 4;
         int lesserRating = 15 - Math.abs(fighter1.getUser().getStats().getRating() - fighter2.getUser().getStats().getRating()) / 8;
         if (lesserRating < 5)
@@ -280,40 +279,40 @@ public class FightController {
 
     @RequestMapping("/stopFight")
     public void stopFight(@RequestParam int fightId) {
-        ArrayList<User> usersBefore = new ArrayList<>();
-        Page<Stats> stts = statsRep.getTopStats(PageRequest.of(0, 10));
-        for (Stats st : stts) {
-            usersBefore.add(st.getUser());
-        }
+//        ArrayList<User> usersBefore = new ArrayList<>();
+//        Page<Stats> stts = statsRep.getTopStats(PageRequest.of(0, 10));
+//        for (Stats st : stts) {
+//            usersBefore.add(st.getUser());
+//        }
         Fight fight = fights.get(fightId);
-        if (fight instanceof FightPVP) {
-            int lvlDiff = ((FightPVP) fight).getFirstFighter().getLevel() -
-                    ((FightPVP) fight).getSecondFighter().getLevel();
-            boolean isFirstWon = ((FightPVP) fight).isFirstWon();
-            int firstFighterPreviousRating = ((FightPVP) fight).getFirstFighter().getUser().getStats().getRating();
-            int secondFighterPreviousRating = ((FightPVP) fight).getSecondFighter().getUser().getStats().getRating();
-            int rating;
-            if (firstFighterPreviousRating >= secondFighterPreviousRating && isFirstWon || secondFighterPreviousRating >= firstFighterPreviousRating && !isFirstWon)
-                rating = ((FightPVP) fight).getLessRatingChange();
-            else
-                rating = ((FightPVP) fight).getBiggerRatingChange();
-            ((FightPVP) fight).setRatingChange(rating);
-            ((FightPVP) fight).getFirstFighter().changeRating(isFirstWon ? rating : -rating);
-            ((FightPVP) fight).getSecondFighter().changeRating(isFirstWon ? -rating : rating);
-            pvpFightsService.addFight(((FightPVP) fight));
-        } else fightVsAIService.addFight(((FightVsAI) fight));
+//        if (fight instanceof FightPVP) {
+//            int lvlDiff = ((FightPVP) fight).getFirstFighter().getLevel() -
+//                    ((FightPVP) fight).getSecondFighter().getLevel();
+//            boolean isFirstWon = ((FightPVP) fight).isFirstWon();
+//            int firstFighterPreviousRating = ((FightPVP) fight).getFirstFighter().getUser().getStats().getRating();
+//            int secondFighterPreviousRating = ((FightPVP) fight).getSecondFighter().getUser().getStats().getRating();
+//            int rating;
+//            if (firstFighterPreviousRating >= secondFighterPreviousRating && isFirstWon || secondFighterPreviousRating >= firstFighterPreviousRating && !isFirstWon)
+//                rating = ((FightPVP) fight).getLessRatingChange();
+//            else
+//                rating = ((FightPVP) fight).getBiggerRatingChange();
+//            ((FightPVP) fight).setRatingChange(rating);
+//            ((FightPVP) fight).getFirstFighter().changeRating(isFirstWon ? rating : -rating);
+//            ((FightPVP) fight).getSecondFighter().changeRating(isFirstWon ? -rating : rating);
+//            pvpFightsService.addFight(((FightPVP) fight));
+//        } else fightVsAIService.addFight(((FightVsAI) fight));
         fights.remove(fightId);
         fight.getFighters().iterator().forEachRemaining(fighter -> {
             if (fighter.getValue() instanceof Boss)
                 usersInFight.remove(String.valueOf(((Boss) fighter.getValue()).getId()));
             else usersInFight.remove(((Character) fighter.getValue()).getUser().getLogin());
         });
-        ArrayList<User> usersAfter = new ArrayList<>();
-        Page<Stats> stats = statsRep.getTopStats(PageRequest.of(0, 10));
-        for (Stats st : stats) {
-            usersAfter.add(st.getUser());
-        }
-        compareStats(usersBefore, usersAfter);
+//        ArrayList<User> usersAfter = new ArrayList<>();
+//        Page<Stats> stats = statsRep.getTopStats(PageRequest.of(0, 10));
+//        for (Stats st : stats) {
+//            usersAfter.add(st.getUser());
+//        }
+//        compareStats(usersBefore, usersAfter);
     }
 
     private void compareStats(ArrayList<User> before, ArrayList<User> after) {
