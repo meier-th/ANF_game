@@ -1,5 +1,6 @@
 package com.p3212.Configurations;
 
+import com.p3212.EntityClasses.State;
 import com.p3212.EntityClasses.StompPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -18,6 +19,10 @@ public class WebSocketsController {
 
     @MessageMapping("/send/message")
     public void notify(String message) {
+        if (message.substring(message.length()-4, message.length()).equals("test")) {
+            State state = new State("Attacker", "Victim", "Air Strike", 100, 120, 70, false, false, "nextAttacker");
+            sendFightState(state, message.substring(0, message.length()-6));
+        }
         messagingTemplate.convertAndSend("/chat", message + " - " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
     }
 
@@ -55,4 +60,8 @@ public class WebSocketsController {
         messagingTemplate.convertAndSendToUser(principal.getName(), "/start", message);
     }
 
+    public void sendFightState (State state, String username) {
+        messagingTemplate.convertAndSendToUser(username, "/fightState", state);
+    }
+    
 }

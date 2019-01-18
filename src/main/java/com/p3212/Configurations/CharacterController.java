@@ -8,8 +8,6 @@ import java.util.List;
 
 import com.p3212.Repositories.RoleRepository;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -263,6 +261,45 @@ public class CharacterController {
         } catch (Throwable exc) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exc.getMessage());
         }
+    }
+    
+    @GetMapping("/profile/pvphistory")
+    public ResponseEntity<?> getPvpHistory() {
+        ArrayList<pvpRecord>toRet = new ArrayList<>();
+        User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
+        List<FightPVP> fights1 = user.getCharacter().getPvpFightsAsFirst();
+        List<FightPVP> fights2 = user.getCharacter().getPvpFightsAsSecond();
+        for (FightPVP fight : fights1) {
+            pvpRecord record = new pvpRecord();
+            record.setDate(fight.getFightDate());
+            record.setRival(fight.getSecondFighter().getUser().getLogin());
+            int rating = 0;
+            if (fight.isFirstWon()) {
+                record.setResult("Win");
+                rating = fight.getRatingChange();
+            } else {
+                record.setResult("Loss");
+                rating = -1 * fight.getRatingChange();
+            }
+            record.setRatingCh(rating);
+            toRet.add(record);
+        }
+        for (FightPVP fight : fights2) {
+            pvpRecord record = new pvpRecord();
+            record.setDate(fight.getFightDate());
+            record.setRival(fight.getFirstFighter().getUser().getLogin());
+            int rating = 0;
+            if (fight.isFirstWon()) {
+                record.setResult("Loss");
+                rating = -1 * fight.getRatingChange();
+            } else {
+                record.setResult("Win");
+                rating = fight.getRatingChange();
+            }
+            record.setRatingCh(rating);
+            toRet.add(record);
+        }
+        return ResponseEntity.ok(toRet);
     }
     
 }

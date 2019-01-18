@@ -330,6 +330,23 @@ public class FightController {
         String warning = "SYSTEM:Users in top-10 have changed their positions:\n" + report;
         notifServ.notify(warning);
     }
+    /**
+     * 
+     * @param username Receiver of a message on websocket
+     * @param damage
+     * @param targetName Username of the target
+     * @param attacker Username of the attacker
+     * @param next Username of the next cha
+     * @param dead
+     * @param allDead
+     * @param attackName
+     * @param chakraCost
+     * @param chakraBurn 
+     */
+    private void sendAfterAttack (String username, int damage, String targetName, String attacker, String next, boolean dead, boolean allDead, String attackName, int chakraCost, int chakraBurn) {
+        State state = new State(attacker, targetName, attackName, chakraCost, damage, chakraBurn, dead, allDead, next);
+        notifServ.sendFightState(state, username);
+    }
 
 
 }
