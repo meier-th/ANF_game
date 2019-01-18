@@ -104,7 +104,7 @@ public class FightController {
 
     @PostMapping("info")
     public ResponseEntity info(@RequestParam int id) {
-            return ResponseEntity.status(HttpStatus.OK).body(fights.get(id).toString());
+        return ResponseEntity.status(HttpStatus.OK).body(fights.get(id).toString());
     }
 
     @RequestMapping("/startPvp")
@@ -154,11 +154,11 @@ public class FightController {
         for (String fighterName : fighters) {
             Character fighter = userService.getUser(fighterName).getCharacter();
             fighter.prepareForFight();
-            fight.addFighter(fighter, 1);
+            fight.addFighter(fighter);
         }
         Boss boss = bossService.getBoss(bossId);
         boss.prepareForFight();
-        fight.addFighter(boss, 2);
+        fight.setBoss(boss);
         fight.setBoss(boss);
         Collections.addAll(usersInFight, fighters);
         usersInFight.add(String.valueOf(bossId));
@@ -173,118 +173,52 @@ public class FightController {
     }
 
     @RequestMapping("/attack")
-    public ResponseEntity<?> attackHandler(@RequestParam(name = "enemyNumber") int enemyNumber,
-                                           @RequestParam(name = "fightId") int fightId,
-                                           @RequestParam(name = "spellname") String spellname) {
+    public ResponseEntity<?> attackHandler(@RequestParam String enemy,
+                                           @RequestParam int fightId,
+                                           @RequestParam String spellName) {
+        String name = SecurityContextHolder.getContext().getAuthentication().getName();
         Fight fight = fights.get(fightId);
         if (fight == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\n\"code\": 2\n}");              //code 2 means fight doesn't exist
-        Attack attack = attack(fight.getCurrentAttacker() + 1, enemyNumber, fightId, spellname);
 
+        Attack attack;
+        if (fight instanceof FightPVP)
+            attack = attackPvp(name, enemy, fightId, spellName);
+        else attack = null; // TODO kek
         if (attack.getCode() != 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(attack.toString());
         fight.switchAttacker();
         return ResponseEntity.status(HttpStatus.OK).body(attack.toString());
     }
 
-    private Attack attack(int attackerNumber, int enemyNumber, int fightId, String spellname) {
-        Fight fight = fights.get(fightId);
-        Creature attacker;
-        Creature enemy;
-        Attack attack = new Attack();
-        if (fight.getFighters().get(--attackerNumber).getKey().equals(fight.getFighters().get(--enemyNumber).getKey())) {
-            attack.setCode(6); //6 means attack of a teammate
-            return attack;
-        }
-        try {
-            attacker = fight.getFighters().get(attackerNumber).getValue();
-            enemy = fight.getFighters().get(enemyNumber).getValue();
-        } catch (Exception ex) {
-            attack.setCode(5);               //code 5 means there's no fighters with that number
-            return attack;
-        }
-        Spell spell;
-        if (attacker instanceof Character) {
-            spell = spellService.get(spellname);
-            if (spell == null || spellHandlingService.getSpellHandling(((Character) attacker), spell) == null) {
-                attack.setCode(8); //8 means user can't use this spell
-                return attack;
-            }
-        } else {
-            int damage = attacker instanceof Boss ? ((Boss) attacker).getNumberOfTails() * 30 : ((NinjaAnimal) attacker).getDamage();
-            spell = new Spell("npc attack", damage, 0, 0, 15, 0);
-            //spell.setBaseChakraConsumption(15); in constructor
-        }
-        int spellLvl = attacker instanceof Character
-                ? spellHandlingService.getSpellHandling((Character) attacker, spell).getSpellLevel() : 1;
-        attack = spell.performAttack(spellLvl, enemy.getResistance());
-        if (attacker.getCurrentChakra() < attack.getChakra()) {
-            if (attacker instanceof NinjaAnimal)
-                fight.getFighters().remove(attackerNumber);         //animals disappear when no chakra
-            attack.setCode(1);
-            return attack;
-        }                         //code 1 means attacker doesn't have enough chakra
-        enemy.acceptDamage(attack.getDamage());
-        if (enemy.getCurrentHP() <= 0) {
-            attack.setDeadly(true);
-            if (enemy instanceof NinjaAnimal) {
-                fight.getFighters().remove(enemyNumber);
-                return attack;
-            }
-            if (fight instanceof FightPVP) {
-                ((FightPVP) fight).setFighters((Character) attacker, (Character) enemy);
-                ((FightPVP) fight).setFirstWon(
-                        fights.get(fightId)
-                                .getFighters()
-                                .get(enemyNumber)
-                                .getKey() == 1);
-                stopFight(fightId);
-            } else {
-                if (fight.getFighters().get(enemyNumber).getKey() == 1) {
-                    ((Character) enemy).changeXP(((FightVsAI) fight).getBoss().getNumberOfTails() * 10);
-                    if (fight.getFighters().size() < 2) {
-                        stopFight(fightId);
-                    }
-                    fight.getFighters().remove(enemyNumber);
-                    usersInFight.remove(((Character) enemy).getUser().getLogin());
-                    return attack;
-                } else {
-                    fight.getFighters().remove(enemyNumber);
-                    fight.getFighters().iterator().forEachRemaining(item -> {
-                        if (item.getValue() instanceof Character) {
-                            ((Character) item.getValue()).changeXP(((FightVsAI) fight).getBoss().getNumberOfTails() * 100);
-                        }
-                    });
-                    stopFight(fightId);
-                }
-            }
-        }
-        return attack;
+    private Attack attackPvp(String attackerName, String enemyName, int fightId, String spellName) {
+        // полный TODO
+        return new Attack(10, 2);
     }
 
-    @RequestMapping("/summon")
-    public ResponseEntity<?> summonAnimal(@RequestParam(name = "summonerNumber") int summonerNumber,
-                                          @RequestParam(name = "animalName") String name,
-                                          @RequestParam(name = "fightId") int id) {
-        Fight fight = fights.get(id);
-        if (fight == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"code\": 2}");
-        NinjaAnimal animal = ninjaAnimalService.get(name);
-        Character summoner = (Character) fight.getFighters().get(summonerNumber).getValue();
-        if (!summoner.getAnimalRace().equals(animal.getRace()) ||
-                summoner.getUser().getStats().getLevel() < animal.getRequiredLevel())
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{ \"code\": 4}"); //4 means user cannot summon this animal
-        animal.prepareForFight();
-        fight.addFighter(animal, fight.getFighters().get(summonerNumber).getKey());
-        return ResponseEntity.status(HttpStatus.OK).body("{ \"summoned\": true }");
-    }
+//    @RequestMapping("/summon")
+//    public ResponseEntity<?> summonAnimal(@RequestParam(name = "summonerNumber") int summonerNumber,
+//                                          @RequestParam(name = "animalName") String name,
+//                                          @RequestParam(name = "fightId") int id) {
+//        Fight fight = fights.get(id);
+//        if (fight == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"code\": 2}");
+//        NinjaAnimal animal = ninjaAnimalService.get(name);
+//        Character summoner = (Character) fight.getFighters().get(summonerNumber).getValue();
+//        if (!summoner.getAnimalRace().equals(animal.getRace()) ||
+//                summoner.getUser().getStats().getLevel() < animal.getRequiredLevel())
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{ \"code\": 4}"); //4 means user cannot summon this animal
+//        animal.prepareForFight();
+//        fight.addFighter(animal, fight.getFighters().get(summonerNumber).getKey());
+//        return ResponseEntity.status(HttpStatus.OK).body("{ \"summoned\": true }");
+//    }
 
-    @RequestMapping("/stopFight")
-    public void stopFight(@RequestParam int fightId) {
+//    @RequestMapping("/stopFight")
+//    public void stopFight(@RequestParam int fightId) {
 //        ArrayList<User> usersBefore = new ArrayList<>();
 //        Page<Stats> stts = statsRep.getTopStats(PageRequest.of(0, 10));
 //        for (Stats st : stts) {
 //            usersBefore.add(st.getUser());
 //        }
-        Fight fight = fights.get(fightId);
+//        Fight fight = fights.get(fightId);
 //        if (fight instanceof FightPVP) {
 //            int lvlDiff = ((FightPVP) fight).getFirstFighter().getLevel() -
 //                    ((FightPVP) fight).getSecondFighter().getLevel();
@@ -301,19 +235,19 @@ public class FightController {
 //            ((FightPVP) fight).getSecondFighter().changeRating(isFirstWon ? -rating : rating);
 //            pvpFightsService.addFight(((FightPVP) fight));
 //        } else fightVsAIService.addFight(((FightVsAI) fight));
-        fights.remove(fightId);
-        fight.getFighters().iterator().forEachRemaining(fighter -> {
-            if (fighter.getValue() instanceof Boss)
-                usersInFight.remove(String.valueOf(((Boss) fighter.getValue()).getId()));
-            else usersInFight.remove(((Character) fighter.getValue()).getUser().getLogin());
-        });
+//        fights.remove(fightId);
+//        fight.getFighters().iterator().forEachRemaining(fighter -> {
+//            if (fighter.getValue() instanceof Boss)
+//                usersInFight.remove(String.valueOf(((Boss) fighter.getValue()).getId()));
+//            else usersInFight.remove(((Character) fighter.getValue()).getUser().getLogin());
+//        });
 //        ArrayList<User> usersAfter = new ArrayList<>();
 //        Page<Stats> stats = statsRep.getTopStats(PageRequest.of(0, 10));
 //        for (Stats st : stats) {
 //            usersAfter.add(st.getUser());
 //        }
 //        compareStats(usersBefore, usersAfter);
-    }
+//    }
 
     private void compareStats(ArrayList<User> before, ArrayList<User> after) {
         String report = "";
@@ -330,20 +264,20 @@ public class FightController {
         String warning = "SYSTEM:Users in top-10 have changed their positions:\n" + report;
         notifServ.notify(warning);
     }
+
     /**
-     * 
-     * @param username Receiver of a message on websocket
+     * @param username   Receiver of a message on websocket
      * @param damage
      * @param targetName Username of the target
-     * @param attacker Username of the attacker
-     * @param next Username of the next cha
+     * @param attacker   Username of the attacker
+     * @param next       Username of the next cha
      * @param dead
      * @param allDead
      * @param attackName
      * @param chakraCost
-     * @param chakraBurn 
+     * @param chakraBurn
      */
-    private void sendAfterAttack (String username, int damage, String targetName, String attacker, String next, boolean dead, boolean allDead, String attackName, int chakraCost, int chakraBurn) {
+    private void sendAfterAttack(String username, int damage, String targetName, String attacker, String next, boolean dead, boolean allDead, String attackName, int chakraCost, int chakraBurn) {
         State state = new State(attacker, targetName, attackName, chakraCost, damage, chakraBurn, dead, allDead, next);
         notifServ.sendFightState(state, username);
     }

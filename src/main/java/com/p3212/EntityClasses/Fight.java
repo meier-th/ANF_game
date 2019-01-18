@@ -22,15 +22,15 @@ public class Fight {
 
     private int currentAttacker = 0;
 
-    private ArrayList<Pair<Integer, Creature>> fighters; //Pair of side and fighter
+    protected ArrayList<User> fighters;
 
-    public void addFighter(Creature fighter, int side) {
-        fighters.add(new Pair<>(side, fighter));
-    }
+    protected User fighter1;
 
-    public ArrayList<Pair<Integer, Creature>> getFighters() {
-        return fighters;
-    }
+    protected User fighter2;
+
+    protected ArrayList<NinjaAnimal> animals1;
+
+    protected ArrayList<NinjaAnimal> animals2;
 
     public int getId() {
         return id;
@@ -48,12 +48,12 @@ public class Fight {
         return currentAttacker;
     }
 
-    public void switchAttacker() {
-        currentAttacker = (currentAttacker + 1) % fighters.size();
+    public void addFighter(Character character) {
+        fighters.add(character.getUser());
     }
 
-    @Override
-    public String toString() {
-        return "{\n\"fightId\": " + id + "\n}";
+    public void switchAttacker() {
+//        currentAttacker = (currentAttacker + 1) % (fighters.size() + (fighter1 != null ? 2 : 0) + animals1.size() + animals2.size());
     }
+
 }

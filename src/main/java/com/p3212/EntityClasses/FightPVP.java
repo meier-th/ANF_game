@@ -86,8 +86,8 @@ public class FightPVP extends Fight {
     }
 
     public void setFighters(Character char1, Character char2) {
-        firstFighter = char1;
-        secondFighter = char2;
+        fighter1 = char1.getUser();
+        fighter2 = char2.getUser();
     }
 
     public int getPvpId() {
@@ -110,10 +110,11 @@ public class FightPVP extends Fight {
         return secondFighter;
     }
 
+    @Override
     public String toString() {
         return "{\"id\":" + id +
                 ", \"type\": \"pvp\"" +
-                ", \"fighters1\":" + firstFighter.getUser().toString() +
-                ", \"fighters2\":" + secondFighter.getUser().toString() + "}";
+                ", \"fighters1\":" + fighter1.toString() +
+                ", \"fighters2\":" + fighter2.toString() + "}";
     }
 }
