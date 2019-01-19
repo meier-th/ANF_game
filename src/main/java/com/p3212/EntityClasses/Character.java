@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.p3212.Services.StatsService;
+
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
@@ -279,6 +280,10 @@ public class Character extends Creature implements Serializable {
     @Override
     public int getMaxChakra() {
         return maxChakraAmount;
+    }
+
+    public void spendChakra(int spent) {
+        currentChakra -= spent;
     }
 
     public void changeXP(int change) {

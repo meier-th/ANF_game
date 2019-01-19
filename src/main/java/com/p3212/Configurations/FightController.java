@@ -191,8 +191,40 @@ public class FightController {
     }
 
     private Attack attackPvp(String attackerName, String enemyName, int fightId, String spellName) {
-        // полный TODO
-        return new Attack(10, 2);
+
+        Attack attack = new Attack();
+        FightPVP fight = (FightPVP) fights.get(fightId);
+        User attacker = fight.getFirstFighter();
+        User enemy = fight.getSecondFighter();
+        if (attacker == null || enemy == null) {
+            attack.setCode(6);
+            return attack;
+        }
+        if (enemy.getLogin().equals(attackerName)) {
+            User tmp = attacker;
+            attacker = enemy;
+            enemy = tmp;
+        }
+        Spell spell = spellService.get(spellName);
+        SpellHandling handling = spellHandlingService.getSpellHandling(attacker.getCharacter(), spell);
+        if (spell == null) {
+            attack.setCode(8);
+            return attack;
+        }
+        int damage = spell.getBaseDamage() +
+                handling.getSpellLevel() * spell.getDamagePerLevel();
+        int chakra = spell.getBaseChakraConsumption() +
+                handling.getSpellLevel() * spell.getChakraConsumptionPerLevel();
+        attack.setDamage(damage);
+        attack.setChakra(chakra);
+        attacker.getCharacter().spendChakra(chakra);
+        enemy.getCharacter().acceptDamage(damage);
+        attack.setDeadly(enemy.getCharacter().getCurrentHP() <= 0);
+        sendAfterAttack(enemyName, damage, enemyName,
+                attackerName, enemyName, attack.isDeadly(),
+                attack.isDeadly(), spellName, chakra, 0); // TODO next, chakraburn
+        // TODO if deadly do smth
+        return attack;
     }
 
 //    @RequestMapping("/summon")

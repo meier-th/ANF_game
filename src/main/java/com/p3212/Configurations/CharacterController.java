@@ -272,7 +272,7 @@ public class CharacterController {
         for (FightPVP fight : fights1) {
             pvpRecord record = new pvpRecord();
             record.setDate(fight.getFightDate());
-            record.setRival(fight.getSecondFighter().getUser().getLogin());
+            record.setRival(fight.getSecondFighter().getLogin());
             int rating = 0;
             if (fight.isFirstWon()) {
                 record.setResult("Win");
@@ -287,7 +287,7 @@ public class CharacterController {
         for (FightPVP fight : fights2) {
             pvpRecord record = new pvpRecord();
             record.setDate(fight.getFightDate());
-            record.setRival(fight.getFirstFighter().getUser().getLogin());
+            record.setRival(fight.getFirstFighter().getLogin());
             int rating = 0;
             if (fight.isFirstWon()) {
                 record.setResult("Loss");

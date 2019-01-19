@@ -88,6 +88,8 @@ public class FightPVP extends Fight {
     public void setFighters(Character char1, Character char2) {
         fighter1 = char1.getUser();
         fighter2 = char2.getUser();
+        firstFighter = char1;
+        secondFighter = char2;
     }
 
     public int getPvpId() {
@@ -102,12 +104,12 @@ public class FightPVP extends Fight {
         return fightDate;
     }
 
-    public Character getFirstFighter() {
-        return firstFighter;
+    public User getFirstFighter() {
+        return fighter1;
     }
 
-    public Character getSecondFighter() {
-        return secondFighter;
+    public User getSecondFighter() {
+        return fighter2;
     }
 
     @Override
