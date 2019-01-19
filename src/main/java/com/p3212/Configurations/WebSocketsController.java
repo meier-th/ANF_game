@@ -63,5 +63,9 @@ public class WebSocketsController {
     public void sendFightState (State state, String username) {
         messagingTemplate.convertAndSendToUser(username, "/fightState", state);
     }
+
+    public void sendSwitch(String next) {
+        messagingTemplate.convertAndSend("/switch", next);
+    }
     
 }

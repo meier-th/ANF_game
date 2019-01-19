@@ -216,7 +216,6 @@ public class Stats {
         return this.deaths;
     }
 
-
     @Override
     public String toString() {
         ObjectMapper mapper = new ObjectMapper();

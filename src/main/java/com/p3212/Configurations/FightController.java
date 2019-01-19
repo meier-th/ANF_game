@@ -5,8 +5,7 @@ import com.p3212.EntityClasses.Character;
 import com.p3212.Services.*;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +53,10 @@ public class FightController {
     @Autowired
     FightDataBean fightDataBean;
 
+    ScheduledExecutorService scheduler;
+
+    private ConcurrentHashMap<Integer, ScheduledFuture> timers;
+
     private ConcurrentHashMap<Integer, Fight> fights;
     private ConcurrentSkipListSet<String> usersInFight;
     private ConcurrentHashMap<Integer, ArrayDeque<String>> queues;
@@ -65,6 +68,8 @@ public class FightController {
         usersInFight = fightDataBean.getUsersInFight();
         queues = fightDataBean.getQueues();
         queueSequence = new AtomicInteger();
+        scheduler = Executors.newScheduledThreadPool(1);
+        timers = new ConcurrentHashMap<>();
     }
 
     @RequestMapping("/createQueue")
@@ -103,7 +108,9 @@ public class FightController {
 
     @PostMapping("info")
     public ResponseEntity info(@RequestParam int id) {
-        return ResponseEntity.status(HttpStatus.OK).body(fights.get(id).toString());
+        Fight fight = fights.get(id);
+        fight.setTimeLeft(timers.get(id).getDelay(TimeUnit.MILLISECONDS));
+        return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
     }
 
     @RequestMapping("/startPvp")
@@ -139,6 +146,10 @@ public class FightController {
         String user = name.equals(fighter1Name) ? fighter2Name : fighter1Name;
         notifServ.sendStart(name, user, fight.getId());
         queues.remove(queueId);
+        timers.put(fight.getId(), scheduler.schedule(() -> {
+            fight.switchAttacker();
+            schedule(fight);
+        }, 3010, TimeUnit.MILLISECONDS));
         return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
     }
 
@@ -181,14 +192,18 @@ public class FightController {
 
     @RequestMapping("/attack")
     public ResponseEntity<?> attackHandler(@RequestParam String enemy,
-            @RequestParam int fightId,
-            @RequestParam String spellName) {
+                                           @RequestParam int fightId,
+                                           @RequestParam String spellName) {
         String name = SecurityContextHolder.getContext().getAuthentication().getName();
         Fight fight = fights.get(fightId);
+        if (!name.equals(fight.getCurrentAttacker(0))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"code\": 10}");                 // 10 - not your turn
+        }
         if (fight == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\n\"code\": 2\n}");              //code 2 means fight doesn't exist
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\n\"code\": 2\n}");              // code 2 means fight doesn't exist
         }
         Attack attack;
+        timers.get(fightId).cancel(true);
         if (fight instanceof FightPVP) {
             attack = attackPvp(name, enemy, fightId, spellName);
         } else {
@@ -198,11 +213,21 @@ public class FightController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(attack.toString());
         }
         fight.switchAttacker();
+        timers.put(fightId, scheduler.schedule(() -> schedule(fight), 30, TimeUnit.SECONDS));
+        if (fight.getCurrentAttacker(0).length() < 6) {
+            // TODO perform NPC attack
+        }
+
         return ResponseEntity.status(HttpStatus.OK).body(attack.toString());
     }
 
-    private Attack attackPvp(String attackerName, String enemyName, int fightId, String spellName) {
+    private void schedule(Fight fight) {
+        fight.switchAttacker();
+        notifServ.sendSwitch(fight.getCurrentAttacker(0));
+        timers.put(fight.getId(), scheduler.schedule(() -> schedule(fight), 30L, TimeUnit.SECONDS));
+    }
 
+    private Attack attackPvp(String attackerName, String enemyName, int fightId, String spellName) {
         Attack attack = new Attack();
         FightPVP fight = (FightPVP) fights.get(fightId);
         User attacker = fight.getFighter1();
@@ -250,10 +275,10 @@ public class FightController {
         attack.setDeadly(enemy.getCharacter().getCurrentHP() <= 0);
 
         sendAfterAttack(enemyName, damage, enemyName,
-                attackerName, enemyName, attack.isDeadly(),
+                attackerName, fight.getNextAttacker(), attack.isDeadly(),
                 attack.isDeadly(), spellName, chakra, chakraBurn);
         sendAfterAttack(attackerName, damage, enemyName,
-                attackerName, enemyName, attack.isDeadly(),
+                attackerName, fight.getNextAttacker(), attack.isDeadly(),
                 attack.isDeadly(), spellName, chakra, chakraBurn);
         if (attack.isDeadly()) {
             if (fight.getFighter1().getLogin().equals(enemyName)) {
@@ -295,48 +320,6 @@ public class FightController {
         return attack;
     }
 
-//    @RequestMapping("/summon")
-//    public ResponseEntity<?> summonAnimal(@RequestParam(name = "summonerNumber") int summonerNumber,
-//                                          @RequestParam(name = "animalName") String name,
-//                                          @RequestParam(name = "fightId") int id) {
-//        Fight fight = fights.get(id);
-//        if (fight == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"code\": 2}");
-//        NinjaAnimal animal = ninjaAnimalService.get(name);
-//        Character summoner = (Character) fight.getFighters().get(summonerNumber).getValue();
-//        if (!summoner.getAnimalRace().equals(animal.getRace()) ||
-//                summoner.getUser().getStats().getLevel() < animal.getRequiredLevel())
-//            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{ \"code\": 4}"); //4 means user cannot summon this animal
-//        animal.prepareForFight();
-//        fight.addFighter(animal, fight.getFighters().get(summonerNumber).getKey());
-//        return ResponseEntity.status(HttpStatus.OK).body("{ \"summoned\": true }");
-//    }
-//    @RequestMapping("/stopFight")
-//    public void stopFight(@RequestParam int fightId) {
-//        ArrayList<User> usersBefore = new ArrayList<>();
-//        Page<Stats> stts = statsRep.getTopStats(PageRequest.of(0, 10));
-//        for (Stats st : stts) {
-//            usersBefore.add(st.getUser());
-//        }
-//        Fight fight = fights.get(fightId);
-//        if (fight instanceof FightPVP) {
-//            int lvlDiff = ((FightPVP) fight).getFirstFighter().getLevel() -
-//                    ((FightPVP) fight).getSecondFighter().getLevel();
-//            boolean isFirstWon = ((FightPVP) fight).isFirstWon();
-//            
-//        } else fightVsAIService.addFight(((FightVsAI) fight));
-//        fights.remove(fightId);
-//        fight.getFighters().iterator().forEachRemaining(fighter -> {
-//            if (fighter.getValue() instanceof Boss)
-//                usersInFight.remove(String.valueOf(((Boss) fighter.getValue()).getId()));
-//            else usersInFight.remove(((Character) fighter.getValue()).getUser().getLogin());
-//        });
-//        ArrayList<User> usersAfter = new ArrayList<>();
-//        Page<Stats> stats = statsRep.getTopStats(PageRequest.of(0, 10));
-//        for (Stats st : stats) {
-//            usersAfter.add(st.getUser());
-//        }
-//        compareStats(usersBefore, usersAfter);
-//    }
     private void compareStats(ArrayList<User> before, ArrayList<User> after) {
         String report = "";
         for (int i = 0; i < 10; ++i) {
@@ -356,11 +339,11 @@ public class FightController {
     }
 
     /**
-     * @param username Receiver of a message on websocket
+     * @param username   Receiver of a message on websocket
      * @param damage
      * @param targetName Username of the target
-     * @param attacker Username of the attacker
-     * @param next Username of the next cha
+     * @param attacker   Username of the attacker
+     * @param next       Username of the next cha
      * @param dead
      * @param allDead
      * @param attackName

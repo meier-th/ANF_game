@@ -14,13 +14,16 @@ public class Fight {
         }
         fighters = new ArrayList<>();
         this.id = number;
+        animals1 = new ArrayList<>();
+        animals2 = new ArrayList<>();
+
     }
 
     protected final int id;
 
     private static volatile int number;
 
-    private int currentAttacker = 0;
+    private int currentAttacker = -1;
 
     protected ArrayList<User> fighters;
 
@@ -31,6 +34,18 @@ public class Fight {
     protected ArrayList<NinjaAnimal> animals1;
 
     protected ArrayList<NinjaAnimal> animals2;
+
+    protected String currentName;
+
+    protected long timeLeft;
+
+    public long getTimeLeft() {
+        return timeLeft;
+    }
+
+    public void setTimeLeft(long timeLeft) {
+        this.timeLeft = timeLeft;
+    }
 
     public int getId() {
         return id;
@@ -44,16 +59,53 @@ public class Fight {
         Fight.number = number;
     }
 
-    public int getCurrentAttacker() {
-        return currentAttacker;
-    }
-
     public void addFighter(Character character) {
         fighters.add(character.getUser());
     }
 
     public void switchAttacker() {
-//        currentAttacker = (currentAttacker + 1) % (fighters.size() + (fighter1 != null ? 2 : 0) + animals1.size() + animals2.size());
+        if (this instanceof FightPVP) {
+            currentAttacker = (currentAttacker + 1) % (2 + animals1.size() + animals2.size());
+            // 0 - first, 1 - second, 2 - animals1[0], 3 - animals2[0]
+        } else {
+            currentAttacker = (currentAttacker + 1) % (fighters.size() + animals1.size() + 1);
+            // 0-4 fighters[i], 5 - boss, 6-10 - animals1[i]
+        }
+        currentName = getCurrentAttacker(0);
+    }
+
+    public String getCurrentAttacker(int offset) {
+        if (this instanceof FightPVP) {
+            switch ((currentAttacker + offset) % (2 + animals1.size() + animals2.size())) {
+                case 0:
+                    return fighter1.getLogin();
+
+                case 1:
+                    return fighter2.getLogin();
+
+                case 2:
+                    return animals1.get(0).getName().substring(0, 3);
+
+                case 3:
+                    return animals2.get(0).getName().substring(0, 3);
+            }
+        } else {
+            if ((currentAttacker + offset) % (2 + animals1.size() + animals2.size()) < fighters.size()) {
+                return fighters.get((currentAttacker + offset) % (2 + animals1.size() + animals2.size())).getLogin();
+            }
+            if ((currentAttacker + offset) % (2 + animals1.size() + animals2.size()) == fighters.size()) {
+                return String.valueOf(((FightVsAI) this).getBoss().getNumberOfTails());
+            } else {
+                return animals1.get(
+                        ((currentAttacker + offset) % (2 + animals1.size() + animals2.size())) -
+                                fighters.size() - 1).getName().substring(0, 3);
+            }
+        }
+        return null;
+    }
+
+    public String getNextAttacker() {
+        return getCurrentAttacker(1);
     }
 
 }
