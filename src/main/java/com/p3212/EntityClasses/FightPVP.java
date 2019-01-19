@@ -81,6 +81,24 @@ public class FightPVP extends Fight {
         return ratingChange;
     }
 
+    public void setFirstFighter(Character firstFighter) {
+        this.firstFighter = firstFighter;
+    }
+
+    public void setSecondFighter(Character secondFighter) {
+        this.secondFighter = secondFighter;
+    }
+
+    public Character getFirstFighter() {
+        return firstFighter;
+    }
+
+    public Character getSecondFighter() {
+        return secondFighter;
+    }
+
+    
+    
     public void setRatingChange(int ratingChange) {
         this.ratingChange = ratingChange;
     }
@@ -104,11 +122,11 @@ public class FightPVP extends Fight {
         return fightDate;
     }
 
-    public User getFirstFighter() {
+    public User getFighter1() {
         return fighter1;
     }
 
-    public User getSecondFighter() {
+    public User getFighter2() {
         return fighter2;
     }
 

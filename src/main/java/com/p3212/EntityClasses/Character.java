@@ -36,11 +36,6 @@ import javax.persistence.Transient;
 @Table(name = "persons")
 public class Character extends Creature implements Serializable {
 
-    @Autowired
-    @Transient
-    @JsonIgnore
-    private StatsService statsServ;
-
     /**
      * The date of creating a character
      */
@@ -294,12 +289,7 @@ public class Character extends Creature implements Serializable {
         user.getStats().setExperience(newXP);
         user.getStats().setLevel(user.getStats().getLevel() + levelsAcquired);
         user.getStats().setUpgradePoints(user.getStats().getUpgradePoints() + pointsAcquired);
-        statsServ.addStats(user.getStats());
-    }
-
-    public void changeRating(int change) {
-        user.getStats().setRating(user.getStats().getRating() + change);
-        statsServ.addStats(user.getStats());
+        //statsServ.addStats(user.getStats()); Will be moved to FighController
     }
 
     // TODO
