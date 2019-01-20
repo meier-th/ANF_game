@@ -7,6 +7,7 @@ import com.p3212.Services.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,6 +38,9 @@ public class FightController {
 
     @Autowired
     FightVsAIService fightVsAIService;
+    
+    @Autowired
+    UserAIFightService userAiFightService;
 
     @Autowired
     NinjaAnimalService ninjaAnimalService;
@@ -196,18 +200,19 @@ public class FightController {
                                            @RequestParam String spellName) {
         String name = SecurityContextHolder.getContext().getAuthentication().getName();
         Fight fight = fights.get(fightId);
-        if (!name.equals(fight.getCurrentAttacker(0))) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"code\": 10}");                 // 10 - not your turn
-        }
         if (fight == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\n\"code\": 2\n}");              // code 2 means fight doesn't exist
         }
+        if (!name.equals(fight.getCurrentAttacker(0))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"code\": 10}");                 // 10 - not your turn
+        }
+        
         Attack attack;
         timers.get(fightId).cancel(true);
         if (fight instanceof FightPVP) {
             attack = attackPvp(name, enemy, fightId, spellName);
         } else {
-            attack = null; // TODO kek
+            attack = attackPve(name, fightId, spellName);
         }
         if (attack.getCode() != 0) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(attack.toString());
@@ -323,6 +328,83 @@ public class FightController {
         return attack;
     }
 
+    private Attack attackPve(String attackerName, int fightId, String spellName) {
+        Attack attack = new Attack();
+        FightVsAI fight = (FightVsAI)fights.get(fightId);
+        Boss boss = fight.getBoss();
+        User attacker = userService.getUser(attackerName);
+        int damage;
+        int chakra;
+        if (!spellName.equalsIgnoreCase("Physical attack")) {
+            Spell spell = spellService.get(spellName);
+            SpellHandling handling = spellHandlingService.getSpellHandling(attacker.getCharacter(), spell);
+            if (spell == null) {
+                attack.setCode(8);
+                return attack;
+            }
+            if (spellName.equals("Air Strike")) {
+                damage = spell.getBaseDamage() + handling.getSpellLevel() * spell.getDamagePerLevel();
+            } else {
+                damage = Math.round((spell.getBaseDamage() + handling.getSpellLevel() * spell.getDamagePerLevel()) * (1 - boss.getResistance()));
+            }
+            if (spellName.equals("Fire Strike") && boss.getResistance() < 0.8) {
+                damage *= 2;
+            }
+            chakra = spell.getBaseChakraConsumption()
+                    + handling.getSpellLevel() * spell.getChakraConsumptionPerLevel();
+        } else {
+            damage = Math.round(attacker.getCharacter().getPhysicalDamage() * (1 - boss.getResistance()));
+            chakra = 0;
+        }
+        attack.setDamage(damage);
+        attack.setChakra(chakra);
+        attacker.getCharacter().spendChakra(chakra);
+        boss.acceptDamage(damage);
+        attack.setDeadly(boss.getCurrentHP() <= 0);
+        List<User> fighters = fight.getSetFighters().stream().map(uinF -> uinF.getFighter().getUser()).collect(Collectors.toList());
+        for (User fighter: fighters) {
+            sendAfterAttack(fighter.getLogin(), damage, boss.getName(), attacker.getLogin(), fight.getNextAttacker(), attack.isDeadly(), attack.isDeadly(), spellName, chakra, 0);
+        }
+        if (attack.isDeadly()) {
+            fightVsAIService.addFight(fight);
+            for (UserAIFight fightData: fight.getSetFighters()) {
+                if (!fightData.getResult().equals(UserAIFight.Result.DIED))
+                    fightData.setResult(UserAIFight.Result.WON);
+                int experience = 500 + 200 * boss.getNumberOfTails();
+                if (fightData.getResult().equals(UserAIFight.Result.DIED)) {
+                    experience /= 2;
+                    fightData.getFighter().getUser().getStats().setFights(fightData.getFighter().getUser().getStats().getFights() + 1);
+                    fightData.getFighter().getUser().getStats().setDeaths(fightData.getFighter().getUser().getStats().getDeaths() + 1);
+                    fightData.getFighter().changeXP(experience);
+                    statsServ.addStats(fightData.getFighter().getUser().getStats());
+                } else {
+                    fightData.getFighter().getUser().getStats().setFights(fightData.getFighter().getUser().getStats().getFights() + 1);
+                    fightData.getFighter().getUser().getStats().setWins(fightData.getFighter().getUser().getStats().getWins() + 1);
+                    fightData.getFighter().changeXP(experience);
+                    statsServ.addStats(fightData.getFighter().getUser().getStats());
+                }
+                fightData.setExperience(experience);
+                userAiFightService.add(fightData);
+            }
+            queues.remove(fightId);
+            for (User fighter: fighters) {
+                usersInFight.remove(fighter.getLogin());
+            }
+        } else {
+            if (fight.getNextAttacker().equals(boss.getName())) {
+                //boss attack
+            } else if (isAnimalName(fight.getNextAttacker())) {
+                //animal attack
+            }
+        }
+        return attack;
+    }
+    
+    private boolean isAnimalName (String name) {
+        int index = name.lastIndexOf(':'); // user:animal
+        return (index != -1);
+    }
+    
     private void compareStats(ArrayList<User> before, ArrayList<User> after) {
         String report = "";
         for (int i = 0; i < 10; ++i) {
