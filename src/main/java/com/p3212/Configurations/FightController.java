@@ -315,7 +315,10 @@ public class FightController {
             fight.setFirstFighter(fight.getFighter1().getCharacter());
             fight.setSecondFighter(fight.getFighter2().getCharacter());
             pvpFightsService.addFight(fight);
-            closeQueue(fightId);
+            timers.remove(fightId).cancel(true);
+            fights.remove(fightId);
+            usersInFight.remove(attackerName);
+            usersInFight.remove(enemyName);
         }
         return attack;
     }
