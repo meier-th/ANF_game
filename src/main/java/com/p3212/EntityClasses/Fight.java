@@ -108,4 +108,18 @@ public class Fight {
         return getCurrentAttacker(1);
     }
 
+    public ArrayList<User> getFighters() {
+        return fighters;
+    }
+
+    public ArrayList<NinjaAnimal> getAnimals1() {
+        return animals1;
+    }
+
+    public ArrayList<NinjaAnimal> getAnimals2() {
+        return animals2;
+    }
+
+    
+    
 }
