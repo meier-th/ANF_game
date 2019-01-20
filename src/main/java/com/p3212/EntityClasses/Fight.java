@@ -35,7 +35,7 @@ public class Fight {
 
     protected ArrayList<NinjaAnimal> animals2;
 
-    protected String currentName;
+    protected String currentName = "";
 
     protected long timeLeft;
 

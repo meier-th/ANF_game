@@ -38,7 +38,7 @@ public class FightController {
 
     @Autowired
     FightVsAIService fightVsAIService;
-    
+
     @Autowired
     UserAIFightService userAiFightService;
 
@@ -150,10 +150,7 @@ public class FightController {
         String user = name.equals(fighter1Name) ? fighter2Name : fighter1Name;
         notifServ.sendStart(name, user, fight.getId());
         queues.remove(queueId);
-        timers.put(fight.getId(), scheduler.schedule(() -> {
-            fight.switchAttacker();
-            schedule(fight);
-        }, 3010, TimeUnit.MILLISECONDS));
+        timers.put(fight.getId(), scheduler.schedule(() -> schedule(fight),3010, TimeUnit.MILLISECONDS));
         return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
     }
 
@@ -206,7 +203,7 @@ public class FightController {
         if (!name.equals(fight.getCurrentAttacker(0))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"code\": 10}");                 // 10 - not your turn
         }
-        
+
         Attack attack;
         timers.get(fightId).cancel(true);
         if (fight instanceof FightPVP) {
@@ -218,6 +215,7 @@ public class FightController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(attack.toString());
         }
         fight.switchAttacker();
+        timers.get(fightId).cancel(true);
         timers.put(fightId, scheduler.schedule(() -> schedule(fight), 30, TimeUnit.SECONDS));
         if (fight.getCurrentAttacker(0).length() < 6) {
             // TODO perform NPC attack
@@ -228,8 +226,14 @@ public class FightController {
 
     private void schedule(Fight fight) {
         fight.switchAttacker();
-        notifServ.sendSwitch(fight.getCurrentAttacker(0));
-        timers.put(fight.getId(), scheduler.schedule(() -> schedule(fight), 30L, TimeUnit.SECONDS));
+        if (fight instanceof FightPVP) {
+            notifServ.sendSwitch(((FightPVP) fight).getFighter1().getLogin(), fight.getCurrentAttacker(0));
+            notifServ.sendSwitch(((FightPVP) fight).getFighter2().getLogin(), fight.getCurrentAttacker(0));
+        } else {
+            ((FightVsAI) fight).getSetFighters().forEach((user) ->
+                    notifServ.sendSwitch(user.getFighter().getUser().getLogin(), fight.getCurrentAttacker(0)));
+        }
+        timers.put(fight.getId(), scheduler.schedule(() -> schedule(fight), 30, TimeUnit.SECONDS));
     }
 
     private Attack attackPvp(String attackerName, String enemyName, int fightId, String spellName) {
@@ -330,7 +334,7 @@ public class FightController {
 
     private Attack attackPve(String attackerName, int fightId, String spellName) {
         Attack attack = new Attack();
-        FightVsAI fight = (FightVsAI)fights.get(fightId);
+        FightVsAI fight = (FightVsAI) fights.get(fightId);
         Boss boss = fight.getBoss();
         User attacker = userService.getUser(attackerName);
         int damage;
@@ -362,12 +366,12 @@ public class FightController {
         boss.acceptDamage(damage);
         attack.setDeadly(boss.getCurrentHP() <= 0);
         List<User> fighters = fight.getSetFighters().stream().map(uinF -> uinF.getFighter().getUser()).collect(Collectors.toList());
-        for (User fighter: fighters) {
+        for (User fighter : fighters) {
             sendAfterAttack(fighter.getLogin(), damage, boss.getName(), attacker.getLogin(), fight.getNextAttacker(), attack.isDeadly(), attack.isDeadly(), spellName, chakra, 0);
         }
         if (attack.isDeadly()) {
             fightVsAIService.addFight(fight);
-            for (UserAIFight fightData: fight.getSetFighters()) {
+            for (UserAIFight fightData : fight.getSetFighters()) {
                 if (!fightData.getResult().equals(UserAIFight.Result.DIED))
                     fightData.setResult(UserAIFight.Result.WON);
                 int experience = 500 + 200 * boss.getNumberOfTails();
@@ -387,7 +391,7 @@ public class FightController {
                 userAiFightService.add(fightData);
             }
             queues.remove(fightId);
-            for (User fighter: fighters) {
+            for (User fighter : fighters) {
                 usersInFight.remove(fighter.getLogin());
             }
         } else {
@@ -399,12 +403,12 @@ public class FightController {
         }
         return attack;
     }
-    
-    private boolean isAnimalName (String name) {
+
+    private boolean isAnimalName(String name) {
         int index = name.lastIndexOf(':'); // user:animal
         return (index != -1);
     }
-    
+
     private void compareStats(ArrayList<User> before, ArrayList<User> after) {
         String report = "";
         for (int i = 0; i < 10; ++i) {
