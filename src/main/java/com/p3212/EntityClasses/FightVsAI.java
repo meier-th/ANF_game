@@ -78,6 +78,11 @@ public class FightVsAI extends Fight {
         this.boss = boss;
     }
 
+    
+    @Override
+    public String toString() {
+        return "{\"id\":" + id + "}";
+    }
 //    @Override
 //    public String toString() {
 //        StringBuilder side1 = new StringBuilder();

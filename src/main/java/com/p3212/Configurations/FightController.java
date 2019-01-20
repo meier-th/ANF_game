@@ -156,31 +156,38 @@ public class FightController {
     }
 
     @RequestMapping("/startPve")
-    public ResponseEntity<?> startPve(@RequestParam(name = "queueId") int queueId, @RequestParam(name = "bossId") int bossId) {
+    public ResponseEntity<?> startPve(@RequestParam(name = "queueId") int queueId, @RequestParam(name = "bossId") String bossName) {
         if (!queues.containsKey(queueId)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\":\"Queue doesn't exist\"}");
         }
-        String[] fighters = (String[]) queues.get(queueId).toArray();
+        ArrayList<String> fighters = new ArrayList<>();
+        queues.get(queueId).stream().forEach(element -> fighters.add((String)element));
         for (String fighter : fighters) {
             if (usersInFight.contains(fighter)) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");
             }
         }
-        if (usersInFight.contains(String.valueOf(bossId))) {
+        if (usersInFight.contains(bossName)) {
             ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");
         }
         FightVsAI fight = new FightVsAI();
+        ArrayList <UserAIFight> userFights = new ArrayList<>();
         for (String fighterName : fighters) {
+            UserAIFight userF = new UserAIFight();
+            userF.setFight(fight);
             Character fighter = userService.getUser(fighterName).getCharacter();
+            userF.setFighter(fighter);
             fighter.prepareForFight();
             fight.addFighter(fighter);
+            userFights.add(userF);
         }
-        Boss boss = bossService.getBoss(bossId);
+        fight.setSetFighters(userFights);
+        Boss boss = bossService.getBossByName(bossName);
         boss.prepareForFight();
         fight.setBoss(boss);
-        fight.setBoss(boss);
-        Collections.addAll(usersInFight, fighters);
-        usersInFight.add(String.valueOf(bossId));
+        
+        fighters.stream().forEach(fighterName -> usersInFight.add(fighterName));
+        usersInFight.add(bossName);
         fights.put(fight.getId(), fight);
         final String name = SecurityContextHolder.getContext().getAuthentication().getName();
         queues.get(queueId).forEach((user) -> {
@@ -189,6 +196,7 @@ public class FightController {
             }
         });
         queues.remove(queueId);
+        timers.put(fight.getId(), scheduler.schedule(() -> schedule(fight),3010, TimeUnit.MILLISECONDS));
         return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
     }
 
