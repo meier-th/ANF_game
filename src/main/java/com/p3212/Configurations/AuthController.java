@@ -74,10 +74,7 @@ public class AuthController {
     public ResponseEntity createNewUser(@RequestBody @Valid User user, BindingResult bindingResult) {
         if (user.getLogin().equalsIgnoreCase("SYSTEM"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("{\"text\":\"'SYSTEM' in any case is a reserved word. Users can not use it as their usernames.\"}");
-        if (user.getLogin().contains(":"))
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("\"Cannot use ':' in login!\"");
-            
+                    .body("{\"text\":\"'SYSTEM' in any case is a reserved word. Users can not use it as their usernames.\"}");   
         User userExists = userService.getUser(user.getLogin());
         if (userExists != null) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"text\":\"This username is already occupied\"}");
