@@ -78,24 +78,14 @@ public class FightVsAI extends Fight {
         this.boss = boss;
     }
 
-    
     @Override
     public String toString() {
-        return "{\"id\":" + id + "}";
+        return "{\"id\":" + id +
+                ", \"type\": \"pve\"" +
+                ", \"timeLeft\":" + timeLeft +
+                ", \"currentName\":\"" + currentName +
+                "\", \"fighters1\":" + fighters +
+                ", \"boss\":" + boss.toString() +
+                ", \"animals1\":" + animals1 + "}";
     }
-//    @Override
-//    public String toString() {
-//        StringBuilder side1 = new StringBuilder();
-//        StringBuilder side2 = new StringBuilder();
-//        fighters.forEach((fighter) -> {
-//            if (fighter.getKey() == 1) side1.append(fighter.getValue().toString()).append(",");
-//            else side2.append(fighter.getValue().toString()).append(",");
-//        });
-//        side1.delete(side1.length() - 1, side1.length());
-//        side2.delete(side2.length() - 1, side2.length());
-//        return "{\"id\":" + id +
-//                ", \"type\": \"pve\"" +
-//                ", \"fighters1\":[" + side1.toString() +
-//                "], \"fighters2\":[" + side2.toString() + "]}";
-//    }
 }

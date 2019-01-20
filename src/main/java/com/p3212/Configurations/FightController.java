@@ -118,19 +118,6 @@ public class FightController {
         fight.setTimeLeft(timers.get(id).getDelay(TimeUnit.MILLISECONDS));
         return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
     }
-    
-    @PostMapping("infoPVE")
-    public ResponseEntity<?> infoPve(@RequestParam int id) {
-        Fight fight = fights.get(id);
-        fight.setTimeLeft(timers.get(id).getDelay(TimeUnit.MILLISECONDS));
-        String retVal = "{ \"id\": "+fight.getId()+", \n \"type\": \"pve\", \n \"fighters\": [ ";
-        for (User usr: fight.getFighters()) {
-            retVal += usr.toString() + ", ";
-        }
-        retVal = retVal.substring(0, retVal.length() - 2);
-        retVal += " ], \n \"currentName\": \"" + fight.getCurrentAttacker(0)+"\" \n \"timeLeft\" :"+fight.getTimeLeft()+" \n \"boss\" : "+((FightVsAI)fight).getBoss().toString() + " }";
-        return ResponseEntity.ok(retVal);
-    }
 
     @RequestMapping("/startPvp")
     public ResponseEntity<?> startPvp(@RequestParam(name = "queueId") int queueId) {
@@ -386,7 +373,10 @@ public class FightController {
         List<User> fighters = fight.getSetFighters().stream().map(uinF -> uinF.getFighter().getUser()).collect(Collectors.toList());
         //ws
         for (User fighter : fighters) {
-            sendAfterAttack(fighter.getLogin(), damage, boss.getName(), attacker.getLogin(), fight.getNextAttacker(), attack.isDeadly(), attack.isDeadly(), spellName, chakra, 0);
+            sendAfterAttack(fighter.getLogin(), damage,
+                    String.valueOf(boss.getNumberOfTails()), attacker.getLogin(),
+                    fight.getNextAttacker(), attack.isDeadly(), attack.isDeadly(),
+                    spellName, chakra, 0);
         }
         //if boss was killed
         if (attack.isDeadly()) {

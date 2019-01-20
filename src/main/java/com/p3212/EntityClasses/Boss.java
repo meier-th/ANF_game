@@ -134,7 +134,7 @@ public class Boss extends Creature implements Serializable {
 
     @Override
     public int getMaxChakra() {
-        return numberOfTails * 1000;
+        return maxChakraAmount;
     }
 
     @Override
