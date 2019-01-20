@@ -90,10 +90,10 @@ public class Fight {
                     return animals2.get(0).getName().substring(0, 3);
             }
         } else {
-            if ((currentAttacker + offset) % (2 + animals1.size() + animals2.size()) < fighters.size()) {
+            if ((currentAttacker + offset) % (1 + animals1.size() + fighters.size()) < fighters.size()) {
                 return fighters.get((currentAttacker + offset) % (2 + animals1.size() + animals2.size())).getLogin();
             }
-            if ((currentAttacker + offset) % (2 + animals1.size() + animals2.size()) == fighters.size()) {
+            if ((currentAttacker + offset) % (1 + fighters.size() + animals2.size()) == fighters.size()) {
                 return String.valueOf(((FightVsAI) this).getBoss().getNumberOfTails());
             } else {
                 return animals1.get(
