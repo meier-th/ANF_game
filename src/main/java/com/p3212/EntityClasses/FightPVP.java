@@ -20,7 +20,7 @@ import javax.persistence.Transient;
 public class FightPVP extends Fight {
 
     public FightPVP() {
-        pvpId = id;
+        //pvpId = id;
         fightDate = new Date();
     }
 

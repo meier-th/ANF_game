@@ -169,6 +169,7 @@ public class FightController {
         }
         FightVsAI fight = new FightVsAI();
         ArrayList<UserAIFight> userFights = new ArrayList<>();
+        System.out.println("PVE fight began. Fighters:");
         for (String fighterName : fighters) {
             UserAIFight userF = new UserAIFight();
             userF.setFight(fight);
@@ -177,6 +178,7 @@ public class FightController {
             fighter.prepareForFight();
             fight.addFighter(fighter);
             userFights.add(userF);
+            System.out.println(fighterName);
         }
         fight.setSetFighters(userFights);
         Boss boss = bossService.getBossByName(bossName);
@@ -372,10 +374,11 @@ public class FightController {
         attack.setDeadly(boss.getCurrentHP() <= 0);
         List<User> fighters = fight.getSetFighters().stream().map(uinF -> uinF.getFighter().getUser()).collect(Collectors.toList());
         //ws
+        String nextAtt = fight.getNextAttacker();
         for (User fighter : fighters) {
             sendAfterAttack(fighter.getLogin(), damage,
                     String.valueOf(boss.getNumberOfTails()), attacker.getLogin(),
-                    fight.getNextAttacker(), attack.isDeadly(), attack.isDeadly(),
+                    nextAtt, attack.isDeadly(), attack.isDeadly(),
                     spellName, chakra, 0);
         }
         //if boss was killed
@@ -410,14 +413,14 @@ public class FightController {
             boolean numeric = true;
             int parsed = 0;
             try {
-                parsed = Integer.parseInt(fight.getNextAttacker());
+                parsed = Integer.parseInt(nextAtt);
             } catch (NumberFormatException exc) {
                 numeric = false;
             }
             // if next attacker is boss
             if (numeric && parsed < 10000) {
                 // use sheduler here
-                long index = Math.round(Math.random() * (fight.getSetFighters().size() + fight.getAnimals1().size()));
+                long index = Math.round(Math.random() * (fight.getSetFighters().size() + fight.getAnimals1().size() - 1));
                 Object target;
                 int bossDamage;
                 boolean bossDeadly = false;
@@ -452,8 +455,9 @@ public class FightController {
                             }
                         }
                     } //ws
+                    nextAtt = fight.getNextAttacker();
                     for (User fighter : fighters) {
-                        sendAfterAttack(fighter.getLogin(), bossDamage, ((User) target).getLogin(), boss.getName(), fight.getNextAttacker(), bossDeadly, bossAllDead, "Physical attack", 0, 0);
+                        sendAfterAttack(fighter.getLogin(), bossDamage, ((User) target).getLogin(), String.valueOf(boss.getNumberOfTails()), nextAtt, bossDeadly, bossAllDead, "Physical attack", 0, 0);
                     }
                     // Target is an animal
                 } else {
@@ -484,8 +488,9 @@ public class FightController {
                             }
                         }
                     } //ws
+                    nextAtt = fight.getNextAttacker();
                     for (User fighter : fighters) {
-                        sendAfterAttack(fighter.getLogin(), bossDamage, ((NinjaAnimal) target).getName(), boss.getName(), fight.getNextAttacker(), bossDeadly, bossAllDead, "Physical attack", 0, 0);
+                        sendAfterAttack(fighter.getLogin(), bossDamage, ((NinjaAnimal) target).getName(), String.valueOf(boss.getNumberOfTails()), nextAtt, bossDeadly, bossAllDead, "Physical attack", 0, 0);
                     }
                 }
 
