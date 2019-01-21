@@ -220,8 +220,8 @@ public class FightController {
         if (attack.getCode() != 0) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(attack.toString());
         }
-        fight.switchAttacker();
-        if (fight.getCurrentAttacker(0).length() < 6) {
+
+        if (fight.getNextAttacker().length() < 6) {
             bossAttack((FightVsAI) fight);
         } else
             timers.put(fightId, scheduler.schedule(() -> schedule(fight), 30, TimeUnit.SECONDS));
@@ -421,20 +421,36 @@ public class FightController {
     }
 
     private void bossAttack(FightVsAI fight) {
+        // time for attack
         int delay = (int) (Math.random() * 7000) + 500;
-        // TODO calc damage
-        // todo set damage
-        int target = (int) (Math.random() * (fight.getFighters().size() + fight.getAnimals1().size() - 0.501));
+        // targetNum - first fighters.size() - from fighters, next from animals
+        int targetNum = (int) (Math.random() * (fight.getFighters().size() + fight.getAnimals1().size() - 0.5));
+        boolean targetUser = targetNum < fight.getFighters().size();
+        // null if target is not a user
+        User target = targetUser ? fight.getFighters().get(targetNum) : null;
+        // null if target is not an animal
+        NinjaAnimal targetAnimal = targetUser ? null : fight.getAnimals1().get(targetNum - fight.getFighters().size());
+
+        int damage = Math.round(70 * fight.getBoss().getNumberOfTails() *
+                (targetUser ? (1 - target.getCharacter().getResistance()) : (1 - targetAnimal.getResistance())));
+        // target gets damage
+        if (targetUser) {
+            target.getCharacter().acceptDamage(damage);
+        } else {
+            targetAnimal.acceptDamage(damage);
+        }
+        // send attack after delay and continue timer
         timers.put(fight.getId(), scheduler.schedule(() -> {
             fight.getFighters().forEach((fighter) -> {
-                sendAfterAttack(fighter.getLogin(), 10,
-                        fight.getFighters().get(target).getLogin(),
+                sendAfterAttack(fighter.getLogin(), damage,
+                        targetUser ? target.getLogin() : targetAnimal.getName().substring(0, 3),
                         fight.getCurrentAttacker(0), fight.getNextAttacker(),
-                        false, false, "HUYNYA!",
-                        10, 0);
+                        false, false, "Boss attack",
+                        0, 0);
             });
             schedule(fight);
         }, delay, TimeUnit.MILLISECONDS));
+        // TODO stop fight
     }
 
     private void compareStats(ArrayList<User> before, ArrayList<User> after) {
