@@ -221,6 +221,7 @@ public class User implements Serializable {
         try {
             return new ObjectMapper().writeValueAsString(this);
         } catch (JsonProcessingException e) {
+            System.out.println(e.getMessage());
             return "{}";
         }
     }

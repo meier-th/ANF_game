@@ -1,6 +1,5 @@
 package com.p3212.EntityClasses;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Column;
@@ -15,17 +14,29 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+
+/**
+ * Used to operate on fight history data
+ */
 @Entity
 @Table(name = "ai_fights")
-public class FightVsAI extends Fight implements Serializable {
+public class FightVsAI extends Fight {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int idPve;
+    private int id;
 
+    /**
+     * Date of a fight
+     */
     @Column(name = "fight_date", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date fight_date;
+
+    /**
+     * Opponent
+     * Either a character or an AI boss
+     */
 
     @ManyToOne
     @JoinColumn(name = "boss", nullable = false)
@@ -34,15 +45,6 @@ public class FightVsAI extends Fight implements Serializable {
     @OneToMany(mappedBy = "fight")
     private List<UserAIFight> setFighters;
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
     public List<UserAIFight> getSetFighters() {
         return setFighters;
     }
@@ -56,14 +58,10 @@ public class FightVsAI extends Fight implements Serializable {
         return id;
     }
 
-    public void setIdPve(int id) {
-        this.idPve = id;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public int getIdPve() {
-        return this.idPve;
-    }
-    
     public Date getFight_date() {
         return fight_date;
     }
