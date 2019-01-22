@@ -108,7 +108,7 @@ public class CharacterController {
                     break;
                 }
                 case "chakra": {
-                    ch.setMaxChakraAmount(ch.getCurrentChakra() + 7);
+                    ch.setMaxChakraAmount(ch.getMaxChakra() + 7);
                     break;
                 }
                 default: {

@@ -284,7 +284,7 @@ public class Character extends Creature implements Serializable {
     public void changeXP(int change) {
         int previousXP = user.getStats().getExperience();
         int newXP = previousXP + change;
-        int levelsAcquired = (newXP % 1000 - newXP % 100 - previousXP % 1000 - previousXP % 100) / 100;
+        int levelsAcquired = (newXP - newXP % 1000 - (previousXP - previousXP % 1000)) / 1000;
         int pointsAcquired = levelsAcquired * 3;
         user.getStats().setExperience(newXP);
         user.getStats().setLevel(user.getStats().getLevel() + levelsAcquired);

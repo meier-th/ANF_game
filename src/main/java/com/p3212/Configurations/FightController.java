@@ -335,6 +335,7 @@ public class FightController {
             fight.setFirstFighter(fight.getFighter1().getCharacter());
             fight.setSecondFighter(fight.getFighter2().getCharacter());
             pvpFightsService.addFight(fight);
+            timers.get(fight.getId()).cancel(true);
             timers.remove(fightId).cancel(true);
             fights.remove(fightId);
             usersInFight.remove(attackerName);
@@ -416,6 +417,7 @@ public class FightController {
             for (User fighter : fighters) {
                 usersInFight.remove(fighter.getLogin());
             }
+            timers.get(fight.getId()).cancel(true);
         }
         return attack;
     }
@@ -442,19 +444,46 @@ public class FightController {
             targetAnimal.acceptDamage(damage);
             deadly = targetAnimal.getCurrentHP() <= 0;
         }
-        
+        //check if everyone is dead
+        boolean allDead = true;
+        for (User user: fight.getFighters()) {
+            if (user.getCharacter().getCurrentHP() > 0)
+                allDead = false;
+        }
+        for (NinjaAnimal animal : fight.getAnimals1()) {
+            if (animal.getCurrentHP() > 0)
+                allDead = false;
+        }
+        // because lambda needs (effectively) final variables
+        final boolean everyoneDied = allDead;
         // send attack after delay and continue timer
         timers.put(fight.getId(), scheduler.schedule(() -> {
             fight.getFighters().forEach((fighter) -> {
                 sendAfterAttack(fighter.getLogin(), damage,
                         targetUser ? target.getLogin() : targetAnimal.getName().substring(0, 3),
                         fight.getCurrentAttacker(0), fight.getNextAttacker(),
-                        deadly, false, "Boss attack",
+                        deadly, everyoneDied, "Boss attack",
                         0, 0);
             });
             schedule(fight);
         }, delay, TimeUnit.MILLISECONDS));
-        // TODO stop fight
+        if (allDead) {
+            fightVsAIService.addFight(fight);
+            for (UserAIFight userData: fight.getSetFighters()) {
+                userData.setExperience(50);
+                userData.setResult(UserAIFight.Result.LOST);
+                userData.getFighter().getUser().getStats().setFights(userData.getFighter().getUser().getStats().getFights() + 1);
+                userData.getFighter().getUser().getStats().setLosses(userData.getFighter().getUser().getStats().getLosses() + 1);
+                userData.getFighter().changeXP(50);
+                statsServ.addStats(userData.getFighter().getUser().getStats());
+                userAiFightService.add(userData);
+            }
+            queues.remove(fight.getId());
+            for (User fighter : fight.getFighters()) {
+                usersInFight.remove(fighter.getLogin());
+            }
+            timers.get(fight.getId()).cancel(true);
+        }
     }
 
     private void compareStats(ArrayList<User> before, ArrayList<User> after) {
