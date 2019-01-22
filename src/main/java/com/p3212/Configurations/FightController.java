@@ -448,7 +448,7 @@ public class FightController {
         // null if target is not an animal
         NinjaAnimal targetAnimal = targetUser ? null : fight.getAnimals1().get(targetNum - fight.getFighters().size());
 
-        int damage = Math.round(70 * fight.getBoss().getNumberOfTails() *
+        int damage = (int) Math.round(30 * Math.pow(fight.getBoss().getNumberOfTails(), 1.5) *
                 (targetUser ? (1 - target.getCharacter().getResistance()) : (1 - targetAnimal.getResistance())));
         // target gets damage
 

@@ -129,7 +129,7 @@ public class Boss extends Creature implements Serializable {
 
     @Override
     public int getMaxHp() {
-        return numberOfTails * 50;
+        return numberOfTails * 700;
     }
 
     @Override
