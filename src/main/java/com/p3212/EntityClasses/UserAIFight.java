@@ -4,11 +4,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinColumns;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -26,11 +26,8 @@ public class UserAIFight {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int fIdentity;
     
-    @ManyToOne
-    @JoinColumns({
-        @JoinColumn(name="boss", referencedColumnName="boss", nullable=false),
-        @JoinColumn(name="fight_date", referencedColumnName="fight_date", nullable=false)
-    })
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "fight_id")
     private FightVsAI fight;
 
     @ManyToOne
