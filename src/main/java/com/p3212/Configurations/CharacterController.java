@@ -120,7 +120,7 @@ public class CharacterController {
             stats.setUpgradePoints(stats.getUpgradePoints() - 1);
             statsServ.addStats(stats);
             userServ.saveUserWithoutBCrypt(us);
-            return ResponseEntity.status(HttpStatus.OK).body("{\"Character is updated.\"}");
+            return ResponseEntity.status(HttpStatus.OK).body("{\"answer\":\"Character is updated.\"}");
         } catch (Throwable error) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error.getMessage());
         }

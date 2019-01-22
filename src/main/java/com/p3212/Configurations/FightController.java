@@ -412,7 +412,7 @@ public class FightController {
                 if (fightData.getResult() == null)
                     fightData.setResult(UserAIFight.Result.WON);
                 int experience = 500 + 200 * boss.getNumberOfTails();
-                if (fightData.getResult() != null) {
+                if (fightData.getResult().equals(UserAIFight.Result.DIED)) {
                     experience /= 2;
                     fightData.getFighter().getUser().getStats().setFights(fightData.getFighter().getUser().getStats().getFights() + 1);
                     fightData.getFighter().getUser().getStats().setDeaths(fightData.getFighter().getUser().getStats().getDeaths() + 1);
@@ -432,7 +432,6 @@ public class FightController {
             for (User fighter : fighters) {
                 usersInFight.remove(fighter.getLogin());
             }
-            timers.get(fight.getId()).cancel(true);
         }
         return attack;
     }
@@ -469,6 +468,10 @@ public class FightController {
                             break;
                         }
                     }
+                    fight.getSetFighters().forEach((set) -> {
+                        if (set.getFighter().getUser().getLogin().equals(target.getLogin()))
+                            set.setResult(UserAIFight.Result.DIED);
+                    });
                     System.out.print("Remaining: ");
                 }
                 fight.getFighters().forEach((user) -> System.out.print(user.getLogin() + " "));
