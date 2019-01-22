@@ -1,6 +1,6 @@
 package com.p3212.Configurations;
 
-import com.p3212.EntityClasses.Fight;
+import com.p3212.EntityClasses.NinjaAnimal;
 import com.p3212.EntityClasses.State;
 import com.p3212.EntityClasses.StompPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,4 +69,10 @@ public class WebSocketsController {
         messagingTemplate.convertAndSendToUser(target, "/switch", next);
     }
 
+    //animalName: first 3 letters and number to distinguish between similar animals
+    public void sendSummon(String username, String summoner, NinjaAnimal animal, String animalName) {
+        String message = "{\"summoner\": \""+summoner+"\", \n\"name\": \""+animalName+"\", \n\"race\": \""+animal.getRace().toString()+"\", \n\"maxHp\": "+animal.getMaxHp()+", \n\"damage\": "+animal.getDamage()+" }";
+        messagingTemplate.convertAndSendToUser(username, "/summon", message);
+    }
+    
 }
