@@ -1,5 +1,6 @@
 package com.p3212.EntityClasses;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Column;
@@ -43,8 +44,16 @@ public class FightVsAI extends Fight {
     private Boss boss;
 
     @OneToMany(mappedBy = "fight")
+    @JsonIgnore
     private List<UserAIFight> setFighters;
 
+    
+    
+    public FightVsAI() {
+        this.fight_date = new Date();
+    }
+    
+    
     public List<UserAIFight> getSetFighters() {
         return setFighters;
     }

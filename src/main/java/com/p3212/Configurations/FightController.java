@@ -393,10 +393,10 @@ public class FightController {
             fightVsAIService.addFight(fight);
             //set stats and save
             for (UserAIFight fightData : fight.getSetFighters()) {
-                if (!fightData.getResult().equals(UserAIFight.Result.DIED))
+                if (fightData.getResult() == null)
                     fightData.setResult(UserAIFight.Result.WON);
                 int experience = 500 + 200 * boss.getNumberOfTails();
-                if (fightData.getResult().equals(UserAIFight.Result.DIED)) {
+                if (fightData.getResult() != null) {
                     experience /= 2;
                     fightData.getFighter().getUser().getStats().setFights(fightData.getFighter().getUser().getStats().getFights() + 1);
                     fightData.getFighter().getUser().getStats().setDeaths(fightData.getFighter().getUser().getStats().getDeaths() + 1);
@@ -433,19 +433,23 @@ public class FightController {
 
         int damage = Math.round(70 * fight.getBoss().getNumberOfTails() *
                 (targetUser ? (1 - target.getCharacter().getResistance()) : (1 - targetAnimal.getResistance())));
+        boolean deadly;
         // target gets damage
         if (targetUser) {
             target.getCharacter().acceptDamage(damage);
+            deadly = target.getCharacter().getCurrentHP() <= 0;
         } else {
             targetAnimal.acceptDamage(damage);
+            deadly = targetAnimal.getCurrentHP() <= 0;
         }
+        
         // send attack after delay and continue timer
         timers.put(fight.getId(), scheduler.schedule(() -> {
             fight.getFighters().forEach((fighter) -> {
                 sendAfterAttack(fighter.getLogin(), damage,
                         targetUser ? target.getLogin() : targetAnimal.getName().substring(0, 3),
                         fight.getCurrentAttacker(0), fight.getNextAttacker(),
-                        false, false, "Boss attack",
+                        deadly, false, "Boss attack",
                         0, 0);
             });
             schedule(fight);

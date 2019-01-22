@@ -1,5 +1,6 @@
 package com.p3212.EntityClasses;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -31,6 +32,7 @@ public class UserAIFight {
     private FightVsAI fight;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name="id", referencedColumnName="id", nullable=false)
     private Character fighter;
 
