@@ -40,7 +40,6 @@ public class VkOauthFilter extends AbstractAuthenticationProcessingFilter {
     public Authentication attemptAuthentication(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws AuthenticationException, IOException, ServletException {
         try {
             try {
-
                 OAuth2AccessToken accessToken = restTemplate.getAccessToken();
                 System.out.println("Access token object: " + accessToken);
                 System.out.println("Additional info: " + accessToken.getAdditionalInformation());

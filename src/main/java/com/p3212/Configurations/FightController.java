@@ -4,6 +4,8 @@ import com.p3212.EntityClasses.*;
 import com.p3212.EntityClasses.Character;
 import com.p3212.Services.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -152,7 +154,7 @@ public class FightController {
         String user = name.equals(fighter1Name) ? fighter2Name : fighter1Name;
         notifServ.sendStart(name, user, fight.getId());
         queues.remove(queueId);
-        timers.put(fight.getId(), scheduler.schedule(() -> schedule(fight), 3010, TimeUnit.MILLISECONDS));
+        timers.put(fight.getId(), scheduler.schedule(() -> schedule(fight, true), 3010, TimeUnit.MILLISECONDS));
         return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
     }
 
@@ -193,7 +195,7 @@ public class FightController {
             }
         });
         queues.remove(queueId);
-        timers.put(fight.getId(), scheduler.schedule(() -> schedule(fight), 3010, TimeUnit.MILLISECONDS));
+        timers.put(fight.getId(), scheduler.schedule(() -> schedule(fight, true), 3010, TimeUnit.MILLISECONDS));
         return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
     }
 
@@ -221,16 +223,27 @@ public class FightController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(attack.toString());
         }
 
-        if (fight.getNextAttacker().length() < 6) {
-            bossAttack((FightVsAI) fight);
-        } else
-            timers.put(fightId, scheduler.schedule(() -> schedule(fight), 30, TimeUnit.SECONDS));
+        schedule(fight, false);
 
         return ResponseEntity.status(HttpStatus.OK).body(attack.toString());
     }
 
-    private void schedule(Fight fight) {
-        fight.switchAttacker();
+    private void schedule(Fight fight, boolean first) {
+        if (first) {
+            fight.switchAttacker();
+        } else {
+            String current = fight.getCurrentAttacker(0);
+            System.out.println("\u001b[32m" + current);
+            fight.switchAttacker();
+            System.out.println(fight.getCurrentAttacker(0) + "\u001b[30m");
+            if (current.equals(fight.getCurrentAttacker(0))) {
+                fight.switchAttacker();
+                System.out.println("Switched after kill\n");
+            }
+        }
+        System.out.println("Attacker switched: to " + fight.getCurrentAttacker(0) + " At: "
+                + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME) + '\n');
+
         if (fight instanceof FightPVP) {
             notifServ.sendSwitch(((FightPVP) fight).getFighter1().getLogin(), fight.getCurrentAttacker(0));
             notifServ.sendSwitch(((FightPVP) fight).getFighter2().getLogin(), fight.getCurrentAttacker(0));
@@ -238,13 +251,14 @@ public class FightController {
             ((FightVsAI) fight).getSetFighters().forEach((user) ->
                     notifServ.sendSwitch(user.getFighter().getUser().getLogin(), fight.getCurrentAttacker(0)));
             if (fight.getCurrentAttacker(0).length() < 3) {
-                timers.get(fight.getId()).cancel(true);
                 bossAttack((FightVsAI) fight);
-            } else if (fight.getCurrentAttacker(0).length() == 3) {
+            } /*else if (fight.getCurrentAttacker(0).length() == 3) {
                 // TODO animal attack
-            }
+            }*/
         }
-        timers.put(fight.getId(), scheduler.schedule(() -> schedule(fight), 30, TimeUnit.SECONDS));
+        if (fight.getCurrentAttacker(0).length() >= 6) {
+            timers.put(fight.getId(), scheduler.schedule(() -> schedule(fight, false), 30, TimeUnit.SECONDS));
+        }
     }
 
     private Attack attackPvp(String attackerName, String enemyName, int fightId, String spellName) {
@@ -335,7 +349,7 @@ public class FightController {
             fight.setFirstFighter(fight.getFighter1().getCharacter());
             fight.setSecondFighter(fight.getFighter2().getCharacter());
             pvpFightsService.addFight(fight);
-            timers.get(fight.getId()).cancel(true);
+//            timers.get(fight.getId()).cancel(true);
             timers.remove(fightId).cancel(true);
             fights.remove(fightId);
             usersInFight.remove(attackerName);
@@ -345,6 +359,7 @@ public class FightController {
     }
 
     private Attack attackPve(String attackerName, int fightId, String spellName) {
+        System.out.println("AttackPve at" + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
         Attack attack = new Attack();
         FightVsAI fight = (FightVsAI) fights.get(fightId);
         //Boss is a target
@@ -423,6 +438,7 @@ public class FightController {
     }
 
     private void bossAttack(FightVsAI fight) {
+        timers.get(fight.getId()).cancel(true);
         // time for attack
         int delay = (int) (Math.random() * 7000) + 500;
         // targetNum - first fighters.size() - from fighters, next from animals
@@ -435,55 +451,72 @@ public class FightController {
 
         int damage = Math.round(70 * fight.getBoss().getNumberOfTails() *
                 (targetUser ? (1 - target.getCharacter().getResistance()) : (1 - targetAnimal.getResistance())));
-        boolean deadly;
         // target gets damage
-        if (targetUser) {
-            target.getCharacter().acceptDamage(damage);
-            deadly = target.getCharacter().getCurrentHP() <= 0;
-        } else {
-            targetAnimal.acceptDamage(damage);
-            deadly = targetAnimal.getCurrentHP() <= 0;
-        }
-        //check if everyone is dead
-        boolean allDead = true;
-        for (User user: fight.getFighters()) {
-            if (user.getCharacter().getCurrentHP() > 0)
-                allDead = false;
-        }
-        for (NinjaAnimal animal : fight.getAnimals1()) {
-            if (animal.getCurrentHP() > 0)
-                allDead = false;
-        }
-        // because lambda needs (effectively) final variables
-        final boolean everyoneDied = allDead;
+
         // send attack after delay and continue timer
         timers.put(fight.getId(), scheduler.schedule(() -> {
-            fight.getFighters().forEach((fighter) -> {
-                sendAfterAttack(fighter.getLogin(), damage,
-                        targetUser ? target.getLogin() : targetAnimal.getName().substring(0, 3),
-                        fight.getCurrentAttacker(0), fight.getNextAttacker(),
-                        deadly, everyoneDied, "Boss attack",
-                        0, 0);
-            });
-            schedule(fight);
+            boolean deadly;
+            if (targetUser) {
+                target.getCharacter().acceptDamage(damage);
+                System.out.println("Boss Attack at"
+                        + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME) + "Damage: " + damage
+                        + "Current: " + target.getCharacter().getCurrentHP() + '\n');
+                deadly = target.getCharacter().getCurrentHP() <= 0;
+                if (deadly) {
+                    for (int i = 0; i < fight.getFighters().size(); i++) {
+                        if (fight.getFighters().get(i).getLogin().equals(target.getLogin())) {
+                            System.out.println("Killed: " + fight.getFighters().remove(i).getLogin() + '\n');
+                            break;
+                        }
+                    }
+                    System.out.print("Remaining: ");
+                }
+                fight.getFighters().forEach((user) -> System.out.print(user.getLogin() + " "));
+            } else {
+                targetAnimal.acceptDamage(damage);
+                deadly = targetAnimal.getCurrentHP() <= 0;
+                if (deadly) {
+                    // TODO remove
+                }
+            }
+            //check if everyone is dead
+            boolean allDead = true;
+            for (User user : fight.getFighters()) {
+                if (user.getCharacter().getCurrentHP() > 0)
+                    allDead = false;
+            }
+            System.out.println("Are all dead: " + allDead + "\n");
+            // because lambda needs (effectively) final variables
+            final boolean everyoneDied = allDead;
+
+            fight.getFighters().forEach((fighter) -> sendAfterAttack(fighter.getLogin(), damage,
+                    targetUser ? target.getLogin() : targetAnimal.getName().substring(0, 3),
+                    fight.getCurrentAttacker(0), fight.getNextAttacker(),
+                    deadly, everyoneDied, "Boss attack",
+                    0, 0));
+
+            if (allDead) {
+                System.out.println("fight ended\n");
+                fightVsAIService.addFight(fight);
+                for (UserAIFight userData : fight.getSetFighters()) {
+                    userData.setExperience(50);
+                    userData.setResult(UserAIFight.Result.LOST);
+                    userData.getFighter().getUser().getStats().setFights(userData.getFighter().getUser().getStats().getFights() + 1);
+                    userData.getFighter().getUser().getStats().setLosses(userData.getFighter().getUser().getStats().getLosses() + 1);
+                    userData.getFighter().changeXP(50);
+                    statsServ.addStats(userData.getFighter().getUser().getStats());
+                    userAiFightService.add(userData);
+                }
+                queues.remove(fight.getId());
+                for (UserAIFight fighter : fight.getSetFighters()) {
+                    usersInFight.remove(fighter.getFighter().getUser().getLogin());
+                }
+                timers.get(fight.getId()).cancel(true);
+                return;
+            }
+            System.out.println("YEEEE!\n");
+            schedule(fight, false);
         }, delay, TimeUnit.MILLISECONDS));
-        if (allDead) {
-            fightVsAIService.addFight(fight);
-            for (UserAIFight userData: fight.getSetFighters()) {
-                userData.setExperience(50);
-                userData.setResult(UserAIFight.Result.LOST);
-                userData.getFighter().getUser().getStats().setFights(userData.getFighter().getUser().getStats().getFights() + 1);
-                userData.getFighter().getUser().getStats().setLosses(userData.getFighter().getUser().getStats().getLosses() + 1);
-                userData.getFighter().changeXP(50);
-                statsServ.addStats(userData.getFighter().getUser().getStats());
-                userAiFightService.add(userData);
-            }
-            queues.remove(fight.getId());
-            for (User fighter : fight.getFighters()) {
-                usersInFight.remove(fighter.getLogin());
-            }
-            timers.get(fight.getId()).cancel(true);
-        }
     }
 
     private void compareStats(ArrayList<User> before, ArrayList<User> after) {

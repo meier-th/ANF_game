@@ -129,14 +129,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         // CORS
         http.cors();
 
-
         http
                 .addFilterAfter(new OAuth2ClientContextFilter(), AbstractPreAuthenticatedProcessingFilter.class)
                 .addFilterAfter(vkOauthFilter(), OAuth2ClientContextFilter.class)
-                .httpBasic()
-                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login/vk"));
-
-        http
                 .addFilterAfter(new RequestContextFilter(), CsrfFilter.class)
                 .httpBasic()
                 .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login/vk"));
@@ -178,7 +173,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .authenticationEntryPoint(restAuthenticationEntryPoint)
                 .and()
                 .authorizeRequests()
-//                .antMatchers("/confirm").hasAnyAuthority("NEWVK", "NEWGoogle")
+                .antMatchers("/confirm").hasAnyAuthority("NEWVK", "NEWGoogle")
                 .antMatchers("/checkCookies").permitAll()
                 .antMatchers("/registration").permitAll()
                 .anyRequest().authenticated()

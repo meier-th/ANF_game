@@ -16,7 +16,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 public class VkClient {
 
     private String clientId = "6751264";
-    private final String clientSecret = "YqVhWS11S17pz670MHzG";
+    private final String clientSecret = "mHaw76ze30C1npjluSCQ";
     private final String accessTokenUri = "https://oauth.vk.com/access_token";
     private final String userAuthorizationUri = "https://oauth.vk.com/authorize";
     private final String redirectUri = "http://localhost:31480/login/vk";
