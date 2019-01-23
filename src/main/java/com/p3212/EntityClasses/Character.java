@@ -292,7 +292,6 @@ public class Character extends Creature implements Serializable {
         //statsServ.addStats(user.getStats()); Will be moved to FighController
     }
 
-    // TODO
     @Override
     public String toString() {
         try {

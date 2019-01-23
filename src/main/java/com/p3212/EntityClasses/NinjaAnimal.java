@@ -1,12 +1,15 @@
 package com.p3212.EntityClasses;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 
 public class NinjaAnimal extends Creature implements Serializable {
 
     public static final ArrayList<NinjaAnimal> animals = new ArrayList<>();
-    
+
     static {
         NinjaAnimal veseliba1 = new NinjaAnimal("Vertet", NinjaAnimalRace.Veseliba, 10, 200, 1);
         NinjaAnimal veseliba2 = new NinjaAnimal("Ubele", NinjaAnimalRace.Veseliba, 35, 500, 10);
@@ -25,7 +28,7 @@ public class NinjaAnimal extends Creature implements Serializable {
         animals.add(rodstvennik1);
         animals.add(rodstvennik2);
     }
-    
+
     private final String name;
 
     private final int requiredLevel;
@@ -83,5 +86,14 @@ public class NinjaAnimal extends Creature implements Serializable {
     @Override
     public int getMaxChakra() {
         return 0;
+    }
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            return "{}";
+        }
     }
 }

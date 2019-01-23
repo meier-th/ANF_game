@@ -71,8 +71,12 @@ public class WebSocketsController {
 
     //animalName: first 3 letters and number to distinguish between similar animals
     public void sendSummon(String username, String summoner, NinjaAnimal animal, String animalName) {
-        String message = "{\"summoner\": \""+summoner+"\", \n\"name\": \""+animalName+"\", \n\"race\": \""+animal.getRace().toString()+"\", \n\"maxHp\": "+animal.getMaxHp()+", \n\"damage\": "+animal.getDamage()+" }";
+        String message = "{\"summoner\": \"" + summoner +
+                "\",\"name\": \"" + animalName +
+                "\",\"race\": \"" + animal.getRace().toString() +
+                "\",\"maxHp\": " + animal.getMaxHp() +
+                ",\"damage\": " + animal.getDamage() + "}";
         messagingTemplate.convertAndSendToUser(username, "/summon", message);
     }
-    
+
 }
