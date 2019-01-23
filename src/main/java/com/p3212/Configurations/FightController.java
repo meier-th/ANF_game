@@ -236,7 +236,7 @@ public class FightController {
         if (fight instanceof FightPVP) {
             notifServ.sendSwitch(((FightPVP) fight).getFighter1().getLogin(), fight.getCurrentAttacker(0));
             notifServ.sendSwitch(((FightPVP) fight).getFighter2().getLogin(), fight.getCurrentAttacker(0));
-            if (fight.getCurrentAttacker(0).length() == 3) {
+            if (fight.getCurrentAttacker(0).length() == 4) {
                 animalPvpAttack((FightPVP) fight);
             }
         } else {
@@ -244,8 +244,8 @@ public class FightController {
                     notifServ.sendSwitch(user.getFighter().getUser().getLogin(), fight.getCurrentAttacker(0)));
             if (fight.getCurrentAttacker(0).length() < 3) {
                 bossAttack((FightVsAI) fight);
-            } else if (fight.getCurrentAttacker(0).length() == 3) {
-
+            } else if (fight.getCurrentAttacker(0).length() > 3 && fight.getCurrentAttacker(0).length() < 5) {
+                animalPveAttack((FightVsAI) fight);
             }
         }
         if (fight.getCurrentAttacker(0).length() >= 6) {
@@ -775,6 +775,87 @@ public class FightController {
         return ResponseEntity.ok(animal.toString());
     }
 
+    private void animalPveAttack (FightVsAI fight) {
+        String animName = fight.getCurrentAttacker(0);
+        NinjaAnimal attacker = null;
+        switch (animName) {
+            case "Дяд" : {
+                attacker = ninjaAnimalService.get("Дядя Бафомет");
+                break;
+            }
+            case "Тёт" : {
+                attacker = ninjaAnimalService.get("Тётя Срака");
+                break;
+            }
+            case "Ube" : {
+                attacker = ninjaAnimalService.get("Ubele");
+                break;
+            }
+            case "Ver" : {
+                attacker = ninjaAnimalService.get("Vertet");
+                break;
+            }
+            case "Lus" : {
+                attacker = ninjaAnimalService.get("Lusis");
+                break;
+            }
+            case "Lau" : {
+                attacker = ninjaAnimalService.get("Lauva");
+                break;
+            }
+            case "Lap" : {
+                attacker = ninjaAnimalService.get("Lapsa");
+                break;
+            }
+            default : {
+                attacker = ninjaAnimalService.get("Erglis");
+            }
+        }
+
+        timers.get(fight.getId()).cancel(true);
+
+        int delay = (int) (Math.random() * 7000) + 500;
+        Boss target = fight.getBoss();
+        int damage = Math.round(attacker.getDamage() * (1 - target.getResistance()));
+        timers.put(fight.getId(), scheduler.schedule(() -> {
+            target.acceptDamage(damage);
+            boolean deadly = false;
+            if (target.getCurrentHP() <= 0)
+                deadly = true;
+            if (deadly) {
+                fightVsAIService.addFight(fight);
+            //set stats and save
+            for (UserAIFight fightData : fight.getSetFighters()) {
+                if (fightData.getResult() == null)
+                    fightData.setResult(UserAIFight.Result.WON);
+                int experience = 500 + 200 * target.getNumberOfTails();
+                if (fightData.getResult().equals(UserAIFight.Result.DIED)) {
+                    experience /= 2;
+                    fightData.getFighter().getUser().getStats().setFights(fightData.getFighter().getUser().getStats().getFights() + 1);
+                    fightData.getFighter().getUser().getStats().setDeaths(fightData.getFighter().getUser().getStats().getDeaths() + 1);
+                    fightData.getFighter().changeXP(experience);
+                    statsServ.addStats(fightData.getFighter().getUser().getStats());
+                } else {
+                    fightData.getFighter().getUser().getStats().setFights(fightData.getFighter().getUser().getStats().getFights() + 1);
+                    fightData.getFighter().getUser().getStats().setWins(fightData.getFighter().getUser().getStats().getWins() + 1);
+                    fightData.getFighter().changeXP(experience);
+                    statsServ.addStats(fightData.getFighter().getUser().getStats());
+                }
+                fightData.setExperience(experience);
+                userAiFightService.add(fightData);
+            }
+            //close fight
+            queues.remove(fight.getId());
+            for (UserAIFight fighter : fight.getSetFighters()) {
+                usersInFight.remove(fighter.getFighter().getUser().getLogin());
+            }
+            timers.get(fight.getId()).cancel(true);
+                fights.remove(fight.getId());
+            }
+        schedule(fight, false);
+        }, delay, TimeUnit.MILLISECONDS));
+    }
+    
     private void compareStats(ArrayList<User> before, ArrayList<User> after) {
         String report = "";
         for (int i = 0; i < 10; ++i) {
