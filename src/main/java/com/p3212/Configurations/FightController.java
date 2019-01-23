@@ -533,7 +533,7 @@ public class FightController {
 
         NinjaAnimal targetAnimal = targetUser ? null : fight.getAnimals1().get(targetNum - fight.getFighters().size());
 
-        int damage = (int) Math.round(30 * Math.pow(.getNumberOfTails(), 1.5) *
+//        int damage = (int) Math.round(30 * Math.pow(.getNumberOfTails(), 1.5) *
 
     }
 
@@ -543,32 +543,34 @@ public class FightController {
         User user = userService.getUser(name);
         FightPVP fight = (FightPVP) fights.get(fightId);
         NinjaAnimalRace race = user.getCharacter().getAnimalRace();
-        boolean lvl2 = user.getCharacter().getLevel() >= 10;
-        String animalName;
-        switch (race) {
-            case Bugurt:
-                animalName = lvl2 ? "Дядя Бафомет" : "Тётя Срака";
-                break;
-            case Veseliba:
-                animalName = lvl2 ? "Ubele" : "Vertet";
-                break;
-            case Bojajumus:
-                animalName = lvl2 ? "Lusis" : "Lauva";
-                break;
-            default:
-                animalName = lvl2 ? "Lapsa" : "Erglis";
-                break;
-        }
-        NinjaAnimal animal = ninjaAnimalService.get(animalName);
-        animal.prepareForFight();
-        if (fight.getFighter1().getLogin().equals(name)) {
-            fight.getAnimals1().add(animal);
-            notifServ.sendSummon(fight.getFighter2().getLogin(), name, animal, animalName);
-        } else {
-            fight.getAnimals2().add(animal);
-            notifServ.sendSummon(fight.getFighter1().getLogin(), name, animal, animalName);
-        }
-        return ResponseEntity.ok(animal.toString());
+        if (race != null) {
+            boolean lvl2 = user.getCharacter().getLevel() >= 10;
+            String animalName;
+            switch (race) {
+                case Bugurt:
+                    animalName = lvl2 ? "Дядя Бафомет" : "Тётя Срака";
+                    break;
+                case Veseliba:
+                    animalName = lvl2 ? "Ubele" : "Vertet";
+                    break;
+                case Bojajumus:
+                    animalName = lvl2 ? "Lusis" : "Lauva";
+                    break;
+                default:
+                    animalName = lvl2 ? "Lapsa" : "Erglis";
+                    break;
+            }
+            NinjaAnimal animal = ninjaAnimalService.get(animalName);
+            animal.prepareForFight();
+            if (fight.getFighter1().getLogin().equals(name)) {
+                fight.getAnimals1().add(animal);
+                notifServ.sendSummon(fight.getFighter2().getLogin(), name, animal, animalName);
+            } else {
+                fight.getAnimals2().add(animal);
+                notifServ.sendSummon(fight.getFighter1().getLogin(), name, animal, animalName);
+            }
+            return ResponseEntity.ok(animal.toString());
+        } else return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"answer\":\"You havent chosen your animal\"}");
     }
 
     @PostMapping("/summonPve")

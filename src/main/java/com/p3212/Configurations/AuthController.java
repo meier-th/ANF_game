@@ -46,7 +46,7 @@ public class AuthController {
 
     @Autowired
     private StatsService statsService;
-    
+
     @Autowired
     private WebSocketsController wsController;
 
@@ -59,10 +59,11 @@ public class AuthController {
     private static Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @GetMapping("/checkCookies")
-    public ResponseEntity checkCookies(@RequestParam String username) {
+    public ResponseEntity checkCookies() {
         try {
-            if (SecurityContextHolder.getContext().getAuthentication().getName().equals(username))
-                return ResponseEntity.status(HttpStatus.OK).body("{\"authorized\": true}");
+            if (!SecurityContextHolder.getContext().getAuthentication().getName().equals("anonymous"))
+                return ResponseEntity.status(HttpStatus.OK).body("{\"authorized\": true, \"login\":\"" +
+                        SecurityContextHolder.getContext().getAuthentication().getName() + "\"}");
             else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{\"authorized\": false}");
         } catch (Exception e) {
             logger.error("An exception occurred: " + e.getMessage());
@@ -74,7 +75,7 @@ public class AuthController {
     public ResponseEntity createNewUser(@RequestBody @Valid User user, BindingResult bindingResult) {
         if (user.getLogin().equalsIgnoreCase("SYSTEM"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("{\"text\":\"'SYSTEM' in any case is a reserved word. Users can not use it as their usernames.\"}");   
+                    .body("{\"text\":\"'SYSTEM' in any case is a reserved word. Users can not use it as their usernames.\"}");
         User userExists = userService.getUser(user.getLogin());
         if (userExists != null) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"text\":\"This username is already occupied\"}");
@@ -102,7 +103,7 @@ public class AuthController {
 //        Authentication auth = authManager.authenticate(authReq);
 //        SecurityContextHolder.getContext().setAuthentication(auth);
         // TODO set auth
-        wsController.sendOnline("new:"+user.getLogin());
+        wsController.sendOnline("new:" + user.getLogin());
         return ResponseEntity.status(HttpStatus.CREATED).body("{\"text\":\"User successfully registered!\"}");
     }
 

@@ -37,7 +37,17 @@ public class NinjaAnimal extends Creature implements Serializable {
 
     private final int damage;
 
+    private String summoner;
+
     private final NinjaAnimalRace race;
+
+    public String getSummoner() {
+        return summoner;
+    }
+
+    public void setSummoner(String summoner) {
+        this.summoner = summoner;
+    }
 
     public String getName() {
         return name;
