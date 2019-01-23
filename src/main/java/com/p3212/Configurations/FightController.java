@@ -258,17 +258,27 @@ public class FightController {
         FightPVP fight = (FightPVP) fights.get(fightId);
         User attacker = fight.getFighter1();
         User enemy = fight.getFighter2();
+        NinjaAnimal targetAnimal = null;
+        boolean userIsTarget = true;
+        if (enemyName.length() < 6) {
+            userIsTarget = false;
+            if (enemyName.charAt(3) == 0)
+                targetAnimal = fight.getAnimals2().get(0);
+            else
+                targetAnimal = fight.getAnimals1().get(0);
+        }
         if (attacker == null || enemy == null) {
             attack.setCode(6);
             return attack;
         }
-        if (enemy.getLogin().equals(attackerName)) {
+        if (userIsTarget && enemy.getLogin().equals(attackerName)) {
             User tmp = attacker;
             attacker = enemy;
             enemy = tmp;
         }
         int damage;
         int chakra;
+        if (userIsTarget)
         if (!spellName.equalsIgnoreCase("Physical attack")) {
             Spell spell = spellService.get(spellName);
             SpellHandling handling = spellHandlingService.getSpellHandling(attacker.getCharacter(), spell);
@@ -290,6 +300,30 @@ public class FightController {
             damage = Math.round(attacker.getCharacter().getPhysicalDamage() * (1 - enemy.getCharacter().getResistance()));
             chakra = 0;
         }
+        //animal is a target
+        else {
+            if (!spellName.equalsIgnoreCase("Physical attack")) {
+            Spell spell = spellService.get(spellName);
+            SpellHandling handling = spellHandlingService.getSpellHandling(attacker.getCharacter(), spell);
+            if (spell == null) {
+                attack.setCode(8);
+                return attack;
+            }
+            if (spellName.equals("Air Strike")) {
+                damage = spell.getBaseDamage() + handling.getSpellLevel() * spell.getDamagePerLevel();
+            } else {
+                damage = Math.round((spell.getBaseDamage() + handling.getSpellLevel() * spell.getDamagePerLevel()) * (1 - targetAnimal.getResistance()));
+            }
+            if (spellName.equals("Fire Strike") && targetAnimal.getResistance() < 0.8) {
+                damage *= 2;
+            }
+            chakra = spell.getBaseChakraConsumption()
+                    + handling.getSpellLevel() * spell.getChakraConsumptionPerLevel();
+        } else {
+            damage = Math.round(attacker.getCharacter().getPhysicalDamage() * (1 - targetAnimal.getResistance()));
+            chakra = 0;
+        }
+        }
         int chakraBurn = 0;
         if (spellName.equals("Water Strike")) {
             chakraBurn = damage / 10;
@@ -297,16 +331,36 @@ public class FightController {
         attack.setDamage(damage);
         attack.setChakra(chakra);
         attacker.getCharacter().spendChakra(chakra);
-        enemy.getCharacter().acceptDamage(damage);
-        attack.setDeadly(enemy.getCharacter().getCurrentHP() <= 0);
-
-        sendAfterAttack(enemyName, damage, enemyName,
+        if (userIsTarget) {
+            enemy.getCharacter().acceptDamage(damage);
+            attack.setDeadly(enemy.getCharacter().getCurrentHP() <= 0);
+            sendAfterAttack(enemyName, damage, enemyName,
                 attackerName, fight.getNextAttacker(), attack.isDeadly(),
                 attack.isDeadly(), spellName, chakra, chakraBurn);
         sendAfterAttack(attackerName, damage, enemyName,
                 attackerName, fight.getNextAttacker(), attack.isDeadly(),
                 attack.isDeadly(), spellName, chakra, chakraBurn);
+        } else {
+            targetAnimal.acceptDamage(damage);
+            attack.setDeadly(targetAnimal.getCurrentHP() <= 0);
+            sendAfterAttack(fight.getFighter1().getLogin(), damage, targetAnimal.getName(),
+                attackerName, fight.getNextAttacker(), attack.isDeadly(),
+                false, spellName, chakra, 0);
+        sendAfterAttack(fight.getFighter2().getLogin(), damage, targetAnimal.getName(),
+                attackerName, fight.getNextAttacker(), attack.isDeadly(),
+                false, spellName, chakra, 0);
+        }
+        
         if (attack.isDeadly()) {
+            if (!userIsTarget) {
+                if (enemyName.charAt(3) == 1) {
+                    fight.getAnimals1().clear();
+                    System.out.println("animal 1 died");
+                } else {
+                    fight.getAnimals2().clear();
+                    System.out.println("animal 2 died");
+                }
+            } else {
             if (fight.getFighter1().getLogin().equals(enemyName)) {
                 fight.setFirstWon(false);
             } else {
@@ -347,7 +401,7 @@ public class FightController {
             fights.remove(fightId);
             usersInFight.remove(attackerName);
             usersInFight.remove(enemyName);
-        }
+        }}
         return attack;
     }
 
