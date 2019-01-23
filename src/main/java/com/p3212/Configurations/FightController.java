@@ -229,18 +229,7 @@ public class FightController {
     }
 
     private void schedule(Fight fight, boolean first) {
-        if (first) {
-            fight.switchAttacker();
-        } else {
-            String current = fight.getCurrentAttacker(0);
-            System.out.println("\u001b[32m" + current);
-            fight.switchAttacker();
-            System.out.println(fight.getCurrentAttacker(0) + "\u001b[30m");
-            if (current.equals(fight.getCurrentAttacker(0))) {
-                fight.switchAttacker();
-                System.out.println("Switched after kill\n");
-            }
-        }
+        fight.switchAttacker();
         System.out.println("Attacker switched: to " + fight.getCurrentAttacker(0) + " At: "
                 + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME) + '\n');
 
@@ -349,8 +338,9 @@ public class FightController {
             fight.setFirstFighter(fight.getFighter1().getCharacter());
             fight.setSecondFighter(fight.getFighter2().getCharacter());
             pvpFightsService.addFight(fight);
-//            timers.get(fight.getId()).cancel(true);
-            timers.remove(fightId).cancel(true);
+            timers.get(fightId).cancel(true);
+            System.out.println("FightId: " + fightId + " getId: " + fight.getId());
+            timers.remove(fightId);
             fights.remove(fightId);
             usersInFight.remove(attackerName);
             usersInFight.remove(enemyName);
@@ -429,9 +419,10 @@ public class FightController {
             }
             //close fight
             queues.remove(fightId);
-            for (User fighter : fighters) {
-                usersInFight.remove(fighter.getLogin());
+            for (UserAIFight fighter : fight.getSetFighters()) {
+                usersInFight.remove(fighter.getFighter().getUser().getLogin());
             }
+            fights.remove(fight.getId());
         }
         return attack;
     }
@@ -492,7 +483,8 @@ public class FightController {
             // because lambda needs (effectively) final variables
             final boolean everyoneDied = allDead;
 
-            fight.getFighters().forEach((fighter) -> sendAfterAttack(fighter.getLogin(), damage,
+            fight.getSetFighters().forEach((fighter) -> sendAfterAttack(
+                    fighter.getFighter().getUser().getLogin(), damage,
                     targetUser ? target.getLogin() : targetAnimal.getName().substring(0, 3),
                     fight.getCurrentAttacker(0), fight.getNextAttacker(),
                     deadly, everyoneDied, "Boss attack",
@@ -515,12 +507,18 @@ public class FightController {
                     usersInFight.remove(fighter.getFighter().getUser().getLogin());
                 }
                 timers.get(fight.getId()).cancel(true);
+                fights.remove(fight.getId());
                 return;
             }
             System.out.println("YEEEE!\n");
             schedule(fight, false);
         }, delay, TimeUnit.MILLISECONDS));
     }
+
+//    @PostMapping("/summon")
+//    public ResponseEntity summon() {
+//
+//    }
 
     private void compareStats(ArrayList<User> before, ArrayList<User> after) {
         String report = "";
