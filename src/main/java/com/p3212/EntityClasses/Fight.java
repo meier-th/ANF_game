@@ -84,10 +84,10 @@ public class Fight {
                     return fighter2.getLogin();
 
                 case 2:
-                    return animals1.get(0).getName().substring(0, 3);
+                    return animals1.get(0).getName().substring(0, 3)+'1';
 
                 case 3:
-                    return animals2.get(0).getName().substring(0, 3);
+                    return animals2.get(0).getName().substring(0, 3)+'0';
             }
         } else {
             if ((currentAttacker + offset) % (1 + animals1.size() + fighters.size()) < fighters.size()) {
