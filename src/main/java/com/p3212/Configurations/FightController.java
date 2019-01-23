@@ -229,7 +229,17 @@ public class FightController {
     }
 
     private void schedule(Fight fight, boolean first) {
-        fight.switchAttacker();
+        if (first) {
+            fight.switchAttacker();
+        } else {
+            if (fight instanceof FightVsAI) {
+                String current = fight.getCurrentAttacker(0);
+                fight.switchAttacker();
+                if (current.equals(fight.getCurrentAttacker(0))) {
+                    fight.switchAttacker();
+                }
+            }
+        }
         System.out.println("Attacker switched: to " + fight.getCurrentAttacker(0) + " At: "
                 + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME) + '\n');
 
@@ -279,50 +289,50 @@ public class FightController {
         int damage;
         int chakra;
         if (userIsTarget)
-        if (!spellName.equalsIgnoreCase("Physical attack")) {
-            Spell spell = spellService.get(spellName);
-            SpellHandling handling = spellHandlingService.getSpellHandling(attacker.getCharacter(), spell);
-            if (spell == null) {
-                attack.setCode(8);
-                return attack;
-            }
-            if (spellName.equals("Air Strike")) {
-                damage = spell.getBaseDamage() + handling.getSpellLevel() * spell.getDamagePerLevel();
+            if (!spellName.equalsIgnoreCase("Physical attack")) {
+                Spell spell = spellService.get(spellName);
+                SpellHandling handling = spellHandlingService.getSpellHandling(attacker.getCharacter(), spell);
+                if (spell == null) {
+                    attack.setCode(8);
+                    return attack;
+                }
+                if (spellName.equals("Air Strike")) {
+                    damage = spell.getBaseDamage() + handling.getSpellLevel() * spell.getDamagePerLevel();
+                } else {
+                    damage = Math.round((spell.getBaseDamage() + handling.getSpellLevel() * spell.getDamagePerLevel()) * (1 - enemy.getCharacter().getResistance()));
+                }
+                if (spellName.equals("Fire Strike") && enemy.getCharacter().getResistance() < 0.8) {
+                    damage *= 2;
+                }
+                chakra = spell.getBaseChakraConsumption()
+                        + handling.getSpellLevel() * spell.getChakraConsumptionPerLevel();
             } else {
-                damage = Math.round((spell.getBaseDamage() + handling.getSpellLevel() * spell.getDamagePerLevel()) * (1 - enemy.getCharacter().getResistance()));
+                damage = Math.round(attacker.getCharacter().getPhysicalDamage() * (1 - enemy.getCharacter().getResistance()));
+                chakra = 0;
             }
-            if (spellName.equals("Fire Strike") && enemy.getCharacter().getResistance() < 0.8) {
-                damage *= 2;
-            }
-            chakra = spell.getBaseChakraConsumption()
-                    + handling.getSpellLevel() * spell.getChakraConsumptionPerLevel();
-        } else {
-            damage = Math.round(attacker.getCharacter().getPhysicalDamage() * (1 - enemy.getCharacter().getResistance()));
-            chakra = 0;
-        }
-        //animal is a target
+            //animal is a target
         else {
             if (!spellName.equalsIgnoreCase("Physical attack")) {
-            Spell spell = spellService.get(spellName);
-            SpellHandling handling = spellHandlingService.getSpellHandling(attacker.getCharacter(), spell);
-            if (spell == null) {
-                attack.setCode(8);
-                return attack;
-            }
-            if (spellName.equals("Air Strike")) {
-                damage = spell.getBaseDamage() + handling.getSpellLevel() * spell.getDamagePerLevel();
+                Spell spell = spellService.get(spellName);
+                SpellHandling handling = spellHandlingService.getSpellHandling(attacker.getCharacter(), spell);
+                if (spell == null) {
+                    attack.setCode(8);
+                    return attack;
+                }
+                if (spellName.equals("Air Strike")) {
+                    damage = spell.getBaseDamage() + handling.getSpellLevel() * spell.getDamagePerLevel();
+                } else {
+                    damage = Math.round((spell.getBaseDamage() + handling.getSpellLevel() * spell.getDamagePerLevel()) * (1 - targetAnimal.getResistance()));
+                }
+                if (spellName.equals("Fire Strike") && targetAnimal.getResistance() < 0.8) {
+                    damage *= 2;
+                }
+                chakra = spell.getBaseChakraConsumption()
+                        + handling.getSpellLevel() * spell.getChakraConsumptionPerLevel();
             } else {
-                damage = Math.round((spell.getBaseDamage() + handling.getSpellLevel() * spell.getDamagePerLevel()) * (1 - targetAnimal.getResistance()));
+                damage = Math.round(attacker.getCharacter().getPhysicalDamage() * (1 - targetAnimal.getResistance()));
+                chakra = 0;
             }
-            if (spellName.equals("Fire Strike") && targetAnimal.getResistance() < 0.8) {
-                damage *= 2;
-            }
-            chakra = spell.getBaseChakraConsumption()
-                    + handling.getSpellLevel() * spell.getChakraConsumptionPerLevel();
-        } else {
-            damage = Math.round(attacker.getCharacter().getPhysicalDamage() * (1 - targetAnimal.getResistance()));
-            chakra = 0;
-        }
         }
         int chakraBurn = 0;
         if (spellName.equals("Water Strike")) {
@@ -335,20 +345,20 @@ public class FightController {
             enemy.getCharacter().acceptDamage(damage);
             attack.setDeadly(enemy.getCharacter().getCurrentHP() <= 0);
             sendAfterAttack(enemyName, damage, enemyName,
-                attackerName, fight.getNextAttacker(), attack.isDeadly(),
-                attack.isDeadly(), spellName, chakra, chakraBurn);
-        sendAfterAttack(attackerName, damage, enemyName,
-                attackerName, fight.getNextAttacker(), attack.isDeadly(),
-                attack.isDeadly(), spellName, chakra, chakraBurn);
+                    attackerName, fight.getNextAttacker(), attack.isDeadly(),
+                    attack.isDeadly(), spellName, chakra, chakraBurn);
+            sendAfterAttack(attackerName, damage, enemyName,
+                    attackerName, fight.getNextAttacker(), attack.isDeadly(),
+                    attack.isDeadly(), spellName, chakra, chakraBurn);
         } else {
             targetAnimal.acceptDamage(damage);
             attack.setDeadly(targetAnimal.getCurrentHP() <= 0);
             sendAfterAttack(fight.getFighter1().getLogin(), damage, targetAnimal.getName(),
-                attackerName, fight.getNextAttacker(), attack.isDeadly(),
-                false, spellName, chakra, 0);
-        sendAfterAttack(fight.getFighter2().getLogin(), damage, targetAnimal.getName(),
-                attackerName, fight.getNextAttacker(), attack.isDeadly(),
-                false, spellName, chakra, 0);
+                    attackerName, fight.getNextAttacker(), attack.isDeadly(),
+                    false, spellName, chakra, 0);
+            sendAfterAttack(fight.getFighter2().getLogin(), damage, targetAnimal.getName(),
+                    attackerName, fight.getNextAttacker(), attack.isDeadly(),
+                    false, spellName, chakra, 0);
         }
 
         if (attack.isDeadly()) {
@@ -361,47 +371,48 @@ public class FightController {
                     System.out.println("animal 2 died");
                 }
             } else {
-            if (fight.getFighter1().getLogin().equals(enemyName)) {
-                fight.setFirstWon(false);
-            } else {
-                fight.setFirstWon(true);
+                if (fight.getFighter1().getLogin().equals(enemyName)) {
+                    fight.setFirstWon(false);
+                } else {
+                    fight.setFirstWon(true);
+                }
+                int firstFighterPreviousRating = fight.getFighter1().getStats().getRating();
+                int secondFighterPreviousRating = fight.getFighter2().getStats().getRating();
+                int rating;
+                if (firstFighterPreviousRating >= secondFighterPreviousRating && fight.isFirstWon() || secondFighterPreviousRating >= firstFighterPreviousRating && !fight.isFirstWon()) {
+                    rating = fight.getLessRatingChange();
+                } else {
+                    rating = fight.getBiggerRatingChange();
+                }
+                fight.setRatingChange(rating);
+                if (fight.isFirstWon()) {
+                    fight.getFighter1().getStats().setRating(fight.getFighter1().getStats().getRating() + rating);
+                    fight.getFighter1().getStats().setFights(fight.getFighter1().getStats().getFights() + 1);
+                    fight.getFighter1().getStats().setWins(fight.getFighter1().getStats().getWins() + 1);
+                    fight.getFighter2().getStats().setRating(fight.getFighter2().getStats().getRating() - rating);
+                    fight.getFighter2().getStats().setFights(fight.getFighter2().getStats().getFights() + 1);
+                    fight.getFighter2().getStats().setLosses(fight.getFighter2().getStats().getLosses() + 1);
+                } else {
+                    fight.getFighter1().getStats().setRating(fight.getFighter1().getStats().getRating() - rating);
+                    fight.getFighter1().getStats().setFights(fight.getFighter1().getStats().getFights() + 1);
+                    fight.getFighter1().getStats().setLosses(fight.getFighter1().getStats().getLosses() + 1);
+                    fight.getFighter2().getStats().setRating(fight.getFighter2().getStats().getRating() + rating);
+                    fight.getFighter2().getStats().setFights(fight.getFighter2().getStats().getFights() + 1);
+                    fight.getFighter2().getStats().setWins(fight.getFighter2().getStats().getWins() + 1);
+                }
+                statsServ.addStats(fight.getFighter1().getStats());
+                statsServ.addStats(fight.getFighter2().getStats());
+                fight.setFirstFighter(fight.getFighter1().getCharacter());
+                fight.setSecondFighter(fight.getFighter2().getCharacter());
+                pvpFightsService.addFight(fight);
+                timers.get(fightId).cancel(true);
+                System.out.println("FightId: " + fightId + " getId: " + fight.getId());
+                timers.remove(fightId);
+                fights.remove(fightId);
+                usersInFight.remove(attackerName);
+                usersInFight.remove(enemyName);
             }
-            int firstFighterPreviousRating = fight.getFighter1().getStats().getRating();
-            int secondFighterPreviousRating = fight.getFighter2().getStats().getRating();
-            int rating;
-            if (firstFighterPreviousRating >= secondFighterPreviousRating && fight.isFirstWon() || secondFighterPreviousRating >= firstFighterPreviousRating && !fight.isFirstWon()) {
-                rating = fight.getLessRatingChange();
-            } else {
-                rating = fight.getBiggerRatingChange();
-            }
-            fight.setRatingChange(rating);
-            if (fight.isFirstWon()) {
-                fight.getFighter1().getStats().setRating(fight.getFighter1().getStats().getRating() + rating);
-                fight.getFighter1().getStats().setFights(fight.getFighter1().getStats().getFights() + 1);
-                fight.getFighter1().getStats().setWins(fight.getFighter1().getStats().getWins() + 1);
-                fight.getFighter2().getStats().setRating(fight.getFighter2().getStats().getRating() - rating);
-                fight.getFighter2().getStats().setFights(fight.getFighter2().getStats().getFights() + 1);
-                fight.getFighter2().getStats().setLosses(fight.getFighter2().getStats().getLosses() + 1);
-            } else {
-                fight.getFighter1().getStats().setRating(fight.getFighter1().getStats().getRating() - rating);
-                fight.getFighter1().getStats().setFights(fight.getFighter1().getStats().getFights() + 1);
-                fight.getFighter1().getStats().setLosses(fight.getFighter1().getStats().getLosses() + 1);
-                fight.getFighter2().getStats().setRating(fight.getFighter2().getStats().getRating() + rating);
-                fight.getFighter2().getStats().setFights(fight.getFighter2().getStats().getFights() + 1);
-                fight.getFighter2().getStats().setWins(fight.getFighter2().getStats().getWins() + 1);
-            }
-            statsServ.addStats(fight.getFighter1().getStats());
-            statsServ.addStats(fight.getFighter2().getStats());
-            fight.setFirstFighter(fight.getFighter1().getCharacter());
-            fight.setSecondFighter(fight.getFighter2().getCharacter());
-            pvpFightsService.addFight(fight);
-            timers.get(fightId).cancel(true);
-            System.out.println("FightId: " + fightId + " getId: " + fight.getId());
-            timers.remove(fightId);
-            fights.remove(fightId);
-            usersInFight.remove(attackerName);
-            usersInFight.remove(enemyName);
-        }}
+        }
         return attack;
     }
 
@@ -577,35 +588,35 @@ public class FightController {
         boolean fromAnimals1 = animName.charAt(3) == '1';
         NinjaAnimal attacker;
         switch (animName) {
-            case "Дяд" : {
+            case "Дяд": {
                 attacker = ninjaAnimalService.get("Дядя Бафомет");
                 break;
             }
-            case "Тёт" : {
+            case "Тёт": {
                 attacker = ninjaAnimalService.get("Тётя Срака");
                 break;
             }
-            case "Ube" : {
+            case "Ube": {
                 attacker = ninjaAnimalService.get("Ubele");
                 break;
             }
-            case "Ver" : {
+            case "Ver": {
                 attacker = ninjaAnimalService.get("Vertet");
                 break;
             }
-            case "Lus" : {
+            case "Lus": {
                 attacker = ninjaAnimalService.get("Lusis");
                 break;
             }
-            case "Lau" : {
+            case "Lau": {
                 attacker = ninjaAnimalService.get("Lauva");
                 break;
             }
-            case "Lap" : {
+            case "Lap": {
                 attacker = ninjaAnimalService.get("Lapsa");
                 break;
             }
-            default : {
+            default: {
                 attacker = ninjaAnimalService.get("Erglis");
             }
         }
@@ -631,80 +642,79 @@ public class FightController {
             targetAnimal = targetUser ? null : fight.getAnimals2().get(targetNum - fight.getAnimals2().size());
         }
         timers.put(fight.getId(), scheduler.schedule(() -> {
-        //damage
-        boolean deadly = false;
-        int damage = attacker.getDamage();
-        if (targetUser) {
-            damage *= (1 - target.getCharacter().getResistance());
-            target.getCharacter().acceptDamage(damage);
-            if (target.getCharacter().getCurrentHP() <= 0)
-                deadly = true;
-        }
-        else {
-            damage *= (1 - targetAnimal.getResistance());
-            targetAnimal.acceptDamage(damage);
-            if (targetAnimal.getCurrentHP() <= 0)
-                deadly = true;
-        }
-        boolean finish = targetUser && deadly;
-        sendAfterAttack(fight.getFighter1().getLogin(), damage, targetUser ? target.getLogin() : targetAnimal.getName(), fight.getCurrentAttacker(0), fight.getNextAttacker(),
-                deadly, finish, "Physical attack", 0, 0);
-        sendAfterAttack(fight.getFighter2().getLogin(), damage, targetUser ? target.getLogin() : targetAnimal.getName(), fight.getCurrentAttacker(0), fight.getNextAttacker(),
-                deadly, finish, "Physical attack", 0, 0);
-        //if animal died
-        if (deadly && !finish) {
-            if (fromAnimals1) {
-                fight.getAnimals2().clear();
-                System.out.println("animal2 died");
+            //damage
+            boolean deadly = false;
+            int damage = attacker.getDamage();
+            if (targetUser) {
+                damage *= (1 - target.getCharacter().getResistance());
+                target.getCharacter().acceptDamage(damage);
+                if (target.getCharacter().getCurrentHP() <= 0)
+                    deadly = true;
             } else {
-                fight.getAnimals1().clear();
-                System.out.println("animal1 died");
+                damage *= (1 - targetAnimal.getResistance());
+                targetAnimal.acceptDamage(damage);
+                if (targetAnimal.getCurrentHP() <= 0)
+                    deadly = true;
             }
-        }
-        //if user died
-        if (finish) {
-            if (fromAnimals1) {
-                fight.setFirstWon(true);
-            } else {
-                fight.setFirstWon(false);
+            boolean finish = targetUser && deadly;
+            sendAfterAttack(fight.getFighter1().getLogin(), damage, targetUser ? target.getLogin() : targetAnimal.getName(), fight.getCurrentAttacker(0), fight.getNextAttacker(),
+                    deadly, finish, "Physical attack", 0, 0);
+            sendAfterAttack(fight.getFighter2().getLogin(), damage, targetUser ? target.getLogin() : targetAnimal.getName(), fight.getCurrentAttacker(0), fight.getNextAttacker(),
+                    deadly, finish, "Physical attack", 0, 0);
+            //if animal died
+            if (deadly && !finish) {
+                if (fromAnimals1) {
+                    fight.getAnimals2().clear();
+                    System.out.println("animal2 died");
+                } else {
+                    fight.getAnimals1().clear();
+                    System.out.println("animal1 died");
+                }
             }
-            int firstFighterPreviousRating = fight.getFighter1().getStats().getRating();
-            int secondFighterPreviousRating = fight.getFighter2().getStats().getRating();
-            int rating;
-            if (firstFighterPreviousRating >= secondFighterPreviousRating && fight.isFirstWon() || secondFighterPreviousRating >= firstFighterPreviousRating && !fight.isFirstWon()) {
-                rating = fight.getLessRatingChange();
-            } else {
-                rating = fight.getBiggerRatingChange();
+            //if user died
+            if (finish) {
+                if (fromAnimals1) {
+                    fight.setFirstWon(true);
+                } else {
+                    fight.setFirstWon(false);
+                }
+                int firstFighterPreviousRating = fight.getFighter1().getStats().getRating();
+                int secondFighterPreviousRating = fight.getFighter2().getStats().getRating();
+                int rating;
+                if (firstFighterPreviousRating >= secondFighterPreviousRating && fight.isFirstWon() || secondFighterPreviousRating >= firstFighterPreviousRating && !fight.isFirstWon()) {
+                    rating = fight.getLessRatingChange();
+                } else {
+                    rating = fight.getBiggerRatingChange();
+                }
+                fight.setRatingChange(rating);
+                if (fight.isFirstWon()) {
+                    fight.getFighter1().getStats().setRating(fight.getFighter1().getStats().getRating() + rating);
+                    fight.getFighter1().getStats().setFights(fight.getFighter1().getStats().getFights() + 1);
+                    fight.getFighter1().getStats().setWins(fight.getFighter1().getStats().getWins() + 1);
+                    fight.getFighter2().getStats().setRating(fight.getFighter2().getStats().getRating() - rating);
+                    fight.getFighter2().getStats().setFights(fight.getFighter2().getStats().getFights() + 1);
+                    fight.getFighter2().getStats().setLosses(fight.getFighter2().getStats().getLosses() + 1);
+                } else {
+                    fight.getFighter1().getStats().setRating(fight.getFighter1().getStats().getRating() - rating);
+                    fight.getFighter1().getStats().setFights(fight.getFighter1().getStats().getFights() + 1);
+                    fight.getFighter1().getStats().setLosses(fight.getFighter1().getStats().getLosses() + 1);
+                    fight.getFighter2().getStats().setRating(fight.getFighter2().getStats().getRating() + rating);
+                    fight.getFighter2().getStats().setFights(fight.getFighter2().getStats().getFights() + 1);
+                    fight.getFighter2().getStats().setWins(fight.getFighter2().getStats().getWins() + 1);
+                }
+                statsServ.addStats(fight.getFighter1().getStats());
+                statsServ.addStats(fight.getFighter2().getStats());
+                fight.setFirstFighter(fight.getFighter1().getCharacter());
+                fight.setSecondFighter(fight.getFighter2().getCharacter());
+                pvpFightsService.addFight(fight);
+                timers.get(fight.getId()).cancel(true);
+                //System.out.println("FightId: " + fightId + " getId: " + fight.getId());
+                timers.remove(fight.getId());
+                fights.remove(fight.getId());
+                usersInFight.remove(fight.getFighter1().getLogin());
+                usersInFight.remove(fight.getFighter2().getLogin());
             }
-            fight.setRatingChange(rating);
-            if (fight.isFirstWon()) {
-                fight.getFighter1().getStats().setRating(fight.getFighter1().getStats().getRating() + rating);
-                fight.getFighter1().getStats().setFights(fight.getFighter1().getStats().getFights() + 1);
-                fight.getFighter1().getStats().setWins(fight.getFighter1().getStats().getWins() + 1);
-                fight.getFighter2().getStats().setRating(fight.getFighter2().getStats().getRating() - rating);
-                fight.getFighter2().getStats().setFights(fight.getFighter2().getStats().getFights() + 1);
-                fight.getFighter2().getStats().setLosses(fight.getFighter2().getStats().getLosses() + 1);
-            } else {
-                fight.getFighter1().getStats().setRating(fight.getFighter1().getStats().getRating() - rating);
-                fight.getFighter1().getStats().setFights(fight.getFighter1().getStats().getFights() + 1);
-                fight.getFighter1().getStats().setLosses(fight.getFighter1().getStats().getLosses() + 1);
-                fight.getFighter2().getStats().setRating(fight.getFighter2().getStats().getRating() + rating);
-                fight.getFighter2().getStats().setFights(fight.getFighter2().getStats().getFights() + 1);
-                fight.getFighter2().getStats().setWins(fight.getFighter2().getStats().getWins() + 1);
-            }
-            statsServ.addStats(fight.getFighter1().getStats());
-            statsServ.addStats(fight.getFighter2().getStats());
-            fight.setFirstFighter(fight.getFighter1().getCharacter());
-            fight.setSecondFighter(fight.getFighter2().getCharacter());
-            pvpFightsService.addFight(fight);
-            timers.get(fight.getId()).cancel(true);
-            //System.out.println("FightId: " + fightId + " getId: " + fight.getId());
-            timers.remove(fight.getId());
-            fights.remove(fight.getId());
-            usersInFight.remove(fight.getFighter1().getLogin());
-            usersInFight.remove(fight.getFighter2().getLogin());
-        }
-                schedule(fight, false);
+            schedule(fight, false);
         }, delay, TimeUnit.MILLISECONDS));
     }
 
@@ -741,7 +751,8 @@ public class FightController {
                 notifServ.sendSummon(fight.getFighter1().getLogin(), name, animal, animalName);
             }
             return ResponseEntity.ok(animal.toString());
-        } else return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"answer\":\"You havent chosen your animal\"}");
+        } else
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"answer\":\"You havent chosen your animal\"}");
     }
 
     @PostMapping("/summonPve")
@@ -777,39 +788,39 @@ public class FightController {
         return ResponseEntity.ok(animal.toString());
     }
 
-    private void animalPveAttack (FightVsAI fight) {
+    private void animalPveAttack(FightVsAI fight) {
         String animName = fight.getCurrentAttacker(0);
         NinjaAnimal attacker = null;
         switch (animName) {
-            case "Дяд" : {
+            case "Дяд": {
                 attacker = ninjaAnimalService.get("Дядя Бафомет");
                 break;
             }
-            case "Тёт" : {
+            case "Тёт": {
                 attacker = ninjaAnimalService.get("Тётя Срака");
                 break;
             }
-            case "Ube" : {
+            case "Ube": {
                 attacker = ninjaAnimalService.get("Ubele");
                 break;
             }
-            case "Ver" : {
+            case "Ver": {
                 attacker = ninjaAnimalService.get("Vertet");
                 break;
             }
-            case "Lus" : {
+            case "Lus": {
                 attacker = ninjaAnimalService.get("Lusis");
                 break;
             }
-            case "Lau" : {
+            case "Lau": {
                 attacker = ninjaAnimalService.get("Lauva");
                 break;
             }
-            case "Lap" : {
+            case "Lap": {
                 attacker = ninjaAnimalService.get("Lapsa");
                 break;
             }
-            default : {
+            default: {
                 attacker = ninjaAnimalService.get("Erglis");
             }
         }
@@ -826,35 +837,35 @@ public class FightController {
                 deadly = true;
             if (deadly) {
                 fightVsAIService.addFight(fight);
-            //set stats and save
-            for (UserAIFight fightData : fight.getSetFighters()) {
-                if (fightData.getResult() == null)
-                    fightData.setResult(UserAIFight.Result.WON);
-                int experience = 500 + 200 * target.getNumberOfTails();
-                if (fightData.getResult().equals(UserAIFight.Result.DIED)) {
-                    experience /= 2;
-                    fightData.getFighter().getUser().getStats().setFights(fightData.getFighter().getUser().getStats().getFights() + 1);
-                    fightData.getFighter().getUser().getStats().setDeaths(fightData.getFighter().getUser().getStats().getDeaths() + 1);
-                    fightData.getFighter().changeXP(experience);
-                    statsServ.addStats(fightData.getFighter().getUser().getStats());
-                } else {
-                    fightData.getFighter().getUser().getStats().setFights(fightData.getFighter().getUser().getStats().getFights() + 1);
-                    fightData.getFighter().getUser().getStats().setWins(fightData.getFighter().getUser().getStats().getWins() + 1);
-                    fightData.getFighter().changeXP(experience);
-                    statsServ.addStats(fightData.getFighter().getUser().getStats());
+                //set stats and save
+                for (UserAIFight fightData : fight.getSetFighters()) {
+                    if (fightData.getResult() == null)
+                        fightData.setResult(UserAIFight.Result.WON);
+                    int experience = 500 + 200 * target.getNumberOfTails();
+                    if (fightData.getResult().equals(UserAIFight.Result.DIED)) {
+                        experience /= 2;
+                        fightData.getFighter().getUser().getStats().setFights(fightData.getFighter().getUser().getStats().getFights() + 1);
+                        fightData.getFighter().getUser().getStats().setDeaths(fightData.getFighter().getUser().getStats().getDeaths() + 1);
+                        fightData.getFighter().changeXP(experience);
+                        statsServ.addStats(fightData.getFighter().getUser().getStats());
+                    } else {
+                        fightData.getFighter().getUser().getStats().setFights(fightData.getFighter().getUser().getStats().getFights() + 1);
+                        fightData.getFighter().getUser().getStats().setWins(fightData.getFighter().getUser().getStats().getWins() + 1);
+                        fightData.getFighter().changeXP(experience);
+                        statsServ.addStats(fightData.getFighter().getUser().getStats());
+                    }
+                    fightData.setExperience(experience);
+                    userAiFightService.add(fightData);
                 }
-                fightData.setExperience(experience);
-                userAiFightService.add(fightData);
-            }
-            //close fight
-            queues.remove(fight.getId());
-            for (UserAIFight fighter : fight.getSetFighters()) {
-                usersInFight.remove(fighter.getFighter().getUser().getLogin());
-            }
-            timers.get(fight.getId()).cancel(true);
+                //close fight
+                queues.remove(fight.getId());
+                for (UserAIFight fighter : fight.getSetFighters()) {
+                    usersInFight.remove(fighter.getFighter().getUser().getLogin());
+                }
+                timers.get(fight.getId()).cancel(true);
                 fights.remove(fight.getId());
             }
-        schedule(fight, false);
+            schedule(fight, false);
         }, delay, TimeUnit.MILLISECONDS));
     }
 

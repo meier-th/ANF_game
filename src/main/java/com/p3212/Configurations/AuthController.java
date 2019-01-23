@@ -61,7 +61,7 @@ public class AuthController {
     @GetMapping("/checkCookies")
     public ResponseEntity checkCookies() {
         try {
-            if (!SecurityContextHolder.getContext().getAuthentication().getName().equals("anonymous"))
+            if (!SecurityContextHolder.getContext().getAuthentication().getName().equalsIgnoreCase("anonymoususer"))
                 return ResponseEntity.status(HttpStatus.OK).body("{\"authorized\": true, \"login\":\"" +
                         SecurityContextHolder.getContext().getAuthentication().getName() + "\"}");
             else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{\"authorized\": false}");
