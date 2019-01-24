@@ -134,8 +134,6 @@ public class FightPVP extends Fight {
         return "{\"id\":" + id +
                 ", \"type\": \"pvp\"" +
                 ", \"fighters1\":" + fighter1.toString() +
-                "\", \"animals1\":" + animals1.get(0) +
-                ",\"animals2\":" + animals2.get(0) +
                 ", \"timeLeft\":" + timeLeft +
                 ", \"currentName\":\"" + currentName +
                 "\", \"fighters2\":" + fighter2.toString() + "}";

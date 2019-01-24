@@ -16,7 +16,6 @@ public class Fight {
         this.id = number;
         animals1 = new ArrayList<>();
         animals2 = new ArrayList<>();
-
     }
 
     protected final int id;

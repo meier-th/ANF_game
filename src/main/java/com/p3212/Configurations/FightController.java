@@ -117,7 +117,9 @@ public class FightController {
     @PostMapping("info")
     public ResponseEntity info(@RequestParam int id) {
         Fight fight = fights.get(id);
-        fight.setTimeLeft(timers.get(id).getDelay(TimeUnit.MILLISECONDS));
+        if (timers.get(id) != null) {
+            fight.setTimeLeft(timers.get(id).getDelay(TimeUnit.MILLISECONDS));
+        }
         return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
     }
 
@@ -254,7 +256,7 @@ public class FightController {
                     notifServ.sendSwitch(user.getFighter().getUser().getLogin(), fight.getCurrentAttacker(0)));
             if (fight.getCurrentAttacker(0).length() < 3) {
                 bossAttack((FightVsAI) fight);
-            } else if (fight.getCurrentAttacker(0).length() > 3 && fight.getCurrentAttacker(0).length() < 5) {
+            } else if (fight.getCurrentAttacker(0).length() >= 3 && fight.getCurrentAttacker(0).length() < 5) {
                 animalPveAttack((FightVsAI) fight);
             }
         }
@@ -538,7 +540,10 @@ public class FightController {
                 targetAnimal.acceptDamage(damage);
                 deadly = targetAnimal.getCurrentHP() <= 0;
                 if (deadly) {
-                    // TODO remove
+                    fight.getAnimals1().forEach((an) -> {
+                        if (an.getName().equalsIgnoreCase(targetAnimal.getName()))
+                            fight.getAnimals1().remove(an);
+                    });
                 }
             }
             //check if everyone is dead
@@ -789,6 +794,7 @@ public class FightController {
     }
 
     private void animalPveAttack(FightVsAI fight) {
+        System.out.println("Animal attack");
         String animName = fight.getCurrentAttacker(0);
         NinjaAnimal attacker = null;
         switch (animName) {
@@ -835,6 +841,13 @@ public class FightController {
             boolean deadly = false;
             if (target.getCurrentHP() <= 0)
                 deadly = true;
+            final boolean dead = deadly;
+            fight.getSetFighters().forEach((set) -> {
+                sendAfterAttack(set.getFighter().getUser().getLogin(), damage,
+                        String.valueOf(target.getNumberOfTails()), fight.getCurrentAttacker(0),
+                        fight.getNextAttacker(), dead, dead, "Physical attack",
+                        0, 0);
+            });
             if (deadly) {
                 fightVsAIService.addFight(fight);
                 //set stats and save
