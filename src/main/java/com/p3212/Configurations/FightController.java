@@ -757,7 +757,7 @@ public class FightController {
             }
             return ResponseEntity.ok(animal.toString());
         } else
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"answer\":\"You havent chosen your animal\"}");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"answer\":\"You haven't chosen your animal\"}");
     }
 
     @PostMapping("/summonPve")
