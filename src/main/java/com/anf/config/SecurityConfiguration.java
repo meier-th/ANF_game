@@ -12,6 +12,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
@@ -19,10 +23,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-/**
- * Security configuration – username/password auth only for now. Google OAuth2 login will be added
- * in the auth-google-only refactoring step.
- */
+/** Security configuration – username/password auth and Google OAuth2 login. */
 @Configuration
 @EnableWebSecurity
 @AllArgsConstructor
@@ -70,7 +71,12 @@ public class SecurityConfiguration {
         .exceptionHandling(ex -> ex.authenticationEntryPoint(restAuthenticationEntryPoint))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/checkCookies", "/registration", "/confirm")
+                auth.requestMatchers(
+                        "/checkCookies",
+                        "/registration",
+                        "/confirm",
+                        "/oauth2/**",
+                        "/login/oauth2/code/google")
                     .permitAll()
                     .requestMatchers("/admin/**")
                     .hasRole("ADMIN")
@@ -79,8 +85,19 @@ public class SecurityConfiguration {
                     .anyRequest()
                     .authenticated())
         .formLogin(form -> form.successHandler(successHandler).failureHandler(FAILURE_HANDLER))
+        .oauth2Login(
+            oauth2 ->
+                oauth2
+                    .userInfoEndpoint(userInfo -> userInfo.userService(oauth2UserService()))
+                    .successHandler(successHandler)
+                    .failureHandler(FAILURE_HANDLER))
         .logout(logout -> logout.deleteCookies("JSESSIONID").logoutSuccessUrl("/logout-success"));
 
     return http.build();
+  }
+
+  @Bean
+  public OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService() {
+    return new DefaultOAuth2UserService(); // Implement custom logic here to save user to DB, etc.
   }
 }

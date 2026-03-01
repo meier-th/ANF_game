@@ -7,10 +7,19 @@ spring:
   jpa:
     show-sql: false
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ""
+            client-secret: ""
+            scope: openid,profile,email
+            redirect-uri: "{baseUrl}/oauth2/callback/{registrationId}"
+
 server:
   port: 8080
 
 logging:
   level:
     org.springframework.web: INFO
- 
