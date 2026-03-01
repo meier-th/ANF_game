@@ -21,3 +21,4 @@ out/
 # Environment / secrets
 .env
 application-local.properties
+application-dev.yaml
