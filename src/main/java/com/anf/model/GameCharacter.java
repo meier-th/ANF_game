@@ -1,8 +1,8 @@
 package com.anf.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -239,7 +239,7 @@ public class GameCharacter extends Creature implements Serializable {
   public String toString() {
     try {
       return new ObjectMapper().writeValueAsString(this);
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       return "{}";
     }
     //        return "Character{" +
