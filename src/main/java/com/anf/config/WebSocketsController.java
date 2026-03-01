@@ -1,0 +1,84 @@
+package com.anf.config;
+
+import java.security.Principal;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Controller;
+
+import com.anf.model.NinjaAnimal;
+import com.anf.model.State;
+import com.anf.model.StompPrincipal;
+
+import lombok.AllArgsConstructor;
+
+@Controller
+@AllArgsConstructor
+public class WebSocketsController {
+
+    private final SimpMessagingTemplate messagingTemplate;
+
+    @MessageMapping("/send/message")
+    public void notify(String message) {
+        if (message.substring(message.length() - 4, message.length()).equals("test")) {
+            State state = new State("Attacker", "Victim", "Air Strike", 100, 120, 70, false, false, "nextAttacker");
+            sendFightState(state, message.substring(0, message.length() - 6));
+        }
+        messagingTemplate.convertAndSend("/chat", message + " - " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
+    }
+
+    public void send(Principal principal, String message) {
+        messagingTemplate.convertAndSendToUser(principal.getName(), "/msg", message);
+    }
+
+    public void sendOnline(String message) {
+        messagingTemplate.convertAndSend("/online", message);
+    }
+
+    public void sendSocial(Principal principal, String message) {
+        messagingTemplate.convertAndSendToUser(principal.getName(), "/social", message);
+    }
+
+    public void sendAdmin(String username) {
+        messagingTemplate.convertAndSend("/admin/admins", username);
+    }
+
+    public void sendInvitation(String username, String author, String type, int id) {
+        String message = type + ":" + author + ":" + id;
+        Principal principal = new StompPrincipal(username);
+        messagingTemplate.convertAndSendToUser(principal.getName(), "/invite", message);
+    }
+
+    public void sendApproval(String author, String username, int id) {
+        String message = username + ":" + id;
+        Principal principal = new StompPrincipal(author);
+        messagingTemplate.convertAndSendToUser(principal.getName(), "/approval", message);
+    }
+
+    public void sendStart(String author, String username, int id) {
+        String message = author + ":" + id;
+        Principal principal = new StompPrincipal(username);
+        messagingTemplate.convertAndSendToUser(principal.getName(), "/start", message);
+    }
+
+    public void sendFightState(State state, String username) {
+        messagingTemplate.convertAndSendToUser(username, "/fightState", state);
+    }
+
+    public void sendSwitch(String target, String next) {
+        messagingTemplate.convertAndSendToUser(target, "/switch", next);
+    }
+
+    //animalName: first 3 letters and number to distinguish between similar animals
+    public void sendSummon(String username, String summoner, NinjaAnimal animal, String animalName) {
+        String message = "{\"summoner\": \"" + summoner +
+                "\",\"name\": \"" + animalName +
+                "\",\"race\": \"" + animal.getRace().toString() +
+                "\",\"maxHp\": " + animal.getMaxHp() +
+                ",\"damage\": " + animal.getDamage() + "}";
+        messagingTemplate.convertAndSendToUser(username, "/summon", message);
+    }
+
+}
