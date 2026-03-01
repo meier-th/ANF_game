@@ -1,175 +1,137 @@
 package com.anf.model;
 
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-
-/**
- * Represents Features entity
- * Used to operate on in-game characters appearances
- */
+/** Represents Features entity Used to operate on in-game characters appearances */
 @Entity
 @Table(name = "Features")
 public class Appearance {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int id;
-    public static enum Gender {
-        MALE,
-        FEMALE;
-    }
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  int id;
 
-    public static enum SkinColour {
-        WHITE,
-        LATIN,
-        DARK,
-        BLACK;
-    }
+  public static enum Gender {
+    MALE,
+    FEMALE;
+  }
 
-    public static enum HairColour {
-        YELLOW,
-        BROWN,
-        BLACK;
-    }
+  public static enum SkinColour {
+    WHITE,
+    LATIN,
+    DARK,
+    BLACK;
+  }
 
-    public static enum ClothesColour {
-        GREEN,
-        RED,
-        BLUE;
-    }
+  public static enum HairColour {
+    YELLOW,
+    BROWN,
+    BLACK;
+  }
 
-    /**
-     * Gender of character
-     * Responsible for model
-     */
-    @Enumerated(EnumType.STRING)
-    @Column(length=6, nullable=false)
-    private Gender gender;
+  public static enum ClothesColour {
+    GREEN,
+    RED,
+    BLUE;
+  }
 
-    /**
-     * Skin colour of a character
-     */
-    @Column(length=5, nullable=false)
-    @Enumerated(EnumType.STRING)
-    private SkinColour skinColour;
+  /** Gender of character Responsible for model */
+  @Enumerated(EnumType.STRING)
+  @Column(length = 6, nullable = false)
+  private Gender gender;
 
-    /**
-     * Hair colour of a character
-     */
-    @Column(length=6, nullable=false)
-    @Enumerated(EnumType.STRING)
-    private HairColour hairColour;
-    
-    @OneToOne(mappedBy="appearance", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    @JsonIgnore
-    private GameCharacter charact;
-    
-    /**
-     * Clothes colour of a character
-     */
-    @Enumerated(EnumType.STRING)
-    @Column(length=5)
-    private ClothesColour clothesColour;
+  /** Skin colour of a character */
+  @Column(length = 5, nullable = false)
+  @Enumerated(EnumType.STRING)
+  private SkinColour skinColour;
 
+  /** Hair colour of a character */
+  @Column(length = 6, nullable = false)
+  @Enumerated(EnumType.STRING)
+  private HairColour hairColour;
 
-    public Appearance(){}
-    
-    /**
-     * Getter
-     * {@link Appearance#gender}
-     */
-    public Gender getGender() {
-        return gender;
-    }
+  @OneToOne(mappedBy = "appearance", cascade = CascadeType.REMOVE, orphanRemoval = true)
+  @JsonIgnore
+  private GameCharacter charact;
 
-    /**
-     * Setter
-     * {@link Appearance#gender}
-     */
-    public void setGender(Gender gender) {
-        this.gender = gender;
-    }
+  /** Clothes colour of a character */
+  @Enumerated(EnumType.STRING)
+  @Column(length = 5)
+  private ClothesColour clothesColour;
 
-    /**
-     * Getter
-     * {@link Appearance#skinColour}
-     */
-    public SkinColour getSkinColour() {
-        return skinColour;
-    }
+  public Appearance() {}
 
-    /**
-     * Setter
-     * {@link Appearance#skinColour}
-     */
-    public void setSkinColour(SkinColour skinColour) {
-        this.skinColour = skinColour;
-    }
+  /** Getter {@link Appearance#gender} */
+  public Gender getGender() {
+    return gender;
+  }
 
-    /**
-     * Getter
-     * {@link Appearance#hairColour}
-     */
-    public HairColour getHairColour() {
-        return hairColour;
-    }
+  /** Setter {@link Appearance#gender} */
+  public void setGender(Gender gender) {
+    this.gender = gender;
+  }
 
-    /**
-     * Setter
-     * {@link Appearance#hairColour}
-     */
-    public void setHairColour(HairColour hairColour) {
-        this.hairColour = hairColour;
-    }
+  /** Getter {@link Appearance#skinColour} */
+  public SkinColour getSkinColour() {
+    return skinColour;
+  }
 
-    /**
-     * Getter
-     * {@link Appearance#clothesColour}
-     */
-    public ClothesColour getClothesColour() {
-        return clothesColour;
-    }
+  /** Setter {@link Appearance#skinColour} */
+  public void setSkinColour(SkinColour skinColour) {
+    this.skinColour = skinColour;
+  }
 
-    /**
-     * Setter
-     * {@link Appearance#clothesColour}
-     */
-    public void setClothesColour(ClothesColour clothesColour) {
-        this.clothesColour = clothesColour;
-    }
+  /** Getter {@link Appearance#hairColour} */
+  public HairColour getHairColour() {
+    return hairColour;
+  }
 
-    public int getId() {
-        return id;
-    }
+  /** Setter {@link Appearance#hairColour} */
+  public void setHairColour(HairColour hairColour) {
+    this.hairColour = hairColour;
+  }
 
-    public GameCharacter getCharact() {
-        return charact;
-    }
+  /** Getter {@link Appearance#clothesColour} */
+  public ClothesColour getClothesColour() {
+    return clothesColour;
+  }
 
-    public void setCharact(GameCharacter charact) {
-        this.charact = charact;
-    }
+  /** Setter {@link Appearance#clothesColour} */
+  public void setClothesColour(ClothesColour clothesColour) {
+    this.clothesColour = clothesColour;
+  }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+  public int getId() {
+    return id;
+  }
 
-    public Appearance(Gender gender, SkinColour skinColour, HairColour hairColour, ClothesColour clothesColour) {
-        this.gender = gender;
-        this.skinColour = skinColour;
-        this.hairColour = hairColour;
-        this.clothesColour = clothesColour;
-    }
+  public GameCharacter getCharact() {
+    return charact;
+  }
+
+  public void setCharact(GameCharacter charact) {
+    this.charact = charact;
+  }
+
+  public void setId(int id) {
+    this.id = id;
+  }
+
+  public Appearance(
+      Gender gender, SkinColour skinColour, HairColour hairColour, ClothesColour clothesColour) {
+    this.gender = gender;
+    this.skinColour = skinColour;
+    this.hairColour = hairColour;
+    this.clothesColour = clothesColour;
+  }
 }

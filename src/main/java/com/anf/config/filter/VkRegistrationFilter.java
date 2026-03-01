@@ -1,13 +1,13 @@
 package com.anf.config.filter;
 
+import com.anf.service.AuthService;
+import com.anf.service.UserService;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -22,70 +22,70 @@ import org.springframework.security.oauth2.common.exceptions.InvalidTokenExcepti
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 
-import com.anf.service.AuthService;
-import com.anf.service.UserService;
-
 public class VkRegistrationFilter extends AbstractAuthenticationProcessingFilter {
 
-    @Autowired
-    UserService service;
+  @Autowired UserService service;
 
-    private OAuth2RestTemplate restTemplate;
+  private OAuth2RestTemplate restTemplate;
 
-    private AuthService authService;
+  private AuthService authService;
 
-    public VkRegistrationFilter(String defaultFilterProcessesUrl) {
-        super(defaultFilterProcessesUrl);
-        setAuthenticationManager(authenticationManagerNone());
+  public VkRegistrationFilter(String defaultFilterProcessesUrl) {
+    super(defaultFilterProcessesUrl);
+    setAuthenticationManager(authenticationManagerNone());
+  }
+
+  @Override
+  public Authentication attemptAuthentication(
+      HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse)
+      throws AuthenticationException, IOException, ServletException {
+    try {
+      try {
+
+        OAuth2AccessToken accessToken = restTemplate.getAccessToken();
+        System.out.println("Access token object: " + accessToken);
+        System.out.println("Additional info: " + accessToken.getAdditionalInformation());
+        System.out.println("id: " + accessToken.getAdditionalInformation().get("user_id"));
+        int vkId =
+            Integer.parseInt(accessToken.getAdditionalInformation().get("user_id").toString());
+
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("NEWVK"));
+
+        org.springframework.security.core.userdetails.User user =
+            new User("tmp" + vkId, "", authorities);
+
+        System.out.println(user.getUsername());
+        return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+
+      } catch (InvalidTokenException e) {
+        throw new BadCredentialsException("Could not obtain user details from token", e);
+      }
+    } catch (OAuth2Exception e) {
+      throw new BadCredentialsException("Error token", e);
     }
+  }
 
-    @Override
-    public Authentication attemptAuthentication(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws AuthenticationException, IOException, ServletException {
-        try {
-            try {
+  public AuthenticationManager authenticationManagerNone() {
+    return authentication -> {
+      throw new UnsupportedOperationException(
+          "No authentication should be done with this AuthenticationManager");
+    };
+  }
 
-                OAuth2AccessToken accessToken = restTemplate.getAccessToken();
-                System.out.println("Access token object: " + accessToken);
-                System.out.println("Additional info: " + accessToken.getAdditionalInformation());
-                System.out.println("id: " + accessToken.getAdditionalInformation().get("user_id"));
-                int vkId = Integer.parseInt(accessToken.getAdditionalInformation().get("user_id").toString());
+  public OAuth2RestTemplate getRestTemplate() {
+    return restTemplate;
+  }
 
-                List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-                authorities.add(new SimpleGrantedAuthority("NEWVK"));
+  public void setRestTemplate(OAuth2RestTemplate restTemplate) {
+    this.restTemplate = restTemplate;
+  }
 
-                org.springframework.security.core.userdetails.User user = new User("tmp" + vkId, "", authorities);
+  public AuthService getAuthService() {
+    return authService;
+  }
 
-                System.out.println(user.getUsername());
-                return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-
-            } catch (InvalidTokenException e) {
-                throw new BadCredentialsException("Could not obtain user details from token", e);
-            }
-        } catch (OAuth2Exception e) {
-            throw new BadCredentialsException("Error token", e);
-        }
-
-    }
-
-    public AuthenticationManager authenticationManagerNone() {
-        return authentication -> {
-            throw new UnsupportedOperationException("No authentication should be done with this AuthenticationManager");
-        };
-    }
-
-    public OAuth2RestTemplate getRestTemplate() {
-        return restTemplate;
-    }
-
-    public void setRestTemplate(OAuth2RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
-
-    public AuthService getAuthService() {
-        return authService;
-    }
-
-    public void setAuthService(AuthService authService) {
-        this.authService = authService;
-    }
+  public void setAuthService(AuthService authService) {
+    this.authService = authService;
+  }
 }

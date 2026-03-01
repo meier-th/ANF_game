@@ -1,160 +1,112 @@
 package com.anf.model;
 
 import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-/**
- * Represents Technique entity
- * Used to operate on spells
- */
+/** Represents Technique entity Used to operate on spells */
 @Entity
 @Table(name = "Techniques")
 public class Spell implements Serializable {
 
-    /**
-     * The base damage of a spell
-     * negative damage = heal
-     */
-    @Column(nullable=false)
-    private int baseDamage;
+  /** The base damage of a spell negative damage = heal */
+  @Column(nullable = false)
+  private int baseDamage;
 
-    /**
-     * additional damage acquired on each level
-     */
-    @Column(nullable=false)
-    private int damagePerLevel;
+  /** additional damage acquired on each level */
+  @Column(nullable = false)
+  private int damagePerLevel;
 
-    /**
-     * The base chakra consumption of a spell
-     */
-    @Column(nullable=false)
-    private int baseChakraConsumption;
+  /** The base chakra consumption of a spell */
+  @Column(nullable = false)
+  private int baseChakraConsumption;
 
-    /**
-     * additional chalra consumption acquired on each level
-     */
-    @Column(nullable=false)
-    private int chakraConsumptionPerLevel;
+  /** additional chalra consumption acquired on each level */
+  @Column(nullable = false)
+  private int chakraConsumptionPerLevel;
 
-    private int reqLevel;
-    
-    /**
-     * Name of a spell
-     */
-    @Id
-    @Column(length=20, nullable=false)
-    private String name;
+  private int reqLevel;
 
-    /**
-     * Getter
-     * {@link Spell#baseDamage}
-     */
-    public int getBaseDamage() {
-        return baseDamage;
-    }
+  /** Name of a spell */
+  @Id
+  @Column(length = 20, nullable = false)
+  private String name;
 
-    public int getReqLevel() {
-        return reqLevel;
-    }
+  /** Getter {@link Spell#baseDamage} */
+  public int getBaseDamage() {
+    return baseDamage;
+  }
 
-    public void setReqLevel(int reqLevel) {
-        this.reqLevel = reqLevel;
-    }
+  public int getReqLevel() {
+    return reqLevel;
+  }
 
-    
-    
-    /**
-     * Setter
-     * {@link Spell#baseDamage}
-     */
-    public void setBaseDamage(int baseDamage) {
-        this.baseDamage = baseDamage;
-    }
+  public void setReqLevel(int reqLevel) {
+    this.reqLevel = reqLevel;
+  }
 
-    /**
-     * Getter
-     * {@link Spell#damagePerLevel}
-     */
-    public int getDamagePerLevel() {
-        return damagePerLevel;
-    }
+  /** Setter {@link Spell#baseDamage} */
+  public void setBaseDamage(int baseDamage) {
+    this.baseDamage = baseDamage;
+  }
 
-    /**
-     * Setter
-     * {@link Spell#damagePerLevel}
-     */
-    public void setDamagePerLevel(int damagePerLevel) {
-        this.damagePerLevel = damagePerLevel;
-    }
+  /** Getter {@link Spell#damagePerLevel} */
+  public int getDamagePerLevel() {
+    return damagePerLevel;
+  }
 
-    /**
-     * Getter
-     * {@link Spell#name}
-     */
-    public String getName() {
-        return name;
-    }
+  /** Setter {@link Spell#damagePerLevel} */
+  public void setDamagePerLevel(int damagePerLevel) {
+    this.damagePerLevel = damagePerLevel;
+  }
 
-    /**
-     * Setter
-     * {@link Spell#name}
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
+  /** Getter {@link Spell#name} */
+  public String getName() {
+    return name;
+  }
 
-    /**
-     * Getter
-     * {@link Spell#baseChakraConsumption}
-     */
-    public int getBaseChakraConsumption() {
-        return baseChakraConsumption;
-    }
+  /** Setter {@link Spell#name} */
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    /**
-     * Setter
-     * {@link Spell#baseChakraConsumption}
-     */
-    public void setBaseChakraConsumption(int baseChakraConsumption) {
-        this.baseChakraConsumption = baseChakraConsumption;
-    }
+  /** Getter {@link Spell#baseChakraConsumption} */
+  public int getBaseChakraConsumption() {
+    return baseChakraConsumption;
+  }
 
-    /**
-     * Getter
-     * {@link Spell#chakraConsumptionPerLevel}
-     */
-    public int getChakraConsumptionPerLevel() {
-        return chakraConsumptionPerLevel;
-    }
+  /** Setter {@link Spell#baseChakraConsumption} */
+  public void setBaseChakraConsumption(int baseChakraConsumption) {
+    this.baseChakraConsumption = baseChakraConsumption;
+  }
 
-    /**
-     * Setter
-     * {@link Spell#chakraConsumptionPerLevel}
-     */
-    public void setChakraConsumptionPerLevel(int chakraConsumptionPerLevel) {
-        this.chakraConsumptionPerLevel = chakraConsumptionPerLevel;
-    }
+  /** Getter {@link Spell#chakraConsumptionPerLevel} */
+  public int getChakraConsumptionPerLevel() {
+    return chakraConsumptionPerLevel;
+  }
 
-    public Spell() {
-    }
+  /** Setter {@link Spell#chakraConsumptionPerLevel} */
+  public void setChakraConsumptionPerLevel(int chakraConsumptionPerLevel) {
+    this.chakraConsumptionPerLevel = chakraConsumptionPerLevel;
+  }
 
-    public Spell(String name, int baseDamage, int lvldmg, int reqlvl, int baseChCons, int chPerLevel) {
-        this.name = name;
-        this.chakraConsumptionPerLevel = chPerLevel;
-        this.baseChakraConsumption = baseChCons;
-        this.reqLevel = reqlvl;
-        this.baseDamage = baseDamage;
-        this.damagePerLevel = lvldmg;
-    }
+  public Spell() {}
 
-    public Attack performAttack(int level, float resistance) {
-        int damage = (int) ((baseDamage + level * damagePerLevel) * (1 - resistance));
-        int chakra = baseChakraConsumption - level * chakraConsumptionPerLevel;
-        return new Attack(damage, chakra);
-    }
+  public Spell(
+      String name, int baseDamage, int lvldmg, int reqlvl, int baseChCons, int chPerLevel) {
+    this.name = name;
+    this.chakraConsumptionPerLevel = chPerLevel;
+    this.baseChakraConsumption = baseChCons;
+    this.reqLevel = reqlvl;
+    this.baseDamage = baseDamage;
+    this.damagePerLevel = lvldmg;
+  }
 
+  public Attack performAttack(int level, float resistance) {
+    int damage = (int) ((baseDamage + level * damagePerLevel) * (1 - resistance));
+    int chakra = baseChakraConsumption - level * chakraConsumptionPerLevel;
+    return new Attack(damage, chakra);
+  }
 }

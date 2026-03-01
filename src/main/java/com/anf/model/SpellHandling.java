@@ -1,7 +1,7 @@
 package com.anf.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -10,104 +10,79 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-/**
- * Represents USERS_OF_TECHNIQUES entity
- * Used to operate on character's spells abilities
- */
+/** Represents USERS_OF_TECHNIQUES entity Used to operate on character's spells abilities */
 @Entity
 public class SpellHandling {
 
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private int handlingId;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int handlingId;
+  /** Character */
+  @ManyToOne
+  @JoinColumn(name = "character", nullable = false)
+  @JsonIgnore
+  private GameCharacter characterHandler;
 
-    /**
-     * Character
-     */
-    @ManyToOne
-    @JoinColumn(name = "character", nullable=false)
-    @JsonIgnore
-    private GameCharacter characterHandler;
+  /** Spell */
+  @ManyToOne
+  @JoinColumn(name = "spell", nullable = false)
+  private Spell spellUse;
 
-    /**
-     * Spell
-     */
+  /** Level of the spell */
+  @Column(nullable = false)
+  private int spellLevel;
 
-    @ManyToOne
-    @JoinColumn(name = "spell", nullable=false)
-    private Spell spellUse;
+  /** Contains all information about characters' spells knowledge */
+  public static ArrayList<SpellHandling> infoAboutSpells;
 
-    /**
-     * Level of the spell
-     */
-    @Column(nullable=false)
-    private int spellLevel;
+  /** Getter {@link SpellHandling#spellLevel} */
+  public int getSpellLevel() {
+    return spellLevel;
+  }
 
-    /**
-     * Contains all information about characters' spells knowledge
-     */
-    public static ArrayList<SpellHandling> infoAboutSpells;
+  /** Setter {@link SpellHandling#spellLevel} */
+  public void setSpellLevel(int spellLevel) {
+    this.spellLevel = spellLevel;
+  }
 
-    /**
-     * Getter
-     * {@link SpellHandling#spellLevel}
-     */
-    public int getSpellLevel() {
-        return spellLevel;
-    }
+  public SpellHandling() {}
 
-    /**
-     * Setter
-     * {@link SpellHandling#spellLevel}
-     */
-    public void setSpellLevel(int spellLevel) {
-        this.spellLevel = spellLevel;
-    }
+  public SpellHandling(int level, Spell spell, GameCharacter user) {
+    this.spellLevel = level;
+    this.spellUse = spell;
+    this.characterHandler = user;
+  }
 
-    public SpellHandling() {
-    }
+  public int getHandlingId() {
+    return handlingId;
+  }
 
-    public SpellHandling(int level, Spell spell, GameCharacter user) {
-        this.spellLevel = level;
-        this.spellUse = spell;
-        this.characterHandler = user;
-    }
+  public void setHandlingId(int handlingId) {
+    this.handlingId = handlingId;
+  }
 
-    public int getHandlingId() {
-        return handlingId;
-    }
+  public GameCharacter getCharacterHandler() {
+    return characterHandler;
+  }
 
-    public void setHandlingId(int handlingId) {
-        this.handlingId = handlingId;
-    }
+  public void setCharacterHandler(GameCharacter characterHandler) {
+    this.characterHandler = characterHandler;
+  }
 
-    public GameCharacter getCharacterHandler() {
-        return characterHandler;
-    }
+  public Spell getSpellUse() {
+    return spellUse;
+  }
 
-    public void setCharacterHandler(GameCharacter characterHandler) {
-        this.characterHandler = characterHandler;
-    }
+  public void setSpellUse(Spell spellUse) {
+    this.spellUse = spellUse;
+  }
 
-    public Spell getSpellUse() {
-        return spellUse;
-    }
+  public static ArrayList<SpellHandling> getInfoAboutSpells() {
+    return infoAboutSpells;
+  }
 
-    public void setSpellUse(Spell spellUse) {
-        this.spellUse = spellUse;
-    }
-
-    public static ArrayList<SpellHandling> getInfoAboutSpells() {
-        return infoAboutSpells;
-    }
-
-    public static void setInfoAboutSpells(ArrayList<SpellHandling> infoAboutSpells) {
-        SpellHandling.infoAboutSpells = infoAboutSpells;
-    }
-
-    
-    
+  public static void setInfoAboutSpells(ArrayList<SpellHandling> infoAboutSpells) {
+    SpellHandling.infoAboutSpells = infoAboutSpells;
+  }
 }

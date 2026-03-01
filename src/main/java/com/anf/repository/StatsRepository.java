@@ -1,5 +1,6 @@
 package com.anf.repository;
 
+import com.anf.model.Stats;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -7,14 +8,13 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.anf.model.Stats;
-
 @Repository
 public interface StatsRepository extends CrudRepository<Stats, Integer> {
-    @Query("Select s from Stats s order by s.rating DESC")
-    Page<Stats>getTopStats(Pageable pg);
+  @Query("Select s from Stats s order by s.rating DESC")
+  Page<Stats> getTopStats(Pageable pg);
 
-    @Query("update Stats s set s.level = s.level + 1, s.upgradePoints = s.upgradePoints + 3 where s.id = :i")
-    void levelUp(@Param("i") int id);
-
+  @Query(
+      "update Stats s set s.level = s.level + 1, s.upgradePoints = s.upgradePoints + 3 where s.id ="
+          + " :i")
+  void levelUp(@Param("i") int id);
 }

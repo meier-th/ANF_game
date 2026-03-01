@@ -1,37 +1,37 @@
 package com.anf.model;
 
 public abstract class Creature {
-    public abstract void acceptDamage(int damage);
+  public abstract void acceptDamage(int damage);
 
-    public abstract float getResistance();
+  public abstract float getResistance();
 
-    public abstract int getLevel();
+  public abstract int getLevel();
 
-    public abstract int getMaxHp();
+  public abstract int getMaxHp();
 
-    public abstract int getMaxChakra();
+  public abstract int getMaxChakra();
 
-    protected int currentHP;
-    protected int currentChakra;
+  protected int currentHP;
+  protected int currentChakra;
 
-    public int getCurrentHP() {
-        return currentHP;
-    }
+  public int getCurrentHP() {
+    return currentHP;
+  }
 
-    public void setCurrentHP(int currentHP) {
-        this.currentHP = currentHP;
-    }
+  public void setCurrentHP(int currentHP) {
+    this.currentHP = currentHP;
+  }
 
-    public int getCurrentChakra() {
-        return currentChakra;
-    }
+  public int getCurrentChakra() {
+    return currentChakra;
+  }
 
-    public void setCurrentChakra(int currentChakra) {
-        this.currentChakra = currentChakra;
-    }
+  public void setCurrentChakra(int currentChakra) {
+    this.currentChakra = currentChakra;
+  }
 
-    public void prepareForFight() {
-        currentHP = getMaxHp();
-        currentChakra = getMaxChakra();
-    }
+  public void prepareForFight() {
+    currentHP = getMaxHp();
+    currentChakra = getMaxChakra();
+  }
 }

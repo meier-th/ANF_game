@@ -1,14 +1,15 @@
 package com.anf.config.filter;
 
+import com.anf.service.AuthService;
+import com.anf.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -25,75 +26,73 @@ import org.springframework.security.oauth2.common.exceptions.InvalidTokenExcepti
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 
-import com.anf.service.AuthService;
-import com.anf.service.UserService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 public class GoogleRegistrationFilter extends AbstractAuthenticationProcessingFilter {
 
-    @Autowired
-    UserService service;
+  @Autowired UserService service;
 
-    private OAuth2RestTemplate restTemplate;
+  private OAuth2RestTemplate restTemplate;
 
-    private AuthService authService;
+  private AuthService authService;
 
-    public GoogleRegistrationFilter(String defaultFilterProcessesUrl) {
-        super(defaultFilterProcessesUrl);
-        setAuthenticationManager(authenticationManagerNone());
+  public GoogleRegistrationFilter(String defaultFilterProcessesUrl) {
+    super(defaultFilterProcessesUrl);
+    setAuthenticationManager(authenticationManagerNone());
+  }
+
+  @Override
+  public Authentication attemptAuthentication(
+      HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse)
+      throws AuthenticationException, IOException, ServletException {
+    try {
+      try {
+
+        OAuth2AccessToken accessToken = restTemplate.getAccessToken();
+
+        String idToken = accessToken.getAdditionalInformation().get("id_token").toString();
+
+        Jwt token = JwtHelper.decode(idToken);
+
+        Map<String, String> authInfo = new ObjectMapper().readValue(token.getClaims(), Map.class);
+
+        String email = authInfo.get("email");
+
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("NEWGoogle"));
+
+        org.springframework.security.core.userdetails.User user =
+            new User("tmp" + email, "", authorities);
+
+        System.out.println(user.getUsername());
+        return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+
+      } catch (InvalidTokenException e) {
+        throw new BadCredentialsException("Could not obtain user details from token", e);
+      }
+    } catch (OAuth2Exception e) {
+      throw new BadCredentialsException("Error token", e);
     }
+  }
 
-    @Override
-    public Authentication attemptAuthentication(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws AuthenticationException, IOException, ServletException {
-        try {
-            try {
+  public AuthenticationManager authenticationManagerNone() {
+    return authentication -> {
+      throw new UnsupportedOperationException(
+          "No authentication should be done with this AuthenticationManager");
+    };
+  }
 
-                OAuth2AccessToken accessToken = restTemplate.getAccessToken();
+  public OAuth2RestTemplate getRestTemplate() {
+    return restTemplate;
+  }
 
-                String idToken = accessToken.getAdditionalInformation().get("id_token").toString();
+  public void setRestTemplate(OAuth2RestTemplate restTemplate) {
+    this.restTemplate = restTemplate;
+  }
 
-                Jwt token = JwtHelper.decode(idToken);
+  public AuthService getAuthService() {
+    return authService;
+  }
 
-                Map<String, String> authInfo = new ObjectMapper().readValue(token.getClaims(), Map.class);
-
-                String email = authInfo.get("email");
-
-                List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-                authorities.add(new SimpleGrantedAuthority("NEWGoogle"));
-
-                org.springframework.security.core.userdetails.User user = new User("tmp" + email, "", authorities);
-
-                System.out.println(user.getUsername());
-                return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-
-            } catch (InvalidTokenException e) {
-                throw new BadCredentialsException("Could not obtain user details from token", e);
-            }
-        } catch (OAuth2Exception e) {
-            throw new BadCredentialsException("Error token", e);
-        }
-
-    }
-
-    public AuthenticationManager authenticationManagerNone() {
-        return authentication -> {
-            throw new UnsupportedOperationException("No authentication should be done with this AuthenticationManager");
-        };
-    }
-
-    public OAuth2RestTemplate getRestTemplate() {
-        return restTemplate;
-    }
-
-    public void setRestTemplate(OAuth2RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
-
-    public AuthService getAuthService() {
-        return authService;
-    }
-
-    public void setAuthService(AuthService authService) {
-        this.authService = authService;
-    }
+  public void setAuthService(AuthService authService) {
+    this.authService = authService;
+  }
 }

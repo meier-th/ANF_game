@@ -1,25 +1,23 @@
 package com.anf.model;
 
-
 public class Message {
-    
-    private String author;
-    private String text;
 
-    public String getAuthor() {
-        return author;
-    }
+  private String author;
+  private String text;
 
-    public void setAuthor(String from) {
-        this.author = from;
-    }
+  public String getAuthor() {
+    return author;
+  }
 
-    public String getText() {
-        return text;
-    }
+  public void setAuthor(String from) {
+    this.author = from;
+  }
 
-    public void setText(String text) {
-        this.text = text;
-    }
-    
+  public String getText() {
+    return text;
+  }
+
+  public void setText(String text) {
+    this.text = text;
+  }
 }
