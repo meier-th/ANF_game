@@ -3,8 +3,8 @@ package com.anf.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
@@ -202,7 +202,7 @@ public class User implements Serializable {
   public String toString() {
     try {
       return new ObjectMapper().writeValueAsString(this);
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       System.out.println(e.getMessage());
       return "{}";
     }

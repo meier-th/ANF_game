@@ -1,7 +1,7 @@
 package com.anf.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -107,7 +107,7 @@ public class Boss extends Creature implements Serializable {
   public String toString() {
     try {
       return new ObjectMapper().writeValueAsString(this);
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       return "{}";
     }
   }

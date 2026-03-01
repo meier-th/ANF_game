@@ -3,7 +3,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
   java
-  id("org.springframework.boot") version "3.5.11"
+  id("org.springframework.boot") version "4.0.3"
 }
 
 group = "com.anf"
@@ -20,28 +20,18 @@ repositories {
 }
 
 dependencies {
-  // Import the Spring Boot BOM for managed dependency versions
-  implementation(platform("org.springframework.boot:spring-boot-dependencies:3.5.11"))
+  implementation(platform("org.springframework.boot:spring-boot-dependencies:4.0.3"))
 
-  // Spring Boot starters
+  // Spring Boot starters (Boot 4 renames)
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  implementation("org.springframework.boot:spring-boot-starter-web")
+  implementation("org.springframework.boot:spring-boot-starter-webmvc")
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-validation")
-
-  // Spring WebSocket / Messaging
-  implementation("org.springframework:spring-websocket")
-  implementation("org.springframework:spring-messaging")
-
-  // Spring Security OAuth2 client (used for Google OAuth in auth-google-only PR)
-  implementation("org.springframework.security:spring-security-oauth2-client")
+  implementation("org.springframework.boot:spring-boot-starter-websocket")
+  implementation("org.springframework.boot:spring-boot-starter-security-oauth2-client")
 
   // Database
   implementation("org.postgresql:postgresql")
-
-  // Jackson (versions managed by Boot BOM)
-  implementation("com.fasterxml.jackson.core:jackson-core")
-  implementation("com.fasterxml.jackson.core:jackson-databind")
 
   // Lombok
   compileOnly("org.projectlombok:lombok:1.18.42")
