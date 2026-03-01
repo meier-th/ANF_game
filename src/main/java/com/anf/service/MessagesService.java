@@ -4,7 +4,7 @@ import com.anf.model.PrivateMessage;
 import com.anf.model.User;
 import com.anf.repository.MessagesRepository;
 import java.util.List;
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,9 +1,9 @@
 package com.anf.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link Spell#performAttack(int, float)}.
@@ -52,7 +52,8 @@ public class SpellTest {
     Attack highLevel = spell.performAttack(5, 0.0f);
 
     assertTrue(
-        "Higher level should cost less chakra", highLevel.getChakra() < lowLevel.getChakra());
+        highLevel.getChakra() < lowLevel.getChakra(),
+        "Higher level should cost less chakra");
   }
 
   @Test

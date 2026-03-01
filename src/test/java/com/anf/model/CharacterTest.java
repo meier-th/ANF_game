@@ -1,9 +1,10 @@
 package com.anf.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for core {@link GameCharacter} mechanics: XP gain/level-up, HP/chakra changes, and
@@ -15,7 +16,7 @@ public class CharacterTest {
   private Stats stats;
   private User user;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     stats = new Stats(50, 0, 0, 0, 0, 0, 1, 0);
     user = new User();
@@ -116,10 +117,5 @@ public class CharacterTest {
 
     assertEquals(character.getMaxHp(), character.getCurrentHP());
     assertEquals(character.getMaxChakra(), character.getCurrentChakra());
-  }
-
-  // helpers (JUnit 4 doesn't have assertFalse/assertTrue with message as first arg)
-  private static void assertTrue(boolean condition) {
-    org.junit.Assert.assertTrue(condition);
   }
 }

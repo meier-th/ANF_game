@@ -1,6 +1,6 @@
 package com.anf.config;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -16,9 +16,9 @@ import com.anf.service.CharacterService;
 import com.anf.service.StatsService;
 import com.anf.service.UserService;
 import java.util.Collections;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,7 +34,7 @@ public class CharacterControllerTest {
   private StatsService statsService;
   private CharacterController controller;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     userService = mock(UserService.class);
     characterService = mock(CharacterService.class);
@@ -50,7 +50,7 @@ public class CharacterControllerTest {
             mock(WebSocketsController.class));
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     SecurityContextHolder.clearContext();
   }
