@@ -1,7 +1,8 @@
 package com.anf.repository;
 
-import com.anf.model.FriendsRequest;
-import com.anf.model.User;
+import com.anf.model.database.FriendsRequest;
+import com.anf.model.database.User;
+
 import java.util.List;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

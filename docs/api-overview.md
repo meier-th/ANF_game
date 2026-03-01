@@ -88,11 +88,11 @@ This document describes the **current** REST and WebSocket APIs and the main use
 - **GET** `/fight/spell`  
   - Returns all available `Spell` definitions.
 - **GET** `/fight/spell/my/all`  
-  - Returns all `SpellHandling` (spell levels) for the current character.
+  - Returns all `SpellKnowledge` (spell levels) for the current character.
 - **GET** `/fight/spell/my`  
-  - Returns the `SpellHandling` for a specific spell (param `spellname`) or HTTP 423 (LOCKED) if not yet learned.
+  - Returns the `SpellKnowledge` for a specific spell (param `spellname`) or HTTP 423 (LOCKED) if not yet learned.
 - **POST** `/fight/spell/my`  
-  - Learns or levels up a spell’s `SpellHandling` for the current character, consuming one upgrade point.
+  - Learns or levels up a spell’s `SpellKnowledge` for the current character, consuming one upgrade point.
 - **GET** `/fight/animals/my`  
   - Returns the currently available `NinjaAnimal` for the player’s race and level (one of two per race, depending on level).
 - **GET** `/fight/animals`  

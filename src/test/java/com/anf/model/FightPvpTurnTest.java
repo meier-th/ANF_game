@@ -7,6 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.anf.model.database.FightPVP;
+import com.anf.model.database.GameCharacter;
+import com.anf.model.database.Stats;
+import com.anf.model.database.User;
+
 /**
  * Unit tests for turn rotation in {@link FightPVP}.
  *

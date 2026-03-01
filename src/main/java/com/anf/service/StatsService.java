@@ -1,6 +1,6 @@
 package com.anf.service;
 
-import com.anf.model.Stats;
+import com.anf.model.database.Stats;
 import com.anf.repository.StatsRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

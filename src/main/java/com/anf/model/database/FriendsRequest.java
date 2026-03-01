@@ -1,4 +1,4 @@
-package com.anf.model;
+package com.anf.model.database;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,7 +9,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "friend_request")
+@Table(name = "friend_requests")
 public class FriendsRequest {
 
   @Id

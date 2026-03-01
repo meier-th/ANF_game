@@ -1,11 +1,8 @@
-package com.anf.model;
+package com.anf.model.database;
 
+import com.anf.model.Creature;
+import com.anf.model.NinjaAnimalRace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -19,10 +16,15 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /** Represents Person entity Used to operate on in-game character's properties */
 @Entity
-@Table(name = "persons")
+@Table(name = "game_characters")
 public class GameCharacter extends Creature implements Serializable {
 
   /** The date of creating a character */
@@ -33,7 +35,7 @@ public class GameCharacter extends Creature implements Serializable {
   private NinjaAnimalRace animalRace;
 
   @OneToMany(mappedBy = "fighter", fetch = FetchType.LAZY)
-  private List<UserAIFight> fights;
+  private List<AiFightParticipation> fights;
 
   public NinjaAnimalRace getAnimalRace() {
     return animalRace;
@@ -44,13 +46,13 @@ public class GameCharacter extends Creature implements Serializable {
   }
 
   @OneToMany(mappedBy = "characterHandler")
-  private List<SpellHandling> spellsKnown;
+  private List<SpellKnowledge> spellsKnown;
 
-  public List<SpellHandling> getSpellsKnown() {
+  public List<SpellKnowledge> getSpellsKnown() {
     return spellsKnown;
   }
 
-  public void setSpellsKnown(List<SpellHandling> spellsKnown) {
+  public void setSpellsKnown(List<SpellKnowledge> spellsKnown) {
     this.spellsKnown = spellsKnown;
   }
 
@@ -74,24 +76,24 @@ public class GameCharacter extends Creature implements Serializable {
   @JsonIgnore
   private User user;
 
-  public List<UserAIFight> getFights() {
+  public List<AiFightParticipation> getFights() {
     return fights;
   }
 
-  public void setFights(List<UserAIFight> fights) {
+  public void setFights(List<AiFightParticipation> fights) {
     this.fights = fights;
   }
 
   /** Appearance object for this character */
   @OneToOne
   @JoinColumn(name = "appearance_id")
-  private Appearance appearance;
+  private CharacterAppearance appearance;
 
-  public Appearance getAppearance() {
+  public CharacterAppearance getAppearance() {
     return appearance;
   }
 
-  public void setAppearance(Appearance appearance) {
+  public void setAppearance(CharacterAppearance appearance) {
     this.appearance = appearance;
   }
 

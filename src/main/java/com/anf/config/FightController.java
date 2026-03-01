@@ -1,27 +1,28 @@
 package com.anf.config;
 
 import com.anf.model.Attack;
-import com.anf.model.Boss;
 import com.anf.model.Fight;
-import com.anf.model.FightPVP;
-import com.anf.model.FightVsAI;
-import com.anf.model.GameCharacter;
 import com.anf.model.NinjaAnimal;
 import com.anf.model.NinjaAnimalRace;
-import com.anf.model.Spell;
-import com.anf.model.SpellHandling;
 import com.anf.model.State;
-import com.anf.model.User;
-import com.anf.model.UserAIFight;
+import com.anf.model.database.AiFightParticipation;
+import com.anf.model.database.Boss;
+import com.anf.model.database.FightPVP;
+import com.anf.model.database.FightVsAI;
+import com.anf.model.database.GameCharacter;
+import com.anf.model.database.Spell;
+import com.anf.model.database.SpellKnowledge;
+import com.anf.model.database.User;
 import com.anf.service.BossService;
 import com.anf.service.FightVsAIService;
 import com.anf.service.NinjaAnimalService;
 import com.anf.service.PVPFightsService;
-import com.anf.service.SpellHandlingService;
+import com.anf.service.SpellKnowledgeService;
 import com.anf.service.SpellService;
 import com.anf.service.StatsService;
 import com.anf.service.UserAIFightService;
 import com.anf.service.UserService;
+import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayDeque;
@@ -34,8 +35,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import jakarta.annotation.PostConstruct;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -46,7 +46,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/fight")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class FightController {
 
   private final UserService userService;
@@ -56,7 +56,7 @@ public class FightController {
   private final FightVsAIService fightVsAIService;
   private final UserAIFightService userAiFightService;
   private final NinjaAnimalService ninjaAnimalService;
-  private final SpellHandlingService spellHandlingService;
+  private final SpellKnowledgeService SpellKnowledgeService;
   private final StatsService statsServ;
   private final WebSocketsController notifServ;
   private final FightDataBean fightDataBean;
@@ -188,10 +188,10 @@ public class FightController {
       ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");
     }
     FightVsAI fight = new FightVsAI();
-    ArrayList<UserAIFight> userFights = new ArrayList<>();
+    ArrayList<AiFightParticipation> userFights = new ArrayList<>();
     System.out.println("PVE fight began. Fighters:");
     for (String fighterName : fighters) {
-      UserAIFight userF = new UserAIFight();
+      AiFightParticipation userF = new AiFightParticipation();
       userF.setFight(fight);
       GameCharacter fighter = userService.getUser(fighterName).getCharacter();
       userF.setFighter(fighter);
@@ -323,8 +323,8 @@ public class FightController {
     if (userIsTarget)
       if (!spellName.equalsIgnoreCase("Physical attack")) {
         Spell spell = spellService.get(spellName);
-        SpellHandling handling =
-            spellHandlingService.getSpellHandling(attacker.getCharacter(), spell);
+        SpellKnowledge handling =
+            SpellKnowledgeService.getSpellKnowledge(attacker.getCharacter(), spell);
         if (spell == null) {
           attack.setCode(8);
           return attack;
@@ -354,8 +354,8 @@ public class FightController {
     else {
       if (!spellName.equalsIgnoreCase("Physical attack")) {
         Spell spell = spellService.get(spellName);
-        SpellHandling handling =
-            spellHandlingService.getSpellHandling(attacker.getCharacter(), spell);
+        SpellKnowledge handling =
+            SpellKnowledgeService.getSpellKnowledge(attacker.getCharacter(), spell);
         if (spell == null) {
           attack.setCode(8);
           return attack;
@@ -521,8 +521,8 @@ public class FightController {
     // count damage
     if (!spellName.equalsIgnoreCase("Physical attack")) {
       Spell spell = spellService.get(spellName);
-      SpellHandling handling =
-          spellHandlingService.getSpellHandling(attacker.getCharacter(), spell);
+      SpellKnowledge handling =
+          SpellKnowledgeService.getSpellKnowledge(attacker.getCharacter(), spell);
       if (spell == null) {
         attack.setCode(8);
         return attack;
@@ -572,10 +572,10 @@ public class FightController {
     if (attack.isDeadly()) {
       fightVsAIService.addFight(fight);
       // set stats and save
-      for (UserAIFight fightData : fight.getSetFighters()) {
-        if (fightData.getResult() == null) fightData.setResult(UserAIFight.Result.WON);
+      for (AiFightParticipation fightData : fight.getSetFighters()) {
+        if (fightData.getResult() == null) fightData.setResult(AiFightParticipation.Result.WON);
         int experience = 500 + 200 * boss.getNumberOfTails();
-        if (fightData.getResult().equals(UserAIFight.Result.DIED)) {
+        if (fightData.getResult().equals(AiFightParticipation.Result.DIED)) {
           experience /= 2;
           fightData
               .getFighter()
@@ -608,7 +608,7 @@ public class FightController {
       }
       // close fight
       queues.remove(fightId);
-      for (UserAIFight fighter : fight.getSetFighters()) {
+      for (AiFightParticipation fighter : fight.getSetFighters()) {
         usersInFight.remove(fighter.getFighter().getUser().getLogin());
       }
       fights.remove(fight.getId());
@@ -670,7 +670,7 @@ public class FightController {
                       .forEach(
                           (set) -> {
                             if (set.getFighter().getUser().getLogin().equals(target.getLogin()))
-                              set.setResult(UserAIFight.Result.DIED);
+                              set.setResult(AiFightParticipation.Result.DIED);
                           });
                   System.out.print("Remaining: ");
                 }
@@ -718,9 +718,9 @@ public class FightController {
               if (allDead) {
                 System.out.println("fight ended\n");
                 fightVsAIService.addFight(fight);
-                for (UserAIFight userData : fight.getSetFighters()) {
+                for (AiFightParticipation userData : fight.getSetFighters()) {
                   userData.setExperience(50);
-                  userData.setResult(UserAIFight.Result.LOST);
+                  userData.setResult(AiFightParticipation.Result.LOST);
                   userData
                       .getFighter()
                       .getUser()
@@ -736,7 +736,7 @@ public class FightController {
                   userAiFightService.add(userData);
                 }
                 queues.remove(fight.getId());
-                for (UserAIFight fighter : fight.getSetFighters()) {
+                for (AiFightParticipation fighter : fight.getSetFighters()) {
                   usersInFight.remove(fighter.getFighter().getUser().getLogin());
                 }
                 timers.get(fight.getId()).cancel(true);
@@ -1110,10 +1110,11 @@ public class FightController {
               if (deadly) {
                 fightVsAIService.addFight(fight);
                 // set stats and save
-                for (UserAIFight fightData : fight.getSetFighters()) {
-                  if (fightData.getResult() == null) fightData.setResult(UserAIFight.Result.WON);
+                for (AiFightParticipation fightData : fight.getSetFighters()) {
+                  if (fightData.getResult() == null)
+                    fightData.setResult(AiFightParticipation.Result.WON);
                   int experience = 500 + 200 * target.getNumberOfTails();
-                  if (fightData.getResult().equals(UserAIFight.Result.DIED)) {
+                  if (fightData.getResult().equals(AiFightParticipation.Result.DIED)) {
                     experience /= 2;
                     fightData
                         .getFighter()
@@ -1146,7 +1147,7 @@ public class FightController {
                 }
                 // close fight
                 queues.remove(fight.getId());
-                for (UserAIFight fighter : fight.getSetFighters()) {
+                for (AiFightParticipation fighter : fight.getSetFighters()) {
                   usersInFight.remove(fighter.getFighter().getUser().getLogin());
                 }
                 timers.get(fight.getId()).cancel(true);

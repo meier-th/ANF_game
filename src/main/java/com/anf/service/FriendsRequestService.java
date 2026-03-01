@@ -1,7 +1,7 @@
 package com.anf.service;
 
-import com.anf.model.FriendsRequest;
-import com.anf.model.User;
+import com.anf.model.database.FriendsRequest;
+import com.anf.model.database.User;
 import com.anf.repository.FriendsRequestRepository;
 import java.util.ArrayList;
 import java.util.List;

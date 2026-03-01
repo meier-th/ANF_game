@@ -1,6 +1,6 @@
 package com.anf.service;
 
-import com.anf.model.Appearance;
+import com.anf.model.database.CharacterAppearance;
 import com.anf.repository.AppearanceRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ public class AppearanceService {
    *
    * @param appearance Appearance object to save
    */
-  public void addAppearance(Appearance appearance) {
+  public void addAppearance(CharacterAppearance appearance) {
     appearanceRepository.save(appearance);
   }
 

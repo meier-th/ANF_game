@@ -6,6 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.anf.model.database.GameCharacter;
+import com.anf.model.database.Stats;
+import com.anf.model.database.User;
+
 /**
  * Unit tests for core {@link GameCharacter} mechanics: XP gain/level-up, HP/chakra changes, and
  * fight preparation.

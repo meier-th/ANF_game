@@ -1,8 +1,8 @@
 package com.anf.service;
 
-import com.anf.model.FightVsAI;
-import com.anf.model.GameCharacter;
-import com.anf.model.UserAIFight;
+import com.anf.model.database.AiFightParticipation;
+import com.anf.model.database.FightVsAI;
+import com.anf.model.database.GameCharacter;
 import com.anf.repository.FightVsAIRepository;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -17,7 +17,7 @@ public class FightVsAIService {
     repository.save(fight);
   }
 
-  public List<UserAIFight> getByFighterId(GameCharacter ch) {
+  public List<AiFightParticipation> getByFighterId(GameCharacter ch) {
     int id = ch.getId();
     return repository.getAIFightsByUser(id);
   }

@@ -1,7 +1,7 @@
 package com.anf.service;
 
-import com.anf.model.PrivateMessage;
-import com.anf.model.User;
+import com.anf.model.database.PrivateMessage;
+import com.anf.model.database.User;
 import com.anf.repository.MessagesRepository;
 import java.util.List;
 import jakarta.transaction.Transactional;

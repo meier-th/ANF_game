@@ -1,4 +1,4 @@
-package com.anf.model;
+package com.anf.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

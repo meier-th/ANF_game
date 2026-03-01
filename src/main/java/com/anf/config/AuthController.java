@@ -1,9 +1,9 @@
 package com.anf.config;
 
-import com.anf.model.GameCharacter;
-import com.anf.model.Role;
-import com.anf.model.Stats;
-import com.anf.model.User;
+import com.anf.model.database.GameCharacter;
+import com.anf.model.database.Role;
+import com.anf.model.database.Stats;
+import com.anf.model.database.User;
 import com.anf.repository.RoleRepository;
 import com.anf.service.CharacterService;
 import com.anf.service.StatsService;

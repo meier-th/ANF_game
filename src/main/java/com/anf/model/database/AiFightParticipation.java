@@ -1,4 +1,4 @@
-package com.anf.model;
+package com.anf.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
@@ -14,8 +14,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "user_aifight")
-public class UserAIFight {
+@Table(name = "ai_fight_participation")
+public class AiFightParticipation {
 
   public static enum Result {
     WON,
@@ -44,9 +44,9 @@ public class UserAIFight {
   @Column(name = "experience_gain", nullable = false)
   private int experience;
 
-  public UserAIFight() {}
+  public AiFightParticipation() {}
 
-  public UserAIFight(Result result, FightVsAI fight, GameCharacter fighter, int exp) {
+  public AiFightParticipation(Result result, FightVsAI fight, GameCharacter fighter, int exp) {
     this.experience = exp;
     this.fight = fight;
     this.fighter = fighter;

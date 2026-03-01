@@ -1,9 +1,9 @@
 package com.anf.config;
 
-import com.anf.model.FriendsRequest;
-import com.anf.model.PrivateMessage;
 import com.anf.model.StompPrincipal;
-import com.anf.model.User;
+import com.anf.model.database.FriendsRequest;
+import com.anf.model.database.PrivateMessage;
+import com.anf.model.database.User;
 import com.anf.service.FriendsRequestService;
 import com.anf.service.MessagesService;
 import com.anf.service.UserService;

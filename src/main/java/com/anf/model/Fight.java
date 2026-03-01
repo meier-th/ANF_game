@@ -1,5 +1,9 @@
 package com.anf.model;
 
+import com.anf.model.database.FightPVP;
+import com.anf.model.database.FightVsAI;
+import com.anf.model.database.GameCharacter;
+import com.anf.model.database.User;
 import java.util.ArrayList;
 
 /** Represents statistics during a fight */

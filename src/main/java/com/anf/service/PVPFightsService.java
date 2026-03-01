@@ -1,7 +1,7 @@
 package com.anf.service;
 
-import com.anf.model.FightPVP;
-import com.anf.model.GameCharacter;
+import com.anf.model.database.FightPVP;
+import com.anf.model.database.GameCharacter;
 import com.anf.repository.PVPFightsRepository;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;

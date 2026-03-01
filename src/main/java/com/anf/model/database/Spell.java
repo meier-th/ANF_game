@@ -1,14 +1,15 @@
-package com.anf.model;
+package com.anf.model.database;
 
-import java.io.Serializable;
+import com.anf.model.Attack;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.io.Serializable;
 
 /** Represents Technique entity Used to operate on spells */
 @Entity
-@Table(name = "Techniques")
+@Table(name = "spells")
 public class Spell implements Serializable {
 
   /** The base damage of a spell negative damage = heal */
