@@ -23,10 +23,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-/**
- * Security configuration – username/password auth and Google OAuth2 login.
- * VK/Telegram integrations have been removed.
- */
+/** Security configuration – username/password auth and Google OAuth2 login. */
 @Configuration
 @EnableWebSecurity
 @AllArgsConstructor
@@ -74,7 +71,12 @@ public class SecurityConfiguration {
         .exceptionHandling(ex -> ex.authenticationEntryPoint(restAuthenticationEntryPoint))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/checkCookies", "/registration", "/confirm", "/oauth2/**", "/login/oauth2/code/google")
+                auth.requestMatchers(
+                        "/checkCookies",
+                        "/registration",
+                        "/confirm",
+                        "/oauth2/**",
+                        "/login/oauth2/code/google")
                     .permitAll()
                     .requestMatchers("/admin/**")
                     .hasRole("ADMIN")
@@ -83,11 +85,12 @@ public class SecurityConfiguration {
                     .anyRequest()
                     .authenticated())
         .formLogin(form -> form.successHandler(successHandler).failureHandler(FAILURE_HANDLER))
-        .oauth2Login(oauth2 -> oauth2
-            .userInfoEndpoint(userInfo -> userInfo.userService(oauth2UserService()))
-            .successHandler(successHandler)
-            .failureHandler(FAILURE_HANDLER)
-        )
+        .oauth2Login(
+            oauth2 ->
+                oauth2
+                    .userInfoEndpoint(userInfo -> userInfo.userService(oauth2UserService()))
+                    .successHandler(successHandler)
+                    .failureHandler(FAILURE_HANDLER))
         .logout(logout -> logout.deleteCookies("JSESSIONID").logoutSuccessUrl("/logout-success"));
 
     return http.build();
