@@ -1,7 +1,6 @@
-package com.anf.model;
+package com.anf.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.ArrayList;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,14 +8,16 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
 
-/** Represents USERS_OF_TECHNIQUES entity Used to operate on character's spells abilities */
 @Entity
-public class SpellHandling {
+@Table(name = "spell_knowledge")
+public class SpellKnowledge {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private int handlingId;
+  private int spellKnowledgeId;
 
   /** Character */
   @ManyToOne
@@ -34,32 +35,32 @@ public class SpellHandling {
   private int spellLevel;
 
   /** Contains all information about characters' spells knowledge */
-  public static ArrayList<SpellHandling> infoAboutSpells;
+  public static ArrayList<SpellKnowledge> infoAboutSpells;
 
-  /** Getter {@link SpellHandling#spellLevel} */
+  /** Getter {@link SpellKnowledge#spellLevel} */
   public int getSpellLevel() {
     return spellLevel;
   }
 
-  /** Setter {@link SpellHandling#spellLevel} */
+  /** Setter {@link SpellKnowledge#spellLevel} */
   public void setSpellLevel(int spellLevel) {
     this.spellLevel = spellLevel;
   }
 
-  public SpellHandling() {}
+  public SpellKnowledge() {}
 
-  public SpellHandling(int level, Spell spell, GameCharacter user) {
+  public SpellKnowledge(int level, Spell spell, GameCharacter user) {
     this.spellLevel = level;
     this.spellUse = spell;
     this.characterHandler = user;
   }
 
-  public int getHandlingId() {
-    return handlingId;
+  public int getSpellKnowledgeId() {
+    return spellKnowledgeId;
   }
 
-  public void setHandlingId(int handlingId) {
-    this.handlingId = handlingId;
+  public void setSpellKnowledgeId(int spellKnowledgeId) {
+    this.spellKnowledgeId = spellKnowledgeId;
   }
 
   public GameCharacter getCharacterHandler() {
@@ -78,11 +79,11 @@ public class SpellHandling {
     this.spellUse = spellUse;
   }
 
-  public static ArrayList<SpellHandling> getInfoAboutSpells() {
+  public static ArrayList<SpellKnowledge> getInfoAboutSpells() {
     return infoAboutSpells;
   }
 
-  public static void setInfoAboutSpells(ArrayList<SpellHandling> infoAboutSpells) {
-    SpellHandling.infoAboutSpells = infoAboutSpells;
+  public static void setInfoAboutSpells(ArrayList<SpellKnowledge> infoAboutSpells) {
+    SpellKnowledge.infoAboutSpells = infoAboutSpells;
   }
 }

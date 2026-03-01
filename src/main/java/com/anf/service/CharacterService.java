@@ -1,6 +1,6 @@
 package com.anf.service;
 
-import com.anf.model.GameCharacter;
+import com.anf.model.database.GameCharacter;
 import com.anf.repository.CharacterRepository;
 import java.util.ArrayList;
 import java.util.Iterator;

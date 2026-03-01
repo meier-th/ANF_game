@@ -1,8 +1,6 @@
-package com.anf.model;
+package com.anf.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,10 +9,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /** Represents Stats entity. Used to operate on users' statistic data. */
 @Entity
-@Table(name = "Statistics")
+@Table(name = "statistics")
 public class Stats {
 
   /** Rating of a user */

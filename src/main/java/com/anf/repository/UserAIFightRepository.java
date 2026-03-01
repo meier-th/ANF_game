@@ -1,8 +1,8 @@
 package com.anf.repository;
 
-import com.anf.model.UserAIFight;
+import com.anf.model.database.AiFightParticipation;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserAIFightRepository extends CrudRepository<UserAIFight, Integer> {}
+public interface UserAIFightRepository extends CrudRepository<AiFightParticipation, Integer> {}

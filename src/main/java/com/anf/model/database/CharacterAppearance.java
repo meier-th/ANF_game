@@ -1,4 +1,4 @@
-package com.anf.model;
+package com.anf.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
@@ -14,8 +14,8 @@ import jakarta.persistence.Table;
 
 /** Represents Features entity Used to operate on in-game characters appearances */
 @Entity
-@Table(name = "Features")
-public class Appearance {
+@Table(name = "character_appearances")
+public class CharacterAppearance {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -69,44 +69,44 @@ public class Appearance {
   @Column(length = 5)
   private ClothesColour clothesColour;
 
-  public Appearance() {}
+  public CharacterAppearance() {}
 
-  /** Getter {@link Appearance#gender} */
+  /** Getter {@link CharacterAppearance#gender} */
   public Gender getGender() {
     return gender;
   }
 
-  /** Setter {@link Appearance#gender} */
+  /** Setter {@link CharacterAppearance#gender} */
   public void setGender(Gender gender) {
     this.gender = gender;
   }
 
-  /** Getter {@link Appearance#skinColour} */
+  /** Getter {@link CharacterAppearance#skinColour} */
   public SkinColour getSkinColour() {
     return skinColour;
   }
 
-  /** Setter {@link Appearance#skinColour} */
+  /** Setter {@link CharacterAppearance#skinColour} */
   public void setSkinColour(SkinColour skinColour) {
     this.skinColour = skinColour;
   }
 
-  /** Getter {@link Appearance#hairColour} */
+  /** Getter {@link CharacterAppearance#hairColour} */
   public HairColour getHairColour() {
     return hairColour;
   }
 
-  /** Setter {@link Appearance#hairColour} */
+  /** Setter {@link CharacterAppearance#hairColour} */
   public void setHairColour(HairColour hairColour) {
     this.hairColour = hairColour;
   }
 
-  /** Getter {@link Appearance#clothesColour} */
+  /** Getter {@link CharacterAppearance#clothesColour} */
   public ClothesColour getClothesColour() {
     return clothesColour;
   }
 
-  /** Setter {@link Appearance#clothesColour} */
+  /** Setter {@link CharacterAppearance#clothesColour} */
   public void setClothesColour(ClothesColour clothesColour) {
     this.clothesColour = clothesColour;
   }
@@ -127,7 +127,7 @@ public class Appearance {
     this.id = id;
   }
 
-  public Appearance(
+  public CharacterAppearance(
       Gender gender, SkinColour skinColour, HairColour hairColour, ClothesColour clothesColour) {
     this.gender = gender;
     this.skinColour = skinColour;

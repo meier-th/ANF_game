@@ -1,9 +1,10 @@
 package com.anf.repository;
 
-import com.anf.model.User;
 import java.util.Optional;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
+
+import com.anf.model.database.User;
 
 @Repository
 public interface UserRepository extends CrudRepository<User, String> {

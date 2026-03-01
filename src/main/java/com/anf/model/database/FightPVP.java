@@ -1,6 +1,9 @@
-package com.anf.model;
+package com.anf.model.database;
 
 import java.util.Date;
+
+import com.anf.model.Fight;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

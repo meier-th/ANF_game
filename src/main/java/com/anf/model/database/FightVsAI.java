@@ -1,8 +1,7 @@
-package com.anf.model;
+package com.anf.model.database;
 
+import com.anf.model.Fight;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.Date;
-import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -14,6 +13,8 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import java.util.Date;
+import java.util.List;
 
 /** Used to operate on fight history data */
 @Entity
@@ -36,17 +37,17 @@ public class FightVsAI extends Fight {
 
   @OneToMany(mappedBy = "fight")
   @JsonIgnore
-  private List<UserAIFight> setFighters;
+  private List<AiFightParticipation> setFighters;
 
   public FightVsAI() {
     this.fight_date = new Date();
   }
 
-  public List<UserAIFight> getSetFighters() {
+  public List<AiFightParticipation> getSetFighters() {
     return setFighters;
   }
 
-  public void setSetFighters(List<UserAIFight> fighters) {
+  public void setSetFighters(List<AiFightParticipation> fighters) {
     this.setFighters = fighters;
   }
 

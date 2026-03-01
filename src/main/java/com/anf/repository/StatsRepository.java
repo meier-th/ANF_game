@@ -1,12 +1,13 @@
 package com.anf.repository;
 
-import com.anf.model.Stats;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import com.anf.model.database.Stats;
 
 @Repository
 public interface StatsRepository extends CrudRepository<Stats, Integer> {

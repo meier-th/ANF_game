@@ -7,9 +7,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.anf.model.GameCharacter;
-import com.anf.model.Stats;
-import com.anf.model.User;
+import com.anf.model.database.GameCharacter;
+import com.anf.model.database.Stats;
+import com.anf.model.database.User;
 import com.anf.repository.RoleRepository;
 import com.anf.service.AppearanceService;
 import com.anf.service.CharacterService;

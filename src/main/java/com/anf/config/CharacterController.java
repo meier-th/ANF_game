@@ -1,12 +1,12 @@
 package com.anf.config;
 
-import com.anf.model.Appearance;
-import com.anf.model.FightPVP;
-import com.anf.model.GameCharacter;
 import com.anf.model.PvpRecord;
-import com.anf.model.Role;
-import com.anf.model.Stats;
-import com.anf.model.User;
+import com.anf.model.database.CharacterAppearance;
+import com.anf.model.database.FightPVP;
+import com.anf.model.database.GameCharacter;
+import com.anf.model.database.Role;
+import com.anf.model.database.Stats;
+import com.anf.model.database.User;
 import com.anf.repository.RoleRepository;
 import com.anf.service.AppearanceService;
 import com.anf.service.CharacterService;
@@ -65,12 +65,12 @@ public class CharacterController {
       User user =
           userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
       GameCharacter ch = user.getCharacter();
-      Appearance appearance =
-          new Appearance(
-              Appearance.Gender.valueOf(gender),
-              Appearance.SkinColour.valueOf(skinColour),
-              Appearance.HairColour.valueOf(hairColour),
-              Appearance.ClothesColour.valueOf(clothesColour));
+      CharacterAppearance appearance =
+          new CharacterAppearance(
+              CharacterAppearance.Gender.valueOf(gender),
+              CharacterAppearance.SkinColour.valueOf(skinColour),
+              CharacterAppearance.HairColour.valueOf(hairColour),
+              CharacterAppearance.ClothesColour.valueOf(clothesColour));
       ch.setAppearance(appearance);
       appearanceServ.addAppearance(appearance);
       charServ.addCharacter(ch);

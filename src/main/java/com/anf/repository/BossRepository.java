@@ -1,10 +1,11 @@
 package com.anf.repository;
 
-import com.anf.model.Boss;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import com.anf.model.database.Boss;
 
 @Repository
 public interface BossRepository extends CrudRepository<Boss, Integer> {

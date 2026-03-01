@@ -1,16 +1,16 @@
 package com.anf.config;
 
-import com.anf.model.Boss;
-import com.anf.model.GameCharacter;
 import com.anf.model.NinjaAnimal;
 import com.anf.model.NinjaAnimalRace;
-import com.anf.model.Spell;
-import com.anf.model.SpellHandling;
-import com.anf.model.Stats;
-import com.anf.model.User;
+import com.anf.model.database.Boss;
+import com.anf.model.database.GameCharacter;
+import com.anf.model.database.Spell;
+import com.anf.model.database.SpellKnowledge;
+import com.anf.model.database.Stats;
+import com.anf.model.database.User;
 import com.anf.service.BossService;
 import com.anf.service.CharacterService;
-import com.anf.service.SpellHandlingService;
+import com.anf.service.SpellKnowledgeService;
 import com.anf.service.SpellService;
 import com.anf.service.StatsService;
 import com.anf.service.UserService;
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class FightEntitiesController {
 
   private final BossService bossService;
-  private final SpellHandlingService spellHandService;
+  private final SpellKnowledgeService spellHandService;
   private final UserService userService;
   private final SpellService spelService;
   private final StatsService statsService;
@@ -60,26 +60,26 @@ public class FightEntitiesController {
   }
 
   @GetMapping("/fight/spell/my/all")
-  public ResponseEntity<?> getAvailableSpellHandlings() {
+  public ResponseEntity<?> getAvailableSpellKnowledges() {
     try {
       User user =
           userService.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
       GameCharacter ch = user.getCharacter();
-      List<SpellHandling> spellHandlings = spellHandService.getPersonsHandling(ch);
-      return ResponseEntity.status(HttpStatus.OK).body(spellHandlings);
+      List<SpellKnowledge> SpellKnowledges = spellHandService.getPersonsHandling(ch);
+      return ResponseEntity.status(HttpStatus.OK).body(SpellKnowledges);
     } catch (Throwable error) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
     }
   }
 
   @GetMapping("/fight/spell/my")
-  public ResponseEntity<?> getMySpellHandling(@RequestParam String spellname) {
+  public ResponseEntity<?> getMySpellKnowledge(@RequestParam String spellname) {
     try {
       User user =
           userService.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
       GameCharacter ch = user.getCharacter();
       Spell spell = spelService.get(spellname);
-      SpellHandling spellHandl = spellHandService.getSpellHandling(ch, spell);
+      SpellKnowledge spellHandl = spellHandService.getSpellKnowledge(ch, spell);
       if (spellHandl == null)
         return ResponseEntity.status(HttpStatus.LOCKED).body("User can't handle this spell yet.");
       return ResponseEntity.status(HttpStatus.OK).body(spellHandl);
@@ -89,7 +89,7 @@ public class FightEntitiesController {
   }
 
   @PostMapping("/fight/spell/my")
-  public ResponseEntity<String> acquireSpellHandling(@RequestParam String spellname) {
+  public ResponseEntity<String> acquireSpellKnowledge(@RequestParam String spellname) {
     try {
       User user =
           userService.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
@@ -98,13 +98,13 @@ public class FightEntitiesController {
       GameCharacter ch = user.getCharacter();
       int currLvl = 0;
       Spell spell = spelService.get(spellname);
-      if (spellHandService.getSpellHandling(ch, spell) != null) {
-        SpellHandling handl = spellHandService.getSpellHandling(ch, spell);
+      if (spellHandService.getSpellKnowledge(ch, spell) != null) {
+        SpellKnowledge handl = spellHandService.getSpellKnowledge(ch, spell);
         currLvl = handl.getSpellLevel();
         handl.setSpellLevel(currLvl + 1);
         spellHandService.addOrUpdateHandling(handl);
       } else {
-        spellHandService.addOrUpdateHandling(new SpellHandling(currLvl + 1, spell, ch));
+        spellHandService.addOrUpdateHandling(new SpellKnowledge(currLvl + 1, spell, ch));
       }
       Stats stats = user.getStats();
       stats.setUpgradePoints(stats.getUpgradePoints() - 1);

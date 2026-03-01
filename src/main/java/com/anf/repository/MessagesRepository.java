@@ -1,7 +1,8 @@
 package com.anf.repository;
 
-import com.anf.model.PrivateMessage;
-import com.anf.model.User;
+import com.anf.model.database.PrivateMessage;
+import com.anf.model.database.User;
+
 import java.util.List;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,7 +19,7 @@ public interface MessagesRepository extends CrudRepository<PrivateMessage, Integ
 
   @Query(
       "select p from PrivateMessage p where (p.receiver = :first "
-          + "and p.sender = :second) or (p.receiver = :second and p.message_id.sender = :first)")
+          + "and p.sender = :second) or (p.receiver = :second and p.sender = :first)")
   List<PrivateMessage> getAllFromDialog(@Param("first") User first, @Param("second") User second);
 
   @Query("select p from PrivateMessage p where p.receiver = :user and p.isRead = false")

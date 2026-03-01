@@ -1,18 +1,21 @@
-package com.anf.model;
+package com.anf.model.database;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
-import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.io.Serializable;
+
+import com.anf.model.Creature;
+
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /** Represents Bidju entity Used to operate on AI bosses data */
 @Entity
-@Table(name = "Bidju")
+@Table(name = "bidjus")
 public class Boss extends Creature implements Serializable {
 
   /** id of the boss */
