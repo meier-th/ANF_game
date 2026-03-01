@@ -10,7 +10,7 @@ import com.anf.service.StatsService;
 import com.anf.service.UserService;
 import java.util.Arrays;
 import java.util.HashSet;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,7 +1,7 @@
 package com.anf.config;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -18,9 +18,9 @@ import com.anf.service.StatsService;
 import com.anf.service.UserService;
 import java.util.Collections;
 import java.util.Optional;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +46,7 @@ public class AuthControllerTest {
   private AuthController controller;
   private BindingResult bindingResult;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     userService = mock(UserService.class);
     roleRepository = mock(RoleRepository.class);
@@ -64,7 +64,7 @@ public class AuthControllerTest {
     when(roleRepository.findById("USER")).thenReturn(Optional.of(userRole));
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     SecurityContextHolder.clearContext();
   }

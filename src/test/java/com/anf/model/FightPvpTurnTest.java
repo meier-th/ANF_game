@@ -1,10 +1,11 @@
 package com.anf.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for turn rotation in {@link FightPVP}.
@@ -18,7 +19,7 @@ public class FightPvpTurnTest {
   private User fighter1;
   private User fighter2;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     fight = new FightPVP();
     fighter1 = makeUser("alice");
@@ -77,7 +78,7 @@ public class FightPvpTurnTest {
 
     // must alternate
     assertNotNull(second);
-    org.junit.Assert.assertNotEquals(first, second);
+    assertNotEquals(first, second);
   }
 
   // helper

@@ -1,3 +1,23 @@
-/bin/
-/target/
-.idea/*
+# Gradle
+.gradle/
+build/
+
+# Maven (legacy; kept in case IDE triggers a Maven build)
+target/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+
+# Environment / secrets
+.env
+application-local.properties
