@@ -54,3 +54,12 @@ tasks.withType<Test> {
     exceptionFormat = TestExceptionFormat.FULL
   }
 }
+
+tasks.register("printJvmArgs") {
+    doLast {
+        println("JVM Arguments: ${System.getProperty("java.vm.info")}")
+        println("Spring Profiles Active: ${System.getProperty("spring.profiles.active")}")
+        println("JAVA_TOOL_OPTIONS: ${System.getenv("JAVA_TOOL_OPTIONS")}")
+        println("JAVA_OPTS: ${System.getenv("JAVA_OPTS")}")
+    }
+}
