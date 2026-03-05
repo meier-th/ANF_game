@@ -15,6 +15,7 @@ import com.anf.service.AppearanceService;
 import com.anf.service.CharacterService;
 import com.anf.service.StatsService;
 import com.anf.service.UserService;
+import com.anf.service.state.OnlinePresenceStore;
 import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +48,8 @@ public class CharacterControllerTest {
             mock(RoleRepository.class),
             userService,
             statsService,
-            mock(WebSocketsController.class));
+            mock(WebSocketsController.class),
+            mock(OnlinePresenceStore.class));
   }
 
   @AfterEach

@@ -22,19 +22,17 @@ import com.anf.service.SpellService;
 import com.anf.service.StatsService;
 import com.anf.service.UserAIFightService;
 import com.anf.service.UserService;
+import com.anf.service.state.FightStateStore;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,21 +57,13 @@ public class FightController {
   private final SpellKnowledgeService SpellKnowledgeService;
   private final StatsService statsServ;
   private final WebSocketsController notifServ;
-  private final FightDataBean fightDataBean;
+  private final FightStateStore fightStateStore;
 
   private ScheduledExecutorService scheduler;
   private ConcurrentHashMap<Integer, ScheduledFuture> timers;
-  private ConcurrentHashMap<Integer, Fight> fights;
-  private ConcurrentSkipListSet<String> usersInFight;
-  private ConcurrentHashMap<Integer, ArrayDeque<String>> queues;
-  private AtomicInteger queueSequence;
 
   @PostConstruct
   private void init() {
-    fights = fightDataBean.getFights();
-    usersInFight = fightDataBean.getUsersInFight();
-    queues = fightDataBean.getQueues();
-    queueSequence = new AtomicInteger();
     scheduler = Executors.newScheduledThreadPool(1);
     timers = new ConcurrentHashMap<>();
   }
@@ -81,18 +71,17 @@ public class FightController {
   @RequestMapping("/createQueue")
   public ResponseEntity<?> createQueue() {
     String name = SecurityContextHolder.getContext().getAuthentication().getName();
-    if (usersInFight.contains(name)) {
+    if (fightStateStore.isUserInFight(name)) {
       return ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}"); // 7 - user is busy
     }
-    final int id = queueSequence.getAndIncrement();
-    queues.put(id, new ArrayDeque<>());
-    queues.get(id).add(name);
+    int id = fightStateStore.nextQueueId();
+    fightStateStore.createQueue(id, name);
     return ResponseEntity.status(HttpStatus.OK).body("{\"queueId\":" + id + "}");
   }
 
   @RequestMapping("/closeQueue")
   public void closeQueue(@RequestParam int id) {
-    queues.remove(id);
+    fightStateStore.removeQueue(id);
   }
 
   @RequestMapping("/invite")
@@ -105,44 +94,53 @@ public class FightController {
   @RequestMapping("/join")
   public ResponseEntity join(@RequestParam String author, @RequestParam int id) {
     String name = SecurityContextHolder.getContext().getAuthentication().getName();
-    if (usersInFight.contains(name)) {
+    if (fightStateStore.isUserInFight(name)) {
       return ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}"); // 7 - user is busy
     }
-    queues.get(id).add(name);
+    if (!fightStateStore.queueExists(id)) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body("{\"code\": 2,\"error\":\"Queue doesn't exist\"}");
+    }
+    fightStateStore.addUserToQueue(id, name);
     notifServ.sendApproval(author, name, id);
     return ResponseEntity.status(HttpStatus.OK).body("{\"answer\": \"OK\"}");
   }
 
   @PostMapping("info")
   public ResponseEntity info(@RequestParam int id) {
-    Fight fight = fights.get(id);
+    Fight fight = fightStateStore.getFight(id).orElse(null);
+    if (fight == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body("{\n\"code\": 2\n}"); // code 2 means fight doesn't exist
+    }
     if (timers.get(id) != null) {
       fight.setTimeLeft(timers.get(id).getDelay(TimeUnit.MILLISECONDS));
     }
+    fightStateStore.saveFight(fight);
     return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
   }
 
   @RequestMapping("/startPvp")
   public ResponseEntity<?> startPvp(@RequestParam(name = "queueId") int queueId) {
-    if (!queues.containsKey(queueId)) {
+    if (!fightStateStore.queueExists(queueId)) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body("{\"code\": 2,\"error\":\"Queue doesn't exist\"}");
     }
-    if (queues.get(queueId).size() != 2) {
+    if (fightStateStore.queueSize(queueId) != 2) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body("{\"code\": 8,\"error\":\"The number of players should be equal to 2\"}");
     }
     FightPVP fight = new FightPVP();
-    String fighter2Name = queues.get(queueId).pop();
-    String fighter1Name = queues.get(queueId).pop();
+    String fighter2Name = fightStateStore.popQueueUser(queueId);
+    String fighter1Name = fightStateStore.popQueueUser(queueId);
     GameCharacter fighter1 = userService.getUser(fighter1Name).getCharacter();
     GameCharacter fighter2 = userService.getUser(fighter2Name).getCharacter();
     if (fighter1 == null || fighter2 == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body("{ \"code\": 3}"); // code 3 means fighter does't exist
     }
-    usersInFight.add(fighter1Name);
-    usersInFight.add(fighter2Name);
+    fightStateStore.markUserInFight(fighter1Name);
+    fightStateStore.markUserInFight(fighter2Name);
     fighter1.prepareForFight();
     fighter2.prepareForFight();
     fight.setFighters(fighter1, fighter2);
@@ -163,11 +161,11 @@ public class FightController {
     }
     fight.setBiggerRatingChange(biggerRating);
     fight.setLessRatingChange(lesserRating);
-    fights.put(fight.getId(), fight);
+    fightStateStore.saveFight(fight);
     final String name = SecurityContextHolder.getContext().getAuthentication().getName();
     String user = name.equals(fighter1Name) ? fighter2Name : fighter1Name;
     notifServ.sendStart(name, user, fight.getId());
-    queues.remove(queueId);
+    fightStateStore.removeQueue(queueId);
     timers.put(
         fight.getId(),
         scheduler.schedule(() -> schedule(fight, true), 3010, TimeUnit.MILLISECONDS));
@@ -177,14 +175,14 @@ public class FightController {
   @RequestMapping("/startPve")
   public ResponseEntity<?> startPve(
       @RequestParam(name = "queueId") int queueId, @RequestParam(name = "bossId") String bossName) {
-    if (!queues.containsKey(queueId)) {
+    if (!fightStateStore.queueExists(queueId)) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body("{\"error\":\"Queue doesn't exist\"}");
     }
-    ArrayList<String> fighters = new ArrayList<>(queues.get(queueId));
-    if (fighters.stream().anyMatch((fighter) -> usersInFight.contains(fighter)))
+    var fighters = new ArrayList<>(fightStateStore.queueUsers(queueId));
+    if (fighters.stream().anyMatch(fightStateStore::isUserInFight))
       return ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");
-    if (usersInFight.contains(bossName)) {
+    if (fightStateStore.isUserInFight(bossName)) {
       ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");
     }
     FightVsAI fight = new FightVsAI();
@@ -204,8 +202,8 @@ public class FightController {
     Boss boss = bossService.getBossByName(bossName);
     boss.prepareForFight();
     fight.setBoss(boss);
-    usersInFight.addAll(fighters);
-    fights.put(fight.getId(), fight);
+    fightStateStore.markUsersInFight(fighters);
+    fightStateStore.saveFight(fight);
     final String name = SecurityContextHolder.getContext().getAuthentication().getName();
     fighters.forEach(
         (user) -> {
@@ -213,7 +211,7 @@ public class FightController {
             notifServ.sendStart(name, user, fight.getId());
           }
         });
-    queues.remove(queueId);
+    fightStateStore.removeQueue(queueId);
     timers.put(
         fight.getId(),
         scheduler.schedule(() -> schedule(fight, true), 3010, TimeUnit.MILLISECONDS));
@@ -224,7 +222,7 @@ public class FightController {
   public ResponseEntity<?> attackHandler(
       @RequestParam String enemy, @RequestParam int fightId, @RequestParam String spellName) {
     String name = SecurityContextHolder.getContext().getAuthentication().getName();
-    Fight fight = fights.get(fightId);
+    Fight fight = fightStateStore.getFight(fightId).orElse(null);
     if (fight == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body("{\n\"code\": 2\n}"); // code 2 means fight doesn't exist
@@ -291,6 +289,7 @@ public class FightController {
         animalPveAttack((FightVsAI) fight);
       }
     }
+    fightStateStore.saveFight(fight);
     if (fight.getCurrentAttacker(0).length() >= 6) {
       timers.put(
           fight.getId(), scheduler.schedule(() -> schedule(fight, false), 30, TimeUnit.SECONDS));
@@ -299,7 +298,11 @@ public class FightController {
 
   private Attack attackPvp(String attackerName, String enemyName, int fightId, String spellName) {
     Attack attack = new Attack();
-    FightPVP fight = (FightPVP) fights.get(fightId);
+    FightPVP fight = (FightPVP) fightStateStore.getFight(fightId).orElse(null);
+    if (fight == null) {
+      attack.setCode(2);
+      return attack;
+    }
     User attacker = fight.getFighter1();
     User enemy = fight.getFighter2();
     NinjaAnimal targetAnimal = null;
@@ -440,6 +443,7 @@ public class FightController {
           0);
     }
 
+    boolean fightFinished = false;
     if (attack.isDeadly()) {
       if (!userIsTarget) {
         if (enemyName.charAt(3) == 1) {
@@ -500,10 +504,14 @@ public class FightController {
         timers.get(fightId).cancel(true);
         System.out.println("FightId: " + fightId + " getId: " + fight.getId());
         timers.remove(fightId);
-        fights.remove(fightId);
-        usersInFight.remove(attackerName);
-        usersInFight.remove(enemyName);
+        fightStateStore.removeFight(fightId);
+        fightStateStore.unmarkUserInFight(attackerName);
+        fightStateStore.unmarkUserInFight(enemyName);
+        fightFinished = true;
       }
+    }
+    if (!fightFinished) {
+      fightStateStore.saveFight(fight);
     }
     return attack;
   }
@@ -512,7 +520,11 @@ public class FightController {
     System.out.println(
         "AttackPve at" + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
     Attack attack = new Attack();
-    FightVsAI fight = (FightVsAI) fights.get(fightId);
+    FightVsAI fight = (FightVsAI) fightStateStore.getFight(fightId).orElse(null);
+    if (fight == null) {
+      attack.setCode(2);
+      return attack;
+    }
     // Boss is a target
     Boss boss = fight.getBoss();
     User attacker = userService.getUser(attackerName);
@@ -569,6 +581,7 @@ public class FightController {
           0);
     }
     // if boss was killed
+    boolean fightFinished = false;
     if (attack.isDeadly()) {
       fightVsAIService.addFight(fight);
       // set stats and save
@@ -607,11 +620,15 @@ public class FightController {
         userAiFightService.add(fightData);
       }
       // close fight
-      queues.remove(fightId);
+      fightStateStore.removeQueue(fightId);
       for (AiFightParticipation fighter : fight.getSetFighters()) {
-        usersInFight.remove(fighter.getFighter().getUser().getLogin());
+        fightStateStore.unmarkUserInFight(fighter.getFighter().getUser().getLogin());
       }
-      fights.remove(fight.getId());
+      fightStateStore.removeFight(fight.getId());
+      fightFinished = true;
+    }
+    if (!fightFinished) {
+      fightStateStore.saveFight(fight);
     }
     return attack;
   }
@@ -735,15 +752,16 @@ public class FightController {
                   statsServ.addStats(userData.getFighter().getUser().getStats());
                   userAiFightService.add(userData);
                 }
-                queues.remove(fight.getId());
+                fightStateStore.removeQueue(fight.getId());
                 for (AiFightParticipation fighter : fight.getSetFighters()) {
-                  usersInFight.remove(fighter.getFighter().getUser().getLogin());
+                  fightStateStore.unmarkUserInFight(fighter.getFighter().getUser().getLogin());
                 }
                 timers.get(fight.getId()).cancel(true);
-                fights.remove(fight.getId());
+                fightStateStore.removeFight(fight.getId());
                 return;
               }
               System.out.println("YEEEE!\n");
+              fightStateStore.saveFight(fight);
               schedule(fight, false);
             },
             delay,
@@ -947,10 +965,12 @@ public class FightController {
                 timers.get(fight.getId()).cancel(true);
                 // System.out.println("FightId: " + fightId + " getId: " + fight.getId());
                 timers.remove(fight.getId());
-                fights.remove(fight.getId());
-                usersInFight.remove(fight.getFighter1().getLogin());
-                usersInFight.remove(fight.getFighter2().getLogin());
+                fightStateStore.removeFight(fight.getId());
+                fightStateStore.unmarkUserInFight(fight.getFighter1().getLogin());
+                fightStateStore.unmarkUserInFight(fight.getFighter2().getLogin());
+                return;
               }
+              fightStateStore.saveFight(fight);
               schedule(fight, false);
             },
             delay,
@@ -961,7 +981,11 @@ public class FightController {
   public ResponseEntity summonPvp(@RequestParam int fightId) {
     String name = SecurityContextHolder.getContext().getAuthentication().getName();
     User user = userService.getUser(name);
-    FightPVP fight = (FightPVP) fights.get(fightId);
+    FightPVP fight = (FightPVP) fightStateStore.getFight(fightId).orElse(null);
+    if (fight == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body("{\"code\": 2,\"error\":\"Fight doesn't exist\"}");
+    }
     NinjaAnimalRace race = user.getCharacter().getAnimalRace();
     if (race != null) {
       boolean lvl2 = user.getCharacter().getLevel() >= 10;
@@ -989,6 +1013,7 @@ public class FightController {
         fight.getAnimals2().add(animal);
         notifServ.sendSummon(fight.getFighter1().getLogin(), name, animal, animalName);
       }
+      fightStateStore.saveFight(fight);
       return ResponseEntity.ok(animal.toString());
     } else
       return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -999,7 +1024,11 @@ public class FightController {
   public ResponseEntity summonPve(@RequestParam int fightId) {
     String name = SecurityContextHolder.getContext().getAuthentication().getName();
     User user = userService.getUser(name);
-    FightVsAI fight = (FightVsAI) fights.get(fightId);
+    FightVsAI fight = (FightVsAI) fightStateStore.getFight(fightId).orElse(null);
+    if (fight == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body("{\"code\": 2,\"error\":\"Fight doesn't exist\"}");
+    }
     NinjaAnimalRace race = user.getCharacter().getAnimalRace();
     boolean lvl2 = user.getCharacter().getLevel() >= 10;
     String animalName;
@@ -1029,6 +1058,7 @@ public class FightController {
                     set.getFighter().getUser().getLogin(), name, animal, animalName);
             });
 
+    fightStateStore.saveFight(fight);
     return ResponseEntity.ok(animal.toString());
   }
 
@@ -1146,13 +1176,15 @@ public class FightController {
                   userAiFightService.add(fightData);
                 }
                 // close fight
-                queues.remove(fight.getId());
+                fightStateStore.removeQueue(fight.getId());
                 for (AiFightParticipation fighter : fight.getSetFighters()) {
-                  usersInFight.remove(fighter.getFighter().getUser().getLogin());
+                  fightStateStore.unmarkUserInFight(fighter.getFighter().getUser().getLogin());
                 }
                 timers.get(fight.getId()).cancel(true);
-                fights.remove(fight.getId());
+                fightStateStore.removeFight(fight.getId());
+                return;
               }
+              fightStateStore.saveFight(fight);
               schedule(fight, false);
             },
             delay,

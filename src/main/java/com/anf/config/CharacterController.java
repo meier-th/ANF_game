@@ -12,6 +12,7 @@ import com.anf.service.AppearanceService;
 import com.anf.service.CharacterService;
 import com.anf.service.StatsService;
 import com.anf.service.UserService;
+import com.anf.service.state.OnlinePresenceStore;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -36,6 +37,7 @@ public class CharacterController {
   private final UserService userServ;
   private final StatsService statsServ;
   private final WebSocketsController wsController;
+  private final OnlinePresenceStore onlinePresenceStore;
 
   @RequestMapping(value = "/")
   public String greeting() {
@@ -242,9 +244,7 @@ public class CharacterController {
   @GetMapping("/ready")
   public ResponseEntity<?> getOnlineUsernames() {
     try {
-      ArrayList<String> toRet = new ArrayList<>();
-      FightDataBean.onlineUsers.forEach(pair -> toRet.add(pair.getKey()));
-      return ResponseEntity.status(HttpStatus.OK).body(toRet);
+      return ResponseEntity.status(HttpStatus.OK).body(onlinePresenceStore.listOnlineUsers());
     } catch (Throwable exc) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exc.getMessage());
     }
@@ -254,7 +254,7 @@ public class CharacterController {
   public ResponseEntity<String> setOnline() {
     try {
       String username = SecurityContextHolder.getContext().getAuthentication().getName();
-      FightDataBean.setOnline(username);
+      onlinePresenceStore.markOnline(username);
       wsController.sendOnline(username + ":online");
       return ResponseEntity.status(HttpStatus.OK).body("{\"response\":\"ok\"}");
     } catch (Throwable exc) {
@@ -266,7 +266,7 @@ public class CharacterController {
   public ResponseEntity<String> setOffline() {
     try {
       String username = SecurityContextHolder.getContext().getAuthentication().getName();
-      FightDataBean.setOffline(username);
+      onlinePresenceStore.markOffline(username);
       wsController.sendOnline(username + ":offline");
       return ResponseEntity.status(HttpStatus.OK).body("{\"response\":\"ok\"}");
     } catch (Throwable exc) {
