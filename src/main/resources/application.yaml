@@ -6,14 +6,17 @@ spring:
     password: ""
   jpa:
     show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
   security:
     oauth2:
       client:
         registration:
           google:
-            client-id: ""
-            client-secret: ""
+            client-id: "${GOOGLE_OAUTH_CLIENT_ID}"
+            client-secret: "${GOOGLE_OAUTH_CLIENT_SECRET}"
             scope: openid,profile,email
             redirect-uri: "{baseUrl}/oauth2/callback/{registrationId}"
 
