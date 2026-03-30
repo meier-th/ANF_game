@@ -129,6 +129,11 @@ public class RedisLobbyStore implements LobbyStore {
     return LobbyLeaveResult.LEFT;
   }
 
+  @Override
+  public void deleteLobby(String lobbyUuid) {
+    redisTemplate.delete(keyFactory.lobbyKey(lobbyUuid));
+  }
+
   private int modeCapacity(FightMode mode) {
     return switch (mode) {
       case FIGHT_MODE_PVP -> PVP_CAPACITY;
