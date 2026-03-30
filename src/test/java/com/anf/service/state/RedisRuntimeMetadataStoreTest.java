@@ -53,8 +53,7 @@ class RedisRuntimeMetadataStoreTest {
     var alias = aliasStore.getFightUuid(42);
 
     assertThat(alias).contains("fight-uuid-1");
-    assertThat(redisData)
-        .containsKey(Base64.getEncoder().encodeToString(keyFactory.fightIdAliasKey(42)));
+    assertThat(redisData).containsKey(Base64.getEncoder().encodeToString(keyFactory.fightIdAliasKey(42)));
   }
 
   @Test

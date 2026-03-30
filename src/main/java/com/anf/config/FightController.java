@@ -9,7 +9,6 @@ import com.anf.model.database.AiFightParticipation;
 import com.anf.model.database.Boss;
 import com.anf.model.database.FightPVP;
 import com.anf.model.database.FightVsAI;
-import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Spell;
 import com.anf.model.database.SpellKnowledge;
 import com.anf.model.database.User;
@@ -175,44 +174,6 @@ public class FightController {
     };
   }
 
-  @RequestMapping("/createQueue")
-  public ResponseEntity<?> createQueue() {
-    String name = SecurityContextHolder.getContext().getAuthentication().getName();
-    if (fightStateStore.isUserInFight(name)) {
-      return ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}"); // 7 - user is busy
-    }
-    int id = fightStateStore.nextQueueId();
-    fightStateStore.createQueue(id, name);
-    return ResponseEntity.status(HttpStatus.OK).body("{\"queueId\":" + id + "}");
-  }
-
-  @RequestMapping("/closeQueue")
-  public void closeQueue(@RequestParam int id) {
-    fightStateStore.removeQueue(id);
-  }
-
-  @RequestMapping("/invite")
-  public void invite(
-      @RequestParam String username, @RequestParam String type, @RequestParam int id) {
-    notifServ.sendInvitation(
-        username, SecurityContextHolder.getContext().getAuthentication().getName(), type, id);
-  }
-
-  @RequestMapping("/join")
-  public ResponseEntity join(@RequestParam String author, @RequestParam int id) {
-    String name = SecurityContextHolder.getContext().getAuthentication().getName();
-    if (fightStateStore.isUserInFight(name)) {
-      return ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}"); // 7 - user is busy
-    }
-    if (!fightStateStore.queueExists(id)) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body("{\"code\": 2,\"error\":\"Queue doesn't exist\"}");
-    }
-    fightStateStore.addUserToQueue(id, name);
-    notifServ.sendApproval(author, name, id);
-    return ResponseEntity.status(HttpStatus.OK).body("{\"answer\": \"OK\"}");
-  }
-
   @PostMapping("info")
   public ResponseEntity info(@RequestParam int id) {
     Fight fight = fightStateStore.getFight(id).orElse(null);
@@ -224,104 +185,6 @@ public class FightController {
       fight.setTimeLeft(timers.get(id).getDelay(TimeUnit.MILLISECONDS));
     }
     fightStateStore.saveFight(fight);
-    return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
-  }
-
-  @RequestMapping("/startPvp")
-  public ResponseEntity<?> startPvp(@RequestParam(name = "queueId") int queueId) {
-    if (!fightStateStore.queueExists(queueId)) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body("{\"code\": 2,\"error\":\"Queue doesn't exist\"}");
-    }
-    if (fightStateStore.queueSize(queueId) != 2) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body("{\"code\": 8,\"error\":\"The number of players should be equal to 2\"}");
-    }
-    FightPVP fight = new FightPVP();
-    String fighter2Name = fightStateStore.popQueueUser(queueId);
-    String fighter1Name = fightStateStore.popQueueUser(queueId);
-    GameCharacter fighter1 = userService.getUser(fighter1Name).getCharacter();
-    GameCharacter fighter2 = userService.getUser(fighter2Name).getCharacter();
-    if (fighter1 == null || fighter2 == null) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body("{ \"code\": 3}"); // code 3 means fighter does't exist
-    }
-    fightStateStore.markUserInFight(fighter1Name);
-    fightStateStore.markUserInFight(fighter2Name);
-    fighter1.prepareForFight();
-    fighter2.prepareForFight();
-    fight.setFighters(fighter1, fighter2);
-    int biggerRating =
-        15
-            + Math.abs(
-                    fighter1.getUser().getStats().getRating()
-                        - fighter2.getUser().getStats().getRating())
-                / 4;
-    int lesserRating =
-        15
-            - Math.abs(
-                    fighter1.getUser().getStats().getRating()
-                        - fighter2.getUser().getStats().getRating())
-                / 8;
-    if (lesserRating < 5) {
-      lesserRating = 5;
-    }
-    fight.setBiggerRatingChange(biggerRating);
-    fight.setLessRatingChange(lesserRating);
-    fightStateStore.saveFight(fight);
-    final String name = SecurityContextHolder.getContext().getAuthentication().getName();
-    String user = name.equals(fighter1Name) ? fighter2Name : fighter1Name;
-    notifServ.sendStart(name, user, fight.getId());
-    fightStateStore.removeQueue(queueId);
-    timers.put(
-        fight.getId(),
-        scheduler.schedule(() -> schedule(fight, true), 3010, TimeUnit.MILLISECONDS));
-    return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
-  }
-
-  @RequestMapping("/startPve")
-  public ResponseEntity<?> startPve(
-      @RequestParam(name = "queueId") int queueId, @RequestParam(name = "bossId") String bossName) {
-    if (!fightStateStore.queueExists(queueId)) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body("{\"error\":\"Queue doesn't exist\"}");
-    }
-    var fighters = new ArrayList<>(fightStateStore.queueUsers(queueId));
-    if (fighters.stream().anyMatch(fightStateStore::isUserInFight))
-      return ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");
-    if (fightStateStore.isUserInFight(bossName)) {
-      ResponseEntity.status(HttpStatus.CONFLICT).body("{ \"code\": 7}");
-    }
-    FightVsAI fight = new FightVsAI();
-    ArrayList<AiFightParticipation> userFights = new ArrayList<>();
-    System.out.println("PVE fight began. Fighters:");
-    for (String fighterName : fighters) {
-      AiFightParticipation userF = new AiFightParticipation();
-      userF.setFight(fight);
-      GameCharacter fighter = userService.getUser(fighterName).getCharacter();
-      userF.setFighter(fighter);
-      fighter.prepareForFight();
-      fight.addFighter(fighter);
-      userFights.add(userF);
-      System.out.println(fighterName);
-    }
-    fight.setSetFighters(userFights);
-    Boss boss = bossService.getBossByName(bossName);
-    boss.prepareForFight();
-    fight.setBoss(boss);
-    fightStateStore.markUsersInFight(fighters);
-    fightStateStore.saveFight(fight);
-    final String name = SecurityContextHolder.getContext().getAuthentication().getName();
-    fighters.forEach(
-        (user) -> {
-          if (!user.equals(name)) {
-            notifServ.sendStart(name, user, fight.getId());
-          }
-        });
-    fightStateStore.removeQueue(queueId);
-    timers.put(
-        fight.getId(),
-        scheduler.schedule(() -> schedule(fight, true), 3010, TimeUnit.MILLISECONDS));
     return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
   }
 
@@ -1357,4 +1220,5 @@ public class FightController {
       default -> FightMode.FIGHT_MODE_UNSPECIFIED;
     };
   }
+
 }
