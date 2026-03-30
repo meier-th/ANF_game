@@ -100,30 +100,30 @@ This document describes the **current** REST and WebSocket APIs and the main use
 - **POST** `/fight/animals/my`  
   - Sets the Ninja Animal race for the current character (one-time choice). Param: `racename` (`NinjaAnimalRace` enum name).
 
-#### Fight sessions, queues & actions (`FightController`)
+#### Fight lobbies & actions (`FightController`)
 
 Base path: **`/fight`**.
 
-- **GET** `/fight/createQueue`  
-  - Creates a new PvP/PvE queue, associates it with the current user, and returns a `queueId`. Fails if user is already in a fight.
-- **GET** `/fight/closeQueue`  
-  - Closes and removes a queue by `id`.
-- **GET** `/fight/invite`  
-  - Sends a WebSocket fight invitation to another user (params: `username`, `type`, `id`).
-- **GET** `/fight/join`  
-  - Joins an existing queue (`id`) created by `author`, notifies the inviter via WebSocket, and returns OK.
+- **POST** `/fight/lobbies`  
+  - Creates a new lobby for current user. Param: `mode` (`PVP`, `SOLO_PVE`, `TEAM_PVE`).
+- **GET** `/fight/lobbies/{lobbyUuid}`  
+  - Returns lobby details (`lobbyUuid`, `fightMode`, leader, players).
+- **POST** `/fight/lobbies/{lobbyUuid}/join`  
+  - Current user joins an existing lobby.
+- **POST** `/fight/lobbies/{lobbyUuid}/leave`  
+  - Current user leaves lobby; lobby is closed automatically when empty.
+- **DELETE** `/fight/lobbies/{lobbyUuid}`  
+  - Closes lobby explicitly.
+- **POST** `/fight/lobbies/{lobbyUuid}/start`  
+  - Starts a fight from lobby and returns `fightUuid`; requires `bossId` for PvE.
 - **POST** `/fight/info`  
-  - Returns the current state of an ongoing fight by `id`, including remaining time.
-- **GET** `/fight/startPvp`  
-  - Starts a PvP fight from a queue (`queueId`). Expects exactly two players; initializes fight state, rating change parameters, and schedules the first turn.
-- **GET** `/fight/startPve`  
-  - Starts a PvE fight from a queue (`queueId`) against a boss (`bossId` = boss name). Initializes fighters, boss, and scheduling.
+  - Returns ongoing fight state by `fightUuid`, including remaining time.
 - **GET** `/fight/attack`  
-  - Performs an attack in a fight. Params: `enemy` (target username or encoded animal name), `fightId`, `spellName`. Enforces turn order and returns an `Attack` result.
+  - Performs an attack in a fight. Params: `enemy`, `fightUuid`, `spellName`.
 - **POST** `/fight/summonPvp`  
-  - Summons the player’s Ninja Animal into a PvP fight, notifies the opponent via WebSocket.
+  - Summons player’s Ninja Animal into a PvP fight. Param: `fightUuid`.
 - **POST** `/fight/summonPve`  
-  - Summons the player’s Ninja Animal into a PvE fight, notifies party members via WebSocket.
+  - Summons player’s Ninja Animal into a PvE fight. Param: `fightUuid`.
 
 ### WebSocket/STOMP API
 
@@ -151,9 +151,7 @@ Base path: **`/fight`**.
   - `/user/{username}/social` – friend-request and friendship status updates.  
   - `/user/{username}/fightState` – detailed fight state updates (`State` object) after an action.  
   - `/user/{username}/switch` – indicates whose turn it is next in a fight.  
-  - `/user/{username}/invite` – fight invitations (type, author, queue ID).  
-  - `/user/{username}/approval` – responses to fight invitations.  
-  - `/user/{username}/start` – fight start notifications with fight IDs.  
+  - `/user/{username}/start` – fight start notifications with `fightUuid`.  
   - `/user/{username}/summon` – Ninja Animal summon notifications with serialized animal data.
 
 ### Core user & game flows (current behavior)
@@ -186,25 +184,25 @@ Base path: **`/fight`**.
    - Removing a friend via `DELETE /profile/friends`.  
    - WebSocket `/social` notifications keep both sides’ UIs synchronized.
 
-#### PvP flow (queue → fight → result)
+#### PvP flow (lobby → fight → result)
 
-1. A player calls `GET /fight/createQueue` to create a queue and invites another user via `GET /fight/invite`.  
-2. The invited user joins via `GET /fight/join`, which triggers WebSocket approvals and moves both into the queue.  
-3. The creator starts the fight via `GET /fight/startPvp?queueId=...`, which:
-   - Prepares both characters (`prepareForFight`), computes rating-change parameters, stores the `FightPVP` in memory, and notifies players via `/start`.  
+1. A player calls `POST /fight/lobbies?mode=PVP` to create a lobby.  
+2. The second player joins via `POST /fight/lobbies/{lobbyUuid}/join`.  
+3. Fight starts via `POST /fight/lobbies/{lobbyUuid}/start`, which:
+   - Prepares both characters (`prepareForFight`), computes rating-change parameters, stores runtime fight state in Redis, and notifies players via `/start`.  
    - Schedules the first attacker and subsequent turns.
-4. Players take turns calling `GET /fight/attack` with `enemy`, `fightId`, `spellName` (or `"Physical attack"`).  
+4. Players take turns calling `GET /fight/attack` with `enemy`, `fightUuid`, `spellName` (or `"Physical attack"`).  
 5. After each action:
    - The backend updates HP/chakra, determines death, sends `State` updates on `/fightState`, and switches attacker (with `/switch` notifications).  
    - When a player (or animal) dies, rating and stats are updated, a `FightPVP` record is persisted, and both users are removed from `usersInFight`.
 
-#### PvE flow (queue → boss fight → result)
+#### PvE flow (lobby → boss fight → result)
 
-1. A group joins a queue via `GET /fight/createQueue`/`/fight/join` and starts a PvE fight with `GET /fight/startPve?queueId=...&bossId=...`.  
+1. A group forms in a lobby via `POST /fight/lobbies?mode=TEAM_PVE` and `/fight/lobbies/{lobbyUuid}/join`, then starts with `POST /fight/lobbies/{lobbyUuid}/start?bossId=...`.  
 2. The backend:
    - Creates a `FightVsAI` with multiple fighters and a `Boss`, prepares all entities, and notifies each player via `/start`.  
    - Manages a turn order that includes players, boss, and summoned animals.
-3. Players attack the boss via `GET /fight/attack` with their `spellName`; the boss and animals may act automatically based on timers.  
+3. Players attack the boss via `GET /fight/attack` with `fightUuid` and `spellName`; the boss and animals may act automatically based on timers.  
 4. When the boss dies or all players die, the service:
    - Persists a `FightVsAI` record and associated `UserAIFight` entries.  
    - Updates `Stats` (fights, wins/losses/deaths, XP), and clears in-memory fight state.
