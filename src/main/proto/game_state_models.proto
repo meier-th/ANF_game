@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package anf.state;
+
+option java_package = "com.anf.service.state.proto";
+option java_outer_classname = "GameStateModels";
+option java_multiple_files = false;
+
+enum FightMode {
+  FIGHT_MODE_UNSPECIFIED = 0;
+  FIGHT_MODE_PVP = 1;
+  FIGHT_MODE_SOLO_PVE = 2;
+  FIGHT_MODE_TEAM_PVE = 3;
+}
+
+message Lobby {
+  string lobby_uuid = 1;
+  FightMode fight_mode = 2;
+  repeated string player_ids = 3;
+  string leader_player_id = 4;
+}
+
+message Fight {
+  string fight_uuid = 1;
+  FightMode fight_mode = 2;
+  repeated string participant_uuids = 3;
+}
+
+message TakenTurn {
+  string character_uuid = 1;
+  int64 timestamp = 2;
+}
+
+message CreatureStatus {
+  int32 remaining_health = 1;
+}
+
+message FightState {
+  string fight_uuid = 1;
+  repeated TakenTurn taken_turns = 2;
+  map<string, CreatureStatus> creature_statuses = 3;
+}
+
+message CacheKey {
+  enum Dataset {
+    DATASET_UNSPECIFIED = 0;
+    DATASET_LOBBY = 1;
+    DATASET_FIGHT = 2;
+    DATASET_FIGHT_STATE = 3;
+  }
+
+  Dataset dataset = 1;
+
+  oneof entity_key {
+    string lobby_uuid = 2;
+    string fight_uuid = 3;
+    string fight_state_fight_uuid = 4;
+  }
+}

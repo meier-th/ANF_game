@@ -1,41 +1,21 @@
 package com.anf.service.state;
 
-import com.anf.model.Fight;
-import java.util.Collection;
-import java.util.List;
+import com.anf.service.state.proto.GameStateModels.FightState;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 
 public interface FightStateStore {
+  int MAX_TRANSACTION_RETRIES = 5;
 
-  int nextQueueId();
+  enum FightStateUpdateResult {
+    UPDATED,
+    FIGHT_STATE_NOT_FOUND,
+    TRANSACTION_CONFLICT
+  }
 
-  void createQueue(int queueId, String owner);
+  void createFightState(FightState fightState);
 
-  boolean queueExists(int queueId);
+  Optional<FightState> getFightState(String fightUuid);
 
-  int queueSize(int queueId);
-
-  List<String> queueUsers(int queueId);
-
-  void addUserToQueue(int queueId, String username);
-
-  String popQueueUser(int queueId);
-
-  void removeQueue(int queueId);
-
-  Optional<Fight> getFight(int fightId);
-
-  void saveFight(Fight fight);
-
-  void removeFight(int fightId);
-
-  boolean isUserInFight(String username);
-
-  void markUserInFight(String username);
-
-  void markUsersInFight(Collection<String> usernames);
-
-  void unmarkUserInFight(String username);
-
-  void unmarkUsersInFight(Collection<String> usernames);
+  FightStateUpdateResult updateFightState(String fightUuid, UnaryOperator<FightState> updater);
 }
