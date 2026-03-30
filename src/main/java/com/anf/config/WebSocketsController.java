@@ -56,8 +56,8 @@ public class WebSocketsController {
     messagingTemplate.convertAndSendToUser(principal.getName(), "/approval", message);
   }
 
-  public void sendStart(String author, String username, int id) {
-    String message = author + ":" + id;
+  public void sendStart(String author, String username, String fightUuid) {
+    String message = author + ":" + fightUuid;
     Principal principal = new StompPrincipal(username);
     messagingTemplate.convertAndSendToUser(principal.getName(), "/start", message);
   }

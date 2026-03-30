@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 public class InMemoryLegacyFightRuntimeStore implements LegacyFightRuntimeStore {
   private final AtomicInteger queueSequence = new AtomicInteger();
   private final ConcurrentHashMap<Integer, ArrayDeque<String>> queues = new ConcurrentHashMap<>();
-  private final ConcurrentHashMap<Integer, Fight> fights = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, Fight> fights = new ConcurrentHashMap<>();
   private final ConcurrentSkipListSet<String> usersInFight = new ConcurrentSkipListSet<>();
 
   @Override
@@ -66,18 +66,18 @@ public class InMemoryLegacyFightRuntimeStore implements LegacyFightRuntimeStore 
   }
 
   @Override
-  public Optional<Fight> getFight(int fightId) {
-    return Optional.ofNullable(fights.get(fightId));
+  public Optional<Fight> getFight(String fightUuid) {
+    return Optional.ofNullable(fights.get(fightUuid));
   }
 
   @Override
-  public void saveFight(Fight fight) {
-    fights.put(fight.getId(), fight);
+  public void saveFight(String fightUuid, Fight fight) {
+    fights.put(fightUuid, fight);
   }
 
   @Override
-  public void removeFight(int fightId) {
-    fights.remove(fightId);
+  public void removeFight(String fightUuid) {
+    fights.remove(fightUuid);
   }
 
   @Override

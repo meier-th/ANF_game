@@ -22,11 +22,11 @@ public interface LegacyFightRuntimeStore {
 
   void removeQueue(int queueId);
 
-  Optional<Fight> getFight(int fightId);
+  Optional<Fight> getFight(String fightUuid);
 
-  void saveFight(Fight fight);
+  void saveFight(String fightUuid, Fight fight);
 
-  void removeFight(int fightId);
+  void removeFight(String fightUuid);
 
   boolean isUserInFight(String username);
 
