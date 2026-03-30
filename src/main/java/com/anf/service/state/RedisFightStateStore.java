@@ -1,124 +1,104 @@
 package com.anf.service.state;
 
-import com.anf.model.Fight;
+import com.anf.service.state.proto.GameStateModels.FightState;
+import com.google.protobuf.InvalidProtocolBufferException;
 import java.time.Duration;
-import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
 public class RedisFightStateStore implements FightStateStore {
-  private static final String FIGHT_KEY_PREFIX = "anf:fight:";
-  private static final String QUEUE_KEY_PREFIX = "anf:queue:";
-  private static final String USERS_IN_FIGHT_KEY = "anf:users-in-fight";
-  private static final String QUEUE_SEQUENCE_KEY = "anf:queue-sequence";
-  private static final Duration FIGHT_TTL = Duration.ofHours(2);
-  private static final Duration QUEUE_TTL = Duration.ofMinutes(30);
+  private static final Duration FIGHT_STATE_TTL = Duration.ofHours(4);
 
-  private final RedisTemplate<String, Object> redisTemplate;
+  @Qualifier("protobufRedisTemplate")
+  private final RedisTemplate<byte[], byte[]> redisTemplate;
+  private final RedisCacheKeyFactory keyFactory;
 
   @Override
-  public int nextQueueId() {
-    var next = redisTemplate.opsForValue().increment(QUEUE_SEQUENCE_KEY);
-    return next == null ? 0 : next.intValue();
+  public void createFightState(FightState fightState) {
+    redisTemplate
+        .opsForValue()
+        .set(keyFactory.fightStateKey(fightState.getFightUuid()), fightState.toByteArray(), FIGHT_STATE_TTL);
   }
 
   @Override
-  public void createQueue(int queueId, String owner) {
-    var key = queueKey(queueId);
-    redisTemplate.delete(key);
-    redisTemplate.opsForList().rightPush(key, owner);
-    redisTemplate.expire(key, QUEUE_TTL);
+  public Optional<FightState> getFightState(String fightUuid) {
+    return readEntity(keyFactory.fightStateKey(fightUuid), FightState::parseFrom);
   }
 
   @Override
-  public boolean queueExists(int queueId) {
-    return Boolean.TRUE.equals(redisTemplate.hasKey(queueKey(queueId)));
-  }
+  public FightStateUpdateResult updateFightState(
+      String fightUuid, UnaryOperator<FightState> updater) {
+    var key = keyFactory.fightStateKey(fightUuid);
+    for (var attempt = 0; attempt < MAX_TRANSACTION_RETRIES; attempt++) {
+      var result =
+          redisTemplate.execute(
+              new SessionCallback<FightStateUpdateResult>() {
+                @Override
+                @SuppressWarnings("unchecked")
+                public FightStateUpdateResult execute(RedisOperations operations)
+                    throws DataAccessException {
+                  RedisOperations<byte[], byte[]> ops = operations;
+                  ops.watch(key);
+                  var payload = ops.opsForValue().get(key);
+                  if (payload == null) {
+                    ops.unwatch();
+                    return FightStateUpdateResult.FIGHT_STATE_NOT_FOUND;
+                  }
 
-  @Override
-  public int queueSize(int queueId) {
-    var size = redisTemplate.opsForList().size(queueKey(queueId));
-    return size == null ? 0 : size.intValue();
-  }
+                  FightState currentState;
+                  try {
+                    currentState = FightState.parseFrom(payload);
+                  } catch (InvalidProtocolBufferException ex) {
+                    ops.unwatch();
+                    throw new IllegalStateException("Invalid fight state payload", ex);
+                  }
 
-  @Override
-  public List<String> queueUsers(int queueId) {
-    var values = redisTemplate.opsForList().range(queueKey(queueId), 0, -1);
-    if (values == null) {
-      return List.of();
+                  var updatedState = updater.apply(currentState);
+                  if (updatedState == null) {
+                    ops.unwatch();
+                    throw new IllegalArgumentException("Fight state updater returned null.");
+                  }
+
+                  ops.multi();
+                  ops.opsForValue().set(key, updatedState.toByteArray());
+                  ops.expire(key, FIGHT_STATE_TTL);
+                  var execResult = ops.exec();
+                  return execResult == null
+                      ? FightStateUpdateResult.TRANSACTION_CONFLICT
+                      : FightStateUpdateResult.UPDATED;
+                }
+              });
+
+      if (result != FightStateUpdateResult.TRANSACTION_CONFLICT) {
+        return result;
+      }
     }
-    return values.stream().map(String.class::cast).toList();
+    return FightStateUpdateResult.TRANSACTION_CONFLICT;
   }
 
-  @Override
-  public void addUserToQueue(int queueId, String username) {
-    var key = queueKey(queueId);
-    redisTemplate.opsForList().rightPush(key, username);
-    redisTemplate.expire(key, QUEUE_TTL);
+  private <T> Optional<T> readEntity(byte[] key, ProtobufReader<T> reader) {
+    var payload = redisTemplate.opsForValue().get(key);
+    if (payload == null) {
+      return Optional.empty();
+    }
+    try {
+      return Optional.of(reader.read(payload));
+    } catch (InvalidProtocolBufferException ex) {
+      throw new IllegalStateException("Invalid protobuf payload", ex);
+    }
   }
 
-  @Override
-  public String popQueueUser(int queueId) {
-    var value = redisTemplate.opsForList().leftPop(queueKey(queueId));
-    return value == null ? null : (String) value;
-  }
-
-  @Override
-  public void removeQueue(int queueId) {
-    redisTemplate.delete(queueKey(queueId));
-  }
-
-  @Override
-  public Optional<Fight> getFight(int fightId) {
-    var fight = redisTemplate.opsForValue().get(fightKey(fightId));
-    return Optional.ofNullable((Fight) fight);
-  }
-
-  @Override
-  public void saveFight(Fight fight) {
-    redisTemplate.opsForValue().set(fightKey(fight.getId()), fight, FIGHT_TTL);
-  }
-
-  @Override
-  public void removeFight(int fightId) {
-    redisTemplate.delete(fightKey(fightId));
-  }
-
-  @Override
-  public boolean isUserInFight(String username) {
-    return Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(USERS_IN_FIGHT_KEY, username));
-  }
-
-  @Override
-  public void markUserInFight(String username) {
-    redisTemplate.opsForSet().add(USERS_IN_FIGHT_KEY, username);
-  }
-
-  @Override
-  public void markUsersInFight(Collection<String> usernames) {
-    usernames.forEach(this::markUserInFight);
-  }
-
-  @Override
-  public void unmarkUserInFight(String username) {
-    redisTemplate.opsForSet().remove(USERS_IN_FIGHT_KEY, username);
-  }
-
-  @Override
-  public void unmarkUsersInFight(Collection<String> usernames) {
-    usernames.forEach(this::unmarkUserInFight);
-  }
-
-  private String fightKey(int fightId) {
-    return FIGHT_KEY_PREFIX + fightId;
-  }
-
-  private String queueKey(int queueId) {
-    return QUEUE_KEY_PREFIX + queueId;
+  @FunctionalInterface
+  private interface ProtobufReader<T> {
+    T read(byte[] payload) throws InvalidProtocolBufferException;
   }
 }

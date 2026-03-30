@@ -22,7 +22,7 @@ import com.anf.service.SpellService;
 import com.anf.service.StatsService;
 import com.anf.service.UserAIFightService;
 import com.anf.service.UserService;
-import com.anf.service.state.FightStateStore;
+import com.anf.service.state.LegacyFightRuntimeStore;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -57,7 +57,7 @@ public class FightController {
   private final SpellKnowledgeService SpellKnowledgeService;
   private final StatsService statsServ;
   private final WebSocketsController notifServ;
-  private final FightStateStore fightStateStore;
+  private final LegacyFightRuntimeStore fightStateStore;
 
   private ScheduledExecutorService scheduler;
   private ConcurrentHashMap<Integer, ScheduledFuture> timers;

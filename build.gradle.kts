@@ -1,10 +1,10 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
   java
   id("org.springframework.boot") version "4.0.3"
+  id("com.google.protobuf") version "0.9.5"
 }
 
 group = "com.anf"
@@ -31,6 +31,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-websocket")
   implementation("org.springframework.boot:spring-boot-starter-security-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-data-redis")
+  implementation("com.google.protobuf:protobuf-java:4.31.1")
 
   // Database
   implementation("org.postgresql:postgresql")
@@ -45,6 +46,12 @@ dependencies {
   testAnnotationProcessor("org.projectlombok:lombok:1.18.42")
 }
 
+protobuf {
+  protoc {
+    artifact = "com.google.protobuf:protoc:4.31.1"
+  }
+}
+
 springBoot {
   mainClass = "com.anf.Application"
 }
@@ -55,12 +62,6 @@ tasks.withType<Test> {
     events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
     exceptionFormat = TestExceptionFormat.FULL
   }
-}
-
-tasks.named<BootRun>("bootRun") {
-  systemProperty(
-      "spring.profiles.active",
-      System.getProperty("spring.profiles.active", "dev"))
 }
 
 tasks.register("printJvmArgs") {
