@@ -41,12 +41,18 @@ message FightState {
   map<string, CreatureStatus> creature_statuses = 3;
 }
 
+message FightIdAlias {
+  int32 legacy_fight_id = 1;
+  string fight_uuid = 2;
+}
+
 message CacheKey {
   enum Dataset {
     DATASET_UNSPECIFIED = 0;
     DATASET_LOBBY = 1;
     DATASET_FIGHT = 2;
     DATASET_FIGHT_STATE = 3;
+    DATASET_FIGHT_ID_ALIAS = 4;
   }
 
   Dataset dataset = 1;
@@ -55,5 +61,6 @@ message CacheKey {
     string lobby_uuid = 2;
     string fight_uuid = 3;
     string fight_state_fight_uuid = 4;
+    int32 legacy_fight_id = 5;
   }
 }

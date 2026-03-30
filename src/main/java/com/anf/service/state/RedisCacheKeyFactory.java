@@ -28,4 +28,12 @@ public class RedisCacheKeyFactory {
         .build()
         .toByteArray();
   }
+
+  public byte[] fightIdAliasKey(int legacyFightId) {
+    return CacheKey.newBuilder()
+        .setDataset(CacheKey.Dataset.DATASET_FIGHT_ID_ALIAS)
+        .setLegacyFightId(legacyFightId)
+        .build()
+        .toByteArray();
+  }
 }
