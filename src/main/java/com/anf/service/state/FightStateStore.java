@@ -18,4 +18,6 @@ public interface FightStateStore {
   Optional<FightState> getFightState(String fightUuid);
 
   FightStateUpdateResult updateFightState(String fightUuid, UnaryOperator<FightState> updater);
+
+  void deleteFightState(String fightUuid);
 }

@@ -547,7 +547,7 @@ public class FightController {
         pvpFightsService.addFight(fight);
         timers.get(fightUuid).cancel(true);
         timers.remove(fightUuid);
-        fightStateStore.removeFight(fightUuid);
+        deleteFightArtifacts(fightUuid);
         fightStateStore.unmarkUserInFight(attackerName);
         fightStateStore.unmarkUserInFight(enemyName);
         fightFinished = true;
@@ -666,7 +666,7 @@ public class FightController {
       for (AiFightParticipation fighter : fight.getSetFighters()) {
         fightStateStore.unmarkUserInFight(fighter.getFighter().getUser().getLogin());
       }
-      fightStateStore.removeFight(fightUuid);
+      deleteFightArtifacts(fightUuid);
       fightFinished = true;
     }
     if (!fightFinished) {
@@ -799,7 +799,7 @@ public class FightController {
                 }
                 timers.get(fightUuid).cancel(true);
                 timers.remove(fightUuid);
-                fightStateStore.removeFight(fightUuid);
+                deleteFightArtifacts(fightUuid);
                 return;
               }
               System.out.println("YEEEE!\n");
@@ -1006,7 +1006,7 @@ public class FightController {
                 pvpFightsService.addFight(fight);
                 timers.get(fightUuid).cancel(true);
                 timers.remove(fightUuid);
-                fightStateStore.removeFight(fightUuid);
+                deleteFightArtifacts(fightUuid);
                 fightStateStore.unmarkUserInFight(fight.getFighter1().getLogin());
                 fightStateStore.unmarkUserInFight(fight.getFighter2().getLogin());
                 return;
@@ -1222,7 +1222,7 @@ public class FightController {
                 }
                 timers.get(fightUuid).cancel(true);
                 timers.remove(fightUuid);
-                fightStateStore.removeFight(fightUuid);
+                deleteFightArtifacts(fightUuid);
                 return;
               }
               fightStateStore.saveFight(fightUuid, fight);
@@ -1358,6 +1358,12 @@ public class FightController {
           }
           return builder.build();
         });
+  }
+
+  private void deleteFightArtifacts(String fightUuid) {
+    fightStateStore.removeFight(fightUuid);
+    protobufFightStore.deleteFight(fightUuid);
+    protobufFightStateStore.deleteFightState(fightUuid);
   }
 
   private Map<String, CreatureStatus> captureStatuses(Fight fight) {
