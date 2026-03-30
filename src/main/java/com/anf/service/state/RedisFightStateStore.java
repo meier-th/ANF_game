@@ -85,6 +85,11 @@ public class RedisFightStateStore implements FightStateStore {
     return FightStateUpdateResult.TRANSACTION_CONFLICT;
   }
 
+  @Override
+  public void deleteFightState(String fightUuid) {
+    redisTemplate.delete(keyFactory.fightStateKey(fightUuid));
+  }
+
   private <T> Optional<T> readEntity(byte[] key, ProtobufReader<T> reader) {
     var payload = redisTemplate.opsForValue().get(key);
     if (payload == null) {

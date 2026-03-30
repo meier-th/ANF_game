@@ -35,4 +35,9 @@ public class RedisFightStore implements FightStore {
       throw new IllegalStateException("Invalid fight payload", ex);
     }
   }
+
+  @Override
+  public void deleteFight(String fightUuid) {
+    redisTemplate.delete(keyFactory.fightKey(fightUuid));
+  }
 }

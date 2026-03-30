@@ -28,4 +28,6 @@ public interface LobbyStore {
   LobbyJoinResult joinLobby(String lobbyUuid, String playerId);
 
   LobbyLeaveResult leaveLobby(String lobbyUuid, String playerId);
+
+  void deleteLobby(String lobbyUuid);
 }

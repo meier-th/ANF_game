@@ -7,4 +7,6 @@ public interface FightStore {
   void createFight(Fight fight);
 
   Optional<Fight> getFight(String fightUuid);
+
+  void deleteFight(String fightUuid);
 }

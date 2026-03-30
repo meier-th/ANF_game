@@ -28,4 +28,5 @@ public class RedisCacheKeyFactory {
         .build()
         .toByteArray();
   }
+
 }
