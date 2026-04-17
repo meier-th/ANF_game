@@ -7,8 +7,10 @@ import static org.mockito.Mockito.verify;
 
 import com.anf.service.BossService;
 import com.anf.service.FightLobbyService;
-import com.anf.service.FightRuntimeFactoryService;
+import com.anf.service.FightSnapshotService;
+import com.anf.service.FightStartService;
 import com.anf.service.FightVsAIService;
+import com.anf.service.InMemoryFightTurnScheduler;
 import com.anf.service.NinjaAnimalService;
 import com.anf.service.PVPFightsService;
 import com.anf.service.SpellKnowledgeService;
@@ -16,9 +18,6 @@ import com.anf.service.SpellService;
 import com.anf.service.StatsService;
 import com.anf.service.UserAIFightService;
 import com.anf.service.UserService;
-import com.anf.service.state.FightRuntimeFacade;
-import com.anf.service.state.FightStateStore;
-import com.anf.service.state.FightStore;
 import com.anf.service.state.LegacyFightRuntimeStore;
 import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
@@ -51,11 +50,10 @@ class FightControllerTest {
             mock(StatsService.class),
             mock(WebSocketsController.class),
             fightLobbyService,
-            mock(FightRuntimeFactoryService.class),
-            mock(LegacyFightRuntimeStore.class),
-            mock(FightRuntimeFacade.class),
-            mock(FightStore.class),
-            mock(FightStateStore.class));
+            mock(FightSnapshotService.class),
+            mock(FightStartService.class),
+            mock(InMemoryFightTurnScheduler.class),
+            mock(LegacyFightRuntimeStore.class));
   }
 
   @AfterEach

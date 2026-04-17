@@ -15,7 +15,9 @@ import com.anf.model.database.User;
 import com.anf.service.BossService;
 import com.anf.service.FightVsAIService;
 import com.anf.service.FightLobbyService;
-import com.anf.service.FightRuntimeFactoryService;
+import com.anf.service.FightSnapshotService;
+import com.anf.service.FightStartService;
+import com.anf.service.InMemoryFightTurnScheduler;
 import com.anf.service.NinjaAnimalService;
 import com.anf.service.PVPFightsService;
 import com.anf.service.SpellKnowledgeService;
@@ -23,27 +25,15 @@ import com.anf.service.SpellService;
 import com.anf.service.StatsService;
 import com.anf.service.UserAIFightService;
 import com.anf.service.UserService;
-import com.anf.service.state.FightRuntimeFacade;
 import com.anf.service.state.FightStateStore;
-import com.anf.service.state.FightStore;
 import com.anf.service.state.LegacyFightRuntimeStore;
-import com.anf.service.state.proto.GameStateModels.CreatureStatus;
-import com.anf.service.state.proto.GameStateModels.FightMode;
-import com.anf.service.state.proto.GameStateModels.TakenTurn;
-import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -71,20 +61,10 @@ public class FightController {
   private final StatsService statsServ;
   private final WebSocketsController notifServ;
   private final FightLobbyService fightLobbyService;
-  private final FightRuntimeFactoryService fightRuntimeFactoryService;
+  private final FightSnapshotService fightSnapshotService;
+  private final FightStartService fightStartService;
+  private final InMemoryFightTurnScheduler fightTurnScheduler;
   private final LegacyFightRuntimeStore fightStateStore;
-  private final FightRuntimeFacade fightRuntimeFacade;
-  private final FightStore protobufFightStore;
-  private final FightStateStore protobufFightStateStore;
-
-  private ScheduledExecutorService scheduler;
-  private ConcurrentHashMap<String, ScheduledFuture<?>> timers;
-
-  @PostConstruct
-  private void init() {
-    scheduler = Executors.newScheduledThreadPool(1);
-    timers = new ConcurrentHashMap<>();
-  }
 
   @PostMapping("/lobbies")
   public ResponseEntity<?> createLobby(@RequestParam(name = "mode") String mode) {
@@ -118,78 +98,14 @@ public class FightController {
   @PostMapping("/lobbies/{lobbyUuid}/start")
   public ResponseEntity<?> startFightFromLobby(
       @PathVariable String lobbyUuid, @RequestParam(name = "bossId", required = false) String bossName) {
-    var lobby = fightRuntimeFacade.getLobby(lobbyUuid);
-    if (lobby.isEmpty()) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body(Map.of("code", 2, "error", "Lobby doesn't exist"));
-    }
-
-    var result = fightRuntimeFacade.startFightFromLobby(lobbyUuid);
-    if (result.status() != FightRuntimeFacade.StartFightResultStatus.STARTED) {
-      return fightLobbyService.mapStartFightFailure(result);
-    }
-
-    var participants = lobby.get().getPlayerIdsList();
-    if (lobby.get().getFightMode() == FightMode.FIGHT_MODE_PVP) {
-      var runtimeFight = fightRuntimeFactoryService.createPvpRuntimeFight(participants);
-      if (runtimeFight == null) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"code\": 3}");
-      }
-      var fightUuid = result.fight().getFightUuid();
-      fightStateStore.saveFight(fightUuid, runtimeFight);
-      fightStateStore.markUserInFight(runtimeFight.getFighter1().getLogin());
-      fightStateStore.markUserInFight(runtimeFight.getFighter2().getLogin());
-      syncFightSnapshot(fightUuid, runtimeFight);
-      var name = SecurityContextHolder.getContext().getAuthentication().getName();
-      var opponent =
-          name.equals(runtimeFight.getFighter1().getLogin())
-              ? runtimeFight.getFighter2().getLogin()
-              : runtimeFight.getFighter1().getLogin();
-      notifServ.sendStart(name, opponent, fightUuid);
-      timers.put(
-          fightUuid, scheduler.schedule(() -> schedule(runtimeFight, fightUuid, true), 3010, TimeUnit.MILLISECONDS));
-      return ResponseEntity.status(HttpStatus.CREATED)
-          .header(HttpHeaders.LOCATION, "/fight/" + fightUuid)
-          .body(
-              Map.of(
-                  "fightUuid", fightUuid,
-                  "fightMode", result.fight().getFightMode().name(),
-                  "participants", result.fight().getParticipantUuidsList()));
-    }
-
-    if (bossName == null || bossName.isBlank()) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(Map.of("code", 8, "error", "bossId is required for PvE fights"));
-    }
-    var runtimeFight = fightRuntimeFactoryService.createPveRuntimeFight(participants, bossName);
-    if (runtimeFight == null) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"code\": 3}");
-    }
-    var fightUuid = result.fight().getFightUuid();
-    fightStateStore.markUsersInFight(participants);
-    fightStateStore.saveFight(fightUuid, runtimeFight);
-    syncFightSnapshot(fightUuid, runtimeFight);
-    var name = SecurityContextHolder.getContext().getAuthentication().getName();
-    participants.forEach(
-        (user) -> {
-          if (!user.equals(name)) {
-            notifServ.sendStart(name, user, fightUuid);
-          }
-        });
-    timers.put(
-        fightUuid, scheduler.schedule(() -> schedule(runtimeFight, fightUuid, true), 3010, TimeUnit.MILLISECONDS));
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .header(HttpHeaders.LOCATION, "/fight/" + fightUuid)
-        .body(
-            Map.of(
-                "fightUuid", fightUuid,
-                "fightMode", result.fight().getFightMode().name(),
-                "participants", result.fight().getParticipantUuidsList()));
+    var requester = SecurityContextHolder.getContext().getAuthentication().getName();
+    return fightStartService.startFightFromLobby(
+        lobbyUuid, bossName, requester, (fight, fightUuid) -> schedule(fight, fightUuid, true));
   }
 
   @PostMapping("info")
   public ResponseEntity info(@RequestParam String fightUuid) {
-    if (!hasProtobufState(fightUuid)) {
+    if (!fightSnapshotService.hasProtobufState(fightUuid)) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\n\"code\": 2\n}");
     }
     Fight fight = fightStateStore.getFight(fightUuid).orElse(null);
@@ -197,9 +113,7 @@ public class FightController {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body("{\n\"code\": 2\n}"); // code 2 means fight doesn't exist
     }
-    if (timers.get(fightUuid) != null) {
-      fight.setTimeLeft(timers.get(fightUuid).getDelay(TimeUnit.MILLISECONDS));
-    }
+    fightTurnScheduler.delayMillis(fightUuid).ifPresent(fight::setTimeLeft);
     fightStateStore.saveFight(fightUuid, fight);
     return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
   }
@@ -208,7 +122,7 @@ public class FightController {
   public ResponseEntity<?> attackHandler(
       @RequestParam String enemy, @RequestParam String fightUuid, @RequestParam String spellName) {
     String name = SecurityContextHolder.getContext().getAuthentication().getName();
-    if (!hasProtobufState(fightUuid)) {
+    if (!fightSnapshotService.hasProtobufState(fightUuid)) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\n\"code\": 2\n}");
     }
     Fight fight = fightStateStore.getFight(fightUuid).orElse(null);
@@ -222,7 +136,7 @@ public class FightController {
     }
 
     Attack attack;
-    timers.get(fightUuid).cancel(true);
+    fightTurnScheduler.cancel(fightUuid);
     if (fight instanceof FightPVP) {
       attack = attackPvp(name, enemy, fightUuid, spellName);
     } else {
@@ -233,7 +147,7 @@ public class FightController {
     }
 
     schedule(fight, fightUuid, false);
-    syncFightSnapshot(fightUuid, fight);
+    fightSnapshotService.syncFightSnapshot(fightUuid, fight);
 
     return ResponseEntity.status(HttpStatus.OK).body(attack.toString());
   }
@@ -280,10 +194,10 @@ public class FightController {
       }
     }
     fightStateStore.saveFight(fightUuid, fight);
-    syncFightSnapshot(fightUuid, fight);
+    fightSnapshotService.syncFightSnapshot(fightUuid, fight);
     if (fight.getCurrentAttacker(0).length() >= 6) {
-      timers.put(
-          fightUuid, scheduler.schedule(() -> schedule(fight, fightUuid, false), 30, TimeUnit.SECONDS));
+      fightTurnScheduler.schedule(
+          fightUuid, () -> schedule(fight, fightUuid, false), 30, TimeUnit.SECONDS);
     }
   }
 
@@ -492,9 +406,9 @@ public class FightController {
         fight.setFirstFighter(fight.getFighter1().getCharacter());
         fight.setSecondFighter(fight.getFighter2().getCharacter());
         pvpFightsService.addFight(fight);
-        timers.get(fightUuid).cancel(true);
-        timers.remove(fightUuid);
-        deleteFightArtifacts(fightUuid);
+        fightTurnScheduler.cancel(fightUuid);
+        fightTurnScheduler.remove(fightUuid);
+        fightSnapshotService.deleteFightArtifacts(fightUuid, () -> fightStateStore.removeFight(fightUuid));
         fightStateStore.unmarkUserInFight(attackerName);
         fightStateStore.unmarkUserInFight(enemyName);
         fightFinished = true;
@@ -613,7 +527,7 @@ public class FightController {
       for (AiFightParticipation fighter : fight.getSetFighters()) {
         fightStateStore.unmarkUserInFight(fighter.getFighter().getUser().getLogin());
       }
-      deleteFightArtifacts(fightUuid);
+      fightSnapshotService.deleteFightArtifacts(fightUuid, () -> fightStateStore.removeFight(fightUuid));
       fightFinished = true;
     }
     if (!fightFinished) {
@@ -623,7 +537,7 @@ public class FightController {
   }
 
   private void bossAttack(FightVsAI fight, String fightUuid) {
-    timers.get(fightUuid).cancel(true);
+    fightTurnScheduler.cancel(fightUuid);
     // time for attack
     int delay = (int) (Math.random() * 7000) + 500;
     // targetNum - first fighters.size() - from fighters, next from animals
@@ -647,10 +561,9 @@ public class FightController {
     // target gets damage
 
     // send attack after delay and continue timer
-    timers.put(
+    fightTurnScheduler.schedule(
         fightUuid,
-        scheduler.schedule(
-            () -> {
+        () -> {
               boolean deadly;
               if (targetUser) {
                 target.getCharacter().acceptDamage(damage);
@@ -744,17 +657,18 @@ public class FightController {
                 for (AiFightParticipation fighter : fight.getSetFighters()) {
                   fightStateStore.unmarkUserInFight(fighter.getFighter().getUser().getLogin());
                 }
-                timers.get(fightUuid).cancel(true);
-                timers.remove(fightUuid);
-                deleteFightArtifacts(fightUuid);
+                fightTurnScheduler.cancel(fightUuid);
+                fightTurnScheduler.remove(fightUuid);
+                fightSnapshotService.deleteFightArtifacts(
+                    fightUuid, () -> fightStateStore.removeFight(fightUuid));
                 return;
               }
               System.out.println("YEEEE!\n");
               fightStateStore.saveFight(fightUuid, fight);
               schedule(fight, fightUuid, false);
-            },
-            delay,
-            TimeUnit.MILLISECONDS));
+        },
+        delay,
+        TimeUnit.MILLISECONDS);
   }
 
   private void animalPvpAttack(FightPVP fight, String fightUuid) {
@@ -803,7 +717,7 @@ public class FightController {
         }
     }
 
-    timers.get(fightUuid).cancel(true);
+    fightTurnScheduler.cancel(fightUuid);
 
     int delay = (int) (Math.random() * 7000) + 500;
     User target;
@@ -828,10 +742,9 @@ public class FightController {
       targetAnimal =
           targetUser ? null : fight.getAnimals2().get(targetNum - fight.getAnimals2().size());
     }
-    timers.put(
+    fightTurnScheduler.schedule(
         fightUuid,
-        scheduler.schedule(
-            () -> {
+        () -> {
               // damage
               boolean deadly = false;
               int damage = attacker.getDamage();
@@ -951,18 +864,19 @@ public class FightController {
                 fight.setFirstFighter(fight.getFighter1().getCharacter());
                 fight.setSecondFighter(fight.getFighter2().getCharacter());
                 pvpFightsService.addFight(fight);
-                timers.get(fightUuid).cancel(true);
-                timers.remove(fightUuid);
-                deleteFightArtifacts(fightUuid);
+                fightTurnScheduler.cancel(fightUuid);
+                fightTurnScheduler.remove(fightUuid);
+                fightSnapshotService.deleteFightArtifacts(
+                    fightUuid, () -> fightStateStore.removeFight(fightUuid));
                 fightStateStore.unmarkUserInFight(fight.getFighter1().getLogin());
                 fightStateStore.unmarkUserInFight(fight.getFighter2().getLogin());
                 return;
               }
               fightStateStore.saveFight(fightUuid, fight);
               schedule(fight, fightUuid, false);
-            },
-            delay,
-            TimeUnit.MILLISECONDS));
+        },
+        delay,
+        TimeUnit.MILLISECONDS);
   }
 
   @PostMapping("/summonPvp")
@@ -1096,15 +1010,14 @@ public class FightController {
         }
     }
 
-    timers.get(fightUuid).cancel(true);
+    fightTurnScheduler.cancel(fightUuid);
 
     int delay = (int) (Math.random() * 7000) + 500;
     Boss target = fight.getBoss();
     int damage = Math.round(attacker.getDamage() * (1 - target.getResistance()));
-    timers.put(
+    fightTurnScheduler.schedule(
         fightUuid,
-        scheduler.schedule(
-            () -> {
+        () -> {
               target.acceptDamage(damage);
               boolean deadly = false;
               if (target.getCurrentHP() <= 0) deadly = true;
@@ -1167,16 +1080,17 @@ public class FightController {
                 for (AiFightParticipation fighter : fight.getSetFighters()) {
                   fightStateStore.unmarkUserInFight(fighter.getFighter().getUser().getLogin());
                 }
-                timers.get(fightUuid).cancel(true);
-                timers.remove(fightUuid);
-                deleteFightArtifacts(fightUuid);
+                fightTurnScheduler.cancel(fightUuid);
+                fightTurnScheduler.remove(fightUuid);
+                fightSnapshotService.deleteFightArtifacts(
+                    fightUuid, () -> fightStateStore.removeFight(fightUuid));
                 return;
               }
               fightStateStore.saveFight(fightUuid, fight);
               schedule(fight, fightUuid, false);
-            },
-            delay,
-            TimeUnit.MILLISECONDS));
+        },
+        delay,
+        TimeUnit.MILLISECONDS);
   }
 
   private void compareStats(ArrayList<User> before, ArrayList<User> after) {
@@ -1224,66 +1138,6 @@ public class FightController {
         new State(
             attacker, targetName, attackName, chakraCost, damage, chakraBurn, dead, allDead, next);
     notifServ.sendFightState(state, username);
-  }
-
-  private boolean hasProtobufState(String fightUuid) {
-    return protobufFightStore.getFight(fightUuid).isPresent()
-        && protobufFightStateStore.getFightState(fightUuid).isPresent();
-  }
-
-  private void syncFightSnapshot(String fightUuid, Fight fight) {
-    protobufFightStateStore.updateFightState(
-        fightUuid,
-        (currentState) -> {
-          var builder = currentState.toBuilder();
-          builder.clearCreatureStatuses().putAllCreatureStatuses(captureStatuses(fight));
-          var currentAttacker = fight.getCurrentAttacker(0);
-          if (currentAttacker != null) {
-            builder.addTakenTurns(
-                TakenTurn.newBuilder()
-                    .setCharacterUuid(currentAttacker)
-                    .setTimestamp(System.currentTimeMillis())
-                    .build());
-          }
-          return builder.build();
-        });
-  }
-
-  private void deleteFightArtifacts(String fightUuid) {
-    fightStateStore.removeFight(fightUuid);
-    protobufFightStore.deleteFight(fightUuid);
-    protobufFightStateStore.deleteFightState(fightUuid);
-  }
-
-  private Map<String, CreatureStatus> captureStatuses(Fight fight) {
-    var statuses = new HashMap<String, CreatureStatus>();
-    if (fight instanceof FightPVP pvp) {
-      statuses.put(
-          pvp.getFighter1().getLogin(),
-          CreatureStatus.newBuilder()
-              .setRemainingHealth(pvp.getFighter1().getCharacter().getCurrentHP())
-              .build());
-      statuses.put(
-          pvp.getFighter2().getLogin(),
-          CreatureStatus.newBuilder()
-              .setRemainingHealth(pvp.getFighter2().getCharacter().getCurrentHP())
-              .build());
-      return statuses;
-    }
-    if (fight instanceof FightVsAI pve) {
-      pve.getFighters()
-          .forEach(
-              (fighter) ->
-                  statuses.put(
-                      fighter.getLogin(),
-                      CreatureStatus.newBuilder()
-                          .setRemainingHealth(fighter.getCharacter().getCurrentHP())
-                          .build()));
-      statuses.put(
-          "boss:" + pve.getBoss().getNumberOfTails(),
-          CreatureStatus.newBuilder().setRemainingHealth(pve.getBoss().getCurrentHP()).build());
-    }
-    return statuses;
   }
 
 }
