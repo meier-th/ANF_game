@@ -14,6 +14,8 @@ import com.anf.model.database.SpellKnowledge;
 import com.anf.model.database.User;
 import com.anf.service.BossService;
 import com.anf.service.FightVsAIService;
+import com.anf.service.FightLobbyService;
+import com.anf.service.FightRuntimeFactoryService;
 import com.anf.service.NinjaAnimalService;
 import com.anf.service.PVPFightsService;
 import com.anf.service.SpellKnowledgeService;
@@ -68,6 +70,8 @@ public class FightController {
   private final SpellKnowledgeService SpellKnowledgeService;
   private final StatsService statsServ;
   private final WebSocketsController notifServ;
+  private final FightLobbyService fightLobbyService;
+  private final FightRuntimeFactoryService fightRuntimeFactoryService;
   private final LegacyFightRuntimeStore fightStateStore;
   private final FightRuntimeFacade fightRuntimeFacade;
   private final FightStore protobufFightStore;
@@ -85,76 +89,29 @@ public class FightController {
   @PostMapping("/lobbies")
   public ResponseEntity<?> createLobby(@RequestParam(name = "mode") String mode) {
     var leader = SecurityContextHolder.getContext().getAuthentication().getName();
-    var parsedMode = parseFightMode(mode);
-    if (parsedMode == FightMode.FIGHT_MODE_UNSPECIFIED) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(Map.of("code", 8, "error", "Unsupported fight mode"));
-    }
-    var lobby = fightRuntimeFacade.createLobby(parsedMode, leader);
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .body(
-            Map.of(
-                "lobbyUuid", lobby.getLobbyUuid(),
-                "fightMode", lobby.getFightMode().name(),
-                "leader", lobby.getLeaderPlayerId(),
-                "players", lobby.getPlayerIdsList()));
+    return fightLobbyService.createLobby(mode, leader);
   }
 
   @GetMapping("/lobbies/{lobbyUuid}")
   public ResponseEntity<?> getLobby(@PathVariable String lobbyUuid) {
-    return fightRuntimeFacade
-        .getLobby(lobbyUuid)
-        .<ResponseEntity<?>>map(
-            (lobby) ->
-                ResponseEntity.ok(
-                    Map.of(
-                        "lobbyUuid", lobby.getLobbyUuid(),
-                        "fightMode", lobby.getFightMode().name(),
-                        "leader", lobby.getLeaderPlayerId(),
-                        "players", lobby.getPlayerIdsList())))
-        .orElseGet(
-            () ->
-                ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("code", 2, "error", "Lobby doesn't exist")));
+    return fightLobbyService.getLobby(lobbyUuid);
   }
 
   @PostMapping("/lobbies/{lobbyUuid}/join")
   public ResponseEntity<?> joinLobby(@PathVariable String lobbyUuid) {
     var player = SecurityContextHolder.getContext().getAuthentication().getName();
-    var result = fightRuntimeFacade.joinLobby(lobbyUuid, player);
-    return switch (result) {
-      case JOINED -> ResponseEntity.ok(Map.of("answer", "OK"));
-      case ALREADY_IN_LOBBY -> ResponseEntity.ok(Map.of("answer", "ALREADY_IN_LOBBY"));
-      case LOBBY_FULL ->
-          ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("code", 8, "error", "Lobby is full"));
-      case LOBBY_NOT_FOUND ->
-          ResponseEntity.status(HttpStatus.NOT_FOUND)
-              .body(Map.of("code", 2, "error", "Lobby doesn't exist"));
-      case TRANSACTION_CONFLICT ->
-          ResponseEntity.status(HttpStatus.CONFLICT)
-              .body(Map.of("code", 9, "error", "Could not join lobby due to contention"));
-    };
+    return fightLobbyService.joinLobby(lobbyUuid, player);
   }
 
   @PostMapping("/lobbies/{lobbyUuid}/leave")
   public ResponseEntity<?> leaveLobby(@PathVariable String lobbyUuid) {
     var player = SecurityContextHolder.getContext().getAuthentication().getName();
-    var result = fightRuntimeFacade.leaveLobby(lobbyUuid, player);
-    return switch (result) {
-      case LEFT -> ResponseEntity.ok(Map.of("answer", "LEFT"));
-      case LEFT_AND_LOBBY_CLOSED -> ResponseEntity.ok(Map.of("answer", "LEFT_AND_LOBBY_CLOSED"));
-      case PLAYER_NOT_IN_LOBBY ->
-          ResponseEntity.status(HttpStatus.BAD_REQUEST)
-              .body(Map.of("code", 8, "error", "Player is not in lobby"));
-      case LOBBY_NOT_FOUND ->
-          ResponseEntity.status(HttpStatus.NOT_FOUND)
-              .body(Map.of("code", 2, "error", "Lobby doesn't exist"));
-    };
+    return fightLobbyService.leaveLobby(lobbyUuid, player);
   }
 
   @DeleteMapping("/lobbies/{lobbyUuid}")
   public ResponseEntity<?> closeLobbyV2(@PathVariable String lobbyUuid) {
-    fightRuntimeFacade.closeLobby(lobbyUuid);
+    fightLobbyService.closeLobby(lobbyUuid);
     return ResponseEntity.noContent().build();
   }
 
@@ -169,22 +126,12 @@ public class FightController {
 
     var result = fightRuntimeFacade.startFightFromLobby(lobbyUuid);
     if (result.status() != FightRuntimeFacade.StartFightResultStatus.STARTED) {
-      return switch (result.status()) {
-        case LOBBY_NOT_FOUND ->
-            ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("code", 2, "error", "Lobby doesn't exist"));
-        case INVALID_PLAYER_COUNT ->
-            ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("code", 8, "error", "Invalid number of players for the selected mode"));
-        default ->
-            ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(Map.of("code", 9, "error", "Could not start fight"));
-      };
+      return fightLobbyService.mapStartFightFailure(result);
     }
 
     var participants = lobby.get().getPlayerIdsList();
     if (lobby.get().getFightMode() == FightMode.FIGHT_MODE_PVP) {
-      var runtimeFight = createPvpRuntimeFight(participants);
+      var runtimeFight = fightRuntimeFactoryService.createPvpRuntimeFight(participants);
       if (runtimeFight == null) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"code\": 3}");
       }
@@ -214,7 +161,7 @@ public class FightController {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("code", 8, "error", "bossId is required for PvE fights"));
     }
-    var runtimeFight = createPveRuntimeFight(participants, bossName);
+    var runtimeFight = fightRuntimeFactoryService.createPveRuntimeFight(participants, bossName);
     if (runtimeFight == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"code\": 3}");
     }
@@ -1279,64 +1226,6 @@ public class FightController {
     notifServ.sendFightState(state, username);
   }
 
-  private FightPVP createPvpRuntimeFight(List<String> participants) {
-    if (participants.size() != 2) {
-      return null;
-    }
-    var fighter1 = userService.getUser(participants.get(0)).getCharacter();
-    var fighter2 = userService.getUser(participants.get(1)).getCharacter();
-    if (fighter1 == null || fighter2 == null) {
-      return null;
-    }
-    var fight = new FightPVP();
-    fighter1.prepareForFight();
-    fighter2.prepareForFight();
-    fight.setFighters(fighter1, fighter2);
-    int biggerRating =
-        15
-            + Math.abs(
-                    fighter1.getUser().getStats().getRating()
-                        - fighter2.getUser().getStats().getRating())
-                / 4;
-    int lesserRating =
-        15
-            - Math.abs(
-                    fighter1.getUser().getStats().getRating()
-                        - fighter2.getUser().getStats().getRating())
-                / 8;
-    if (lesserRating < 5) {
-      lesserRating = 5;
-    }
-    fight.setBiggerRatingChange(biggerRating);
-    fight.setLessRatingChange(lesserRating);
-    return fight;
-  }
-
-  private FightVsAI createPveRuntimeFight(List<String> participants, String bossName) {
-    var boss = bossService.getBossByName(bossName);
-    if (boss == null) {
-      return null;
-    }
-    var fight = new FightVsAI();
-    ArrayList<AiFightParticipation> userFights = new ArrayList<>();
-    for (String fighterName : participants) {
-      var fighter = userService.getUser(fighterName).getCharacter();
-      if (fighter == null) {
-        return null;
-      }
-      AiFightParticipation userF = new AiFightParticipation();
-      userF.setFight(fight);
-      userF.setFighter(fighter);
-      fighter.prepareForFight();
-      fight.addFighter(fighter);
-      userFights.add(userF);
-    }
-    fight.setSetFighters(userFights);
-    boss.prepareForFight();
-    fight.setBoss(boss);
-    return fight;
-  }
-
   private boolean hasProtobufState(String fightUuid) {
     return protobufFightStore.getFight(fightUuid).isPresent()
         && protobufFightStateStore.getFightState(fightUuid).isPresent();
@@ -1395,19 +1284,6 @@ public class FightController {
           CreatureStatus.newBuilder().setRemainingHealth(pve.getBoss().getCurrentHP()).build());
     }
     return statuses;
-  }
-
-  private FightMode parseFightMode(String modeRaw) {
-    if (modeRaw == null) {
-      return FightMode.FIGHT_MODE_UNSPECIFIED;
-    }
-    var normalized = modeRaw.trim().toUpperCase();
-    return switch (normalized) {
-      case "PVP", "FIGHT_MODE_PVP" -> FightMode.FIGHT_MODE_PVP;
-      case "SOLO_PVE", "SOLOPVE", "FIGHT_MODE_SOLO_PVE" -> FightMode.FIGHT_MODE_SOLO_PVE;
-      case "TEAM_PVE", "TEAMPVE", "FIGHT_MODE_TEAM_PVE" -> FightMode.FIGHT_MODE_TEAM_PVE;
-      default -> FightMode.FIGHT_MODE_UNSPECIFIED;
-    };
   }
 
 }
