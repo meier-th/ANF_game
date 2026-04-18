@@ -100,7 +100,7 @@ This document describes the **current** REST and WebSocket APIs and the main use
 - **POST** `/fight/animals/my`  
   - Sets the Ninja Animal race for the current character (one-time choice). Param: `racename` (`NinjaAnimalRace` enum name).
 
-#### Fight lobbies & actions (`FightController`)
+#### Fight lobbies (`FightLobbyController`)
 
 Base path: **`/fight`**.
 
@@ -116,6 +116,8 @@ Base path: **`/fight`**.
   - Closes lobby explicitly.
 - **POST** `/fight/lobbies/{lobbyUuid}/start`  
   - Starts a fight from lobby and returns `fightUuid`; requires `bossId` for PvE.
+
+#### In-fight moves (`FightMovesController`)
 - **POST** `/fight/info`  
   - Returns ongoing fight state by `fightUuid`, including remaining time.
 - **GET** `/fight/attack`  
