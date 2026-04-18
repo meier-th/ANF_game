@@ -5,19 +5,15 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import com.anf.service.BossService;
+import com.anf.service.FightAttackService;
 import com.anf.service.FightLobbyService;
 import com.anf.service.FightSnapshotService;
 import com.anf.service.FightStartService;
-import com.anf.service.FightVsAIService;
+import com.anf.service.FightSummonService;
+import com.anf.service.FightTurnEngineService;
 import com.anf.service.InMemoryFightTurnScheduler;
-import com.anf.service.NinjaAnimalService;
-import com.anf.service.PVPFightsService;
-import com.anf.service.SpellKnowledgeService;
-import com.anf.service.SpellService;
-import com.anf.service.StatsService;
-import com.anf.service.UserAIFightService;
-import com.anf.service.UserService;
+import com.anf.service.PveAttackService;
+import com.anf.service.PvpAttackService;
 import com.anf.service.state.LegacyFightRuntimeStore;
 import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
@@ -39,20 +35,15 @@ class FightControllerTest {
     fightLobbyService = mock(FightLobbyService.class);
     fightController =
         new FightController(
-            mock(UserService.class),
-            mock(SpellService.class),
-            mock(BossService.class),
-            mock(PVPFightsService.class),
-            mock(FightVsAIService.class),
-            mock(UserAIFightService.class),
-            mock(NinjaAnimalService.class),
-            mock(SpellKnowledgeService.class),
-            mock(StatsService.class),
-            mock(WebSocketsController.class),
+            mock(FightAttackService.class),
             fightLobbyService,
             mock(FightSnapshotService.class),
             mock(FightStartService.class),
+            mock(FightSummonService.class),
+            mock(FightTurnEngineService.class),
             mock(InMemoryFightTurnScheduler.class),
+            mock(PvpAttackService.class),
+            mock(PveAttackService.class),
             mock(LegacyFightRuntimeStore.class));
   }
 
