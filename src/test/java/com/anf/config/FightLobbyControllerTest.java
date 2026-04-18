@@ -5,16 +5,9 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import com.anf.service.FightAttackService;
 import com.anf.service.FightLobbyService;
-import com.anf.service.FightSnapshotService;
 import com.anf.service.FightStartService;
-import com.anf.service.FightSummonService;
 import com.anf.service.FightTurnEngineService;
-import com.anf.service.InMemoryFightTurnScheduler;
-import com.anf.service.PveAttackService;
-import com.anf.service.PvpAttackService;
-import com.anf.service.state.LegacyFightRuntimeStore;
 import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,25 +19,16 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-class FightControllerTest {
+class FightLobbyControllerTest {
   private FightLobbyService fightLobbyService;
-  private FightController fightController;
+  private FightLobbyController fightController;
 
   @BeforeEach
   void setUp() {
     fightLobbyService = mock(FightLobbyService.class);
     fightController =
-        new FightController(
-            mock(FightAttackService.class),
-            fightLobbyService,
-            mock(FightSnapshotService.class),
-            mock(FightStartService.class),
-            mock(FightSummonService.class),
-            mock(FightTurnEngineService.class),
-            mock(InMemoryFightTurnScheduler.class),
-            mock(PvpAttackService.class),
-            mock(PveAttackService.class),
-            mock(LegacyFightRuntimeStore.class));
+        new FightLobbyController(
+            fightLobbyService, mock(FightStartService.class), mock(FightTurnEngineService.class));
   }
 
   @AfterEach
