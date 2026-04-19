@@ -17,7 +17,7 @@ import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Stats;
 import com.anf.model.database.User;
 import com.anf.service.state.FightRuntimeFacade;
-import com.anf.service.state.LegacyFightRuntimeStore;
+import com.anf.service.state.FightRuntimeStore;
 import com.anf.service.state.proto.GameStateModels.FightMode;
 import com.anf.service.state.proto.GameStateModels.Lobby;
 import java.util.List;
@@ -31,10 +31,9 @@ class FightStartServiceTest {
   private FightRuntimeFacade fightRuntimeFacade;
   private FightLobbyService fightLobbyService;
   private FightRuntimeFactoryService runtimeFactoryService;
-  private LegacyFightRuntimeStore legacyFightRuntimeStore;
+  private FightRuntimeStore legacyFightRuntimeStore;
   private FightSnapshotService fightSnapshotService;
   private WebSocketsController webSocketsController;
-  private InMemoryFightTurnScheduler fightTurnScheduler;
   private FightStartService fightStartService;
 
   @BeforeEach
@@ -42,10 +41,9 @@ class FightStartServiceTest {
     fightRuntimeFacade = mock(FightRuntimeFacade.class);
     fightLobbyService = mock(FightLobbyService.class);
     runtimeFactoryService = mock(FightRuntimeFactoryService.class);
-    legacyFightRuntimeStore = mock(LegacyFightRuntimeStore.class);
+    legacyFightRuntimeStore = mock(FightRuntimeStore.class);
     fightSnapshotService = mock(FightSnapshotService.class);
     webSocketsController = mock(WebSocketsController.class);
-    fightTurnScheduler = mock(InMemoryFightTurnScheduler.class);
     fightStartService =
         new FightStartService(
             fightRuntimeFacade,
@@ -53,8 +51,7 @@ class FightStartServiceTest {
             runtimeFactoryService,
             legacyFightRuntimeStore,
             fightSnapshotService,
-            webSocketsController,
-            fightTurnScheduler);
+            webSocketsController);
   }
 
   @Test
@@ -89,7 +86,7 @@ class FightStartServiceTest {
   }
 
   @Test
-  void startFightFromLobby_startsPvpFightAndSchedulesFirstTurn() {
+  void startFightFromLobby_startsPvpFightAndRunsFirstTurn() {
     var lobby =
         Lobby.newBuilder()
             .setLobbyUuid("lobby-1")
@@ -113,15 +110,6 @@ class FightStartServiceTest {
     when(runtimeFactoryService.createPvpRuntimeFight(List.of("alice", "bob"))).thenReturn(runtimeFight);
 
     var firstTurnCalled = new AtomicBoolean(false);
-    doAnswer(
-            (invocation) -> {
-              var task = invocation.getArgument(1, Runnable.class);
-              task.run();
-              return null;
-            })
-        .when(fightTurnScheduler)
-        .schedule(eq("fight-1"), any(Runnable.class), eq(3010L), eq(java.util.concurrent.TimeUnit.MILLISECONDS));
-
     var response =
         fightStartService.startFightFromLobby(
             "lobby-1", null, "alice", (fight, id) -> firstTurnCalled.set(true));

@@ -12,7 +12,7 @@ import com.anf.model.database.FightPVP;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Stats;
 import com.anf.model.database.User;
-import com.anf.service.state.LegacyFightRuntimeStore;
+import com.anf.service.state.FightRuntimeStore;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,8 +22,7 @@ class PvpAttackServiceTest {
   private SpellKnowledgeService spellKnowledgeService;
   private StatsService statsService;
   private PVPFightsService pvpFightsService;
-  private LegacyFightRuntimeStore fightStateStore;
-  private InMemoryFightTurnScheduler fightTurnScheduler;
+  private FightRuntimeStore fightStateStore;
   private FightSnapshotService fightSnapshotService;
   private FightStateNotifier fightStateNotifier;
   private PvpAttackService pvpAttackService;
@@ -34,8 +33,7 @@ class PvpAttackServiceTest {
     spellKnowledgeService = mock(SpellKnowledgeService.class);
     statsService = mock(StatsService.class);
     pvpFightsService = mock(PVPFightsService.class);
-    fightStateStore = mock(LegacyFightRuntimeStore.class);
-    fightTurnScheduler = mock(InMemoryFightTurnScheduler.class);
+    fightStateStore = mock(FightRuntimeStore.class);
     fightSnapshotService = mock(FightSnapshotService.class);
     fightStateNotifier = mock(FightStateNotifier.class);
     pvpAttackService =
@@ -45,7 +43,6 @@ class PvpAttackServiceTest {
             statsService,
             pvpFightsService,
             fightStateStore,
-            fightTurnScheduler,
             fightSnapshotService,
             fightStateNotifier);
   }
@@ -73,7 +70,6 @@ class PvpAttackServiceTest {
     assertThat(attack.getCode()).isEqualTo(0);
     assertThat(attack.getDamage()).isGreaterThan(0);
     verify(fightStateStore).saveFight("fight-1", fight);
-    verify(fightTurnScheduler, never()).remove(any());
   }
 
   private User user(String login, int hp) {

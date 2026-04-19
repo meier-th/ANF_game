@@ -11,11 +11,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ValueOperations;
 
-class RedisLegacyFightRuntimeStoreTest {
+class RedisFightRuntimeStoreTest {
   private RedisTemplate<String, Object> redisTemplate;
   private ValueOperations<String, Object> valueOperations;
   private SetOperations<String, Object> setOperations;
-  private RedisLegacyFightRuntimeStore runtimeStore;
+  private RedisFightRuntimeStore runtimeStore;
 
   @BeforeEach
   void setUp() {
@@ -24,7 +24,7 @@ class RedisLegacyFightRuntimeStoreTest {
     setOperations = mock(SetOperations.class);
     when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     when(redisTemplate.opsForSet()).thenReturn(setOperations);
-    runtimeStore = new RedisLegacyFightRuntimeStore(redisTemplate);
+    runtimeStore = new RedisFightRuntimeStore(redisTemplate);
   }
 
   @Test

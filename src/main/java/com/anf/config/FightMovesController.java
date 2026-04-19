@@ -5,10 +5,9 @@ import com.anf.service.FightAttackService;
 import com.anf.service.FightSnapshotService;
 import com.anf.service.FightSummonService;
 import com.anf.service.FightTurnEngineService;
-import com.anf.service.InMemoryFightTurnScheduler;
 import com.anf.service.PveAttackService;
 import com.anf.service.PvpAttackService;
-import com.anf.service.state.LegacyFightRuntimeStore;
+import com.anf.service.state.FightRuntimeStore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,10 +26,9 @@ public class FightMovesController {
   private final FightSnapshotService fightSnapshotService;
   private final FightSummonService fightSummonService;
   private final FightTurnEngineService fightTurnEngineService;
-  private final InMemoryFightTurnScheduler fightTurnScheduler;
   private final PvpAttackService pvpAttackService;
   private final PveAttackService pveAttackService;
-  private final LegacyFightRuntimeStore fightStateStore;
+  private final FightRuntimeStore fightStateStore;
 
   @PostMapping("info")
   public ResponseEntity info(@RequestParam String fightUuid) {
@@ -42,7 +40,11 @@ public class FightMovesController {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body("{\n\"code\": 2\n}"); // code 2 means fight doesn't exist
     }
-    fightTurnScheduler.delayMillis(fightUuid).ifPresent(fight::setTimeLeft);
+    var turnStartedAt = fightSnapshotService.currentTurnStartedAt(fightUuid);
+    if (turnStartedAt > 0) {
+      var remaining = Math.max(0L, 30_000L - (System.currentTimeMillis() - turnStartedAt));
+      fight.setTimeLeft(remaining);
+    }
     fightStateStore.saveFight(fightUuid, fight);
     return ResponseEntity.status(HttpStatus.OK).body(fight.toString());
   }
@@ -72,5 +74,12 @@ public class FightMovesController {
   public ResponseEntity summonPve(@RequestParam String fightUuid) {
     String name = SecurityContextHolder.getContext().getAuthentication().getName();
     return fightSummonService.summonPve(fightUuid, name);
+  }
+
+  @PostMapping("/timeout")
+  public ResponseEntity<?> timeoutCurrentTurn(
+      @RequestParam String fightUuid, @RequestParam String timedOutAttacker) {
+    var reporter = SecurityContextHolder.getContext().getAuthentication().getName();
+    return fightTurnEngineService.timeoutCurrentTurn(fightUuid, reporter, timedOutAttacker);
   }
 }

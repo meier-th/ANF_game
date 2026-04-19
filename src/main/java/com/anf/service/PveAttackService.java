@@ -7,7 +7,7 @@ import com.anf.model.database.FightVsAI;
 import com.anf.model.database.Spell;
 import com.anf.model.database.SpellKnowledge;
 import com.anf.model.database.User;
-import com.anf.service.state.LegacyFightRuntimeStore;
+import com.anf.service.state.FightRuntimeStore;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -23,7 +23,7 @@ public class PveAttackService {
   private final FightVsAIService fightVsAIService;
   private final UserAIFightService userAiFightService;
   private final StatsService statsService;
-  private final LegacyFightRuntimeStore fightStateStore;
+  private final FightRuntimeStore fightStateStore;
   private final FightSnapshotService fightSnapshotService;
   private final FightStateNotifier fightStateNotifier;
 

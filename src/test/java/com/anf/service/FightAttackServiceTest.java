@@ -12,7 +12,7 @@ import com.anf.model.database.FightPVP;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Stats;
 import com.anf.model.database.User;
-import com.anf.service.state.LegacyFightRuntimeStore;
+import com.anf.service.state.FightRuntimeStore;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,16 +21,14 @@ import org.springframework.http.HttpStatus;
 
 class FightAttackServiceTest {
   private FightSnapshotService fightSnapshotService;
-  private LegacyFightRuntimeStore fightStateStore;
-  private InMemoryFightTurnScheduler fightTurnScheduler;
+  private FightRuntimeStore fightStateStore;
   private FightAttackService fightAttackService;
 
   @BeforeEach
   void setUp() {
     fightSnapshotService = mock(FightSnapshotService.class);
-    fightStateStore = mock(LegacyFightRuntimeStore.class);
-    fightTurnScheduler = mock(InMemoryFightTurnScheduler.class);
-    fightAttackService = new FightAttackService(fightSnapshotService, fightStateStore, fightTurnScheduler);
+    fightStateStore = mock(FightRuntimeStore.class);
+    fightAttackService = new FightAttackService(fightSnapshotService, fightStateStore);
   }
 
   @Test
@@ -51,6 +49,7 @@ class FightAttackServiceTest {
     var fight = pvpFight("bob", "alice");
     fight.switchAttacker(); // current attacker = bob
     when(fightStateStore.getFight("fight-1")).thenReturn(Optional.of(fight));
+    when(fightSnapshotService.isCurrentAttacker("fight-1", "alice", "bob")).thenReturn(false);
 
     var response = fightAttackService.attack(context, (ctx) -> new Attack(), (ctx) -> new Attack(), () -> {});
 
@@ -64,6 +63,7 @@ class FightAttackServiceTest {
     var fight = pvpFight("alice", "bob");
     fight.switchAttacker(); // current attacker = alice
     when(fightStateStore.getFight("fight-1")).thenReturn(Optional.of(fight));
+    when(fightSnapshotService.isCurrentAttacker("fight-1", "alice", "alice")).thenReturn(true);
 
     var pvpCalled = new AtomicBoolean(false);
     var scheduled = new AtomicBoolean(false);
@@ -85,7 +85,6 @@ class FightAttackServiceTest {
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(pvpCalled.get()).isTrue();
     assertThat(scheduled.get()).isTrue();
-    verify(fightTurnScheduler).cancel("fight-1");
     verify(fightSnapshotService).syncFightSnapshot("fight-1", fight);
   }
 
@@ -96,6 +95,7 @@ class FightAttackServiceTest {
     var fight = pvpFight("alice", "bob");
     fight.switchAttacker(); // current attacker = alice
     when(fightStateStore.getFight("fight-1")).thenReturn(Optional.of(fight));
+    when(fightSnapshotService.isCurrentAttacker("fight-1", "alice", "alice")).thenReturn(true);
 
     var attack = new Attack();
     attack.setCode(8);

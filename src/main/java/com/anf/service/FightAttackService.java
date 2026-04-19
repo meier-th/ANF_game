@@ -3,7 +3,7 @@ package com.anf.service;
 import com.anf.model.Attack;
 import com.anf.model.Fight;
 import com.anf.model.database.FightPVP;
-import com.anf.service.state.LegacyFightRuntimeStore;
+import com.anf.service.state.FightRuntimeStore;
 import java.util.function.Function;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,8 +16,7 @@ public class FightAttackService {
   public record AttackContext(String attackerName, String enemyName, String fightUuid, String spellName) {}
 
   private final FightSnapshotService fightSnapshotService;
-  private final LegacyFightRuntimeStore fightStateStore;
-  private final InMemoryFightTurnScheduler fightTurnScheduler;
+  private final FightRuntimeStore fightStateStore;
 
   public ResponseEntity<?> attack(
       AttackContext context,
@@ -34,11 +33,11 @@ public class FightAttackService {
           .body("{\n\"code\": 2\n}"); // code 2 means fight doesn't exist
     }
 
-    if (!context.attackerName().equals(fight.getCurrentAttacker(0))) {
+    if (!fightSnapshotService.isCurrentAttacker(
+        context.fightUuid(), context.attackerName(), fight.getCurrentAttacker(0))) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"code\": 10}"); // 10 - not your turn
     }
 
-    fightTurnScheduler.cancel(context.fightUuid());
     Attack attack = fight instanceof FightPVP ? pvpAttack.apply(context) : pveAttack.apply(context);
     if (attack.getCode() != 0) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(attack.toString());

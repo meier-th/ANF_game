@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Primary
 @AllArgsConstructor
-public class RedisLegacyFightRuntimeStore implements LegacyFightRuntimeStore {
+public class RedisFightRuntimeStore implements FightRuntimeStore {
   private static final String USERS_IN_FIGHT_KEY = "anf:runtime:users-in-fight";
   private static final Duration FIGHT_TTL = Duration.ofHours(4);
 
