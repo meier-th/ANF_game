@@ -14,7 +14,7 @@ import com.anf.model.database.FightPVP;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Stats;
 import com.anf.model.database.User;
-import com.anf.service.state.LegacyFightRuntimeStore;
+import com.anf.service.state.FightRuntimeStore;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ import org.springframework.http.HttpStatus;
 class FightSummonServiceTest {
   private UserService userService;
   private NinjaAnimalResolverService ninjaAnimalResolverService;
-  private LegacyFightRuntimeStore fightStateStore;
+  private FightRuntimeStore fightStateStore;
   private WebSocketsController webSocketsController;
   private FightSummonService fightSummonService;
 
@@ -31,7 +31,7 @@ class FightSummonServiceTest {
   void setUp() {
     userService = mock(UserService.class);
     ninjaAnimalResolverService = mock(NinjaAnimalResolverService.class);
-    fightStateStore = mock(LegacyFightRuntimeStore.class);
+    fightStateStore = mock(FightRuntimeStore.class);
     webSocketsController = mock(WebSocketsController.class);
     fightSummonService =
         new FightSummonService(

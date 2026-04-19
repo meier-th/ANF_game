@@ -31,6 +31,19 @@ message TakenTurn {
   int64 timestamp = 2;
 }
 
+enum AttackEventType {
+  ATTACK_EVENT_TYPE_UNSPECIFIED = 0;
+  ATTACK_EVENT_TYPE_EXECUTED = 1;
+  ATTACK_EVENT_TYPE_TIMED_OUT = 2;
+}
+
+message AttackEvent {
+  string attacker_id = 1;
+  AttackEventType event_type = 2;
+  int64 timestamp = 3;
+  int64 turn_started_at_ms = 4;
+}
+
 message CreatureStatus {
   int32 remaining_health = 1;
 }
@@ -39,6 +52,9 @@ message FightState {
   string fight_uuid = 1;
   repeated TakenTurn taken_turns = 2;
   map<string, CreatureStatus> creature_statuses = 3;
+  string current_attacker_id = 4;
+  int64 current_turn_started_at_ms = 5;
+  repeated AttackEvent attack_log = 6;
 }
 
 message CacheKey {

@@ -3,10 +3,9 @@ package com.anf.service;
 import com.anf.config.WebSocketsController;
 import com.anf.model.Fight;
 import com.anf.service.state.FightRuntimeFacade;
-import com.anf.service.state.LegacyFightRuntimeStore;
+import com.anf.service.state.FightRuntimeStore;
 import com.anf.service.state.proto.GameStateModels.FightMode;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -20,10 +19,9 @@ public class FightStartService {
   private final FightRuntimeFacade fightRuntimeFacade;
   private final FightLobbyService fightLobbyService;
   private final FightRuntimeFactoryService fightRuntimeFactoryService;
-  private final LegacyFightRuntimeStore fightStateStore;
+  private final FightRuntimeStore fightStateStore;
   private final FightSnapshotService fightSnapshotService;
   private final WebSocketsController webSocketsController;
-  private final InMemoryFightTurnScheduler fightTurnScheduler;
 
   public ResponseEntity<?> startFightFromLobby(
       String lobbyUuid, String bossName, String requester, BiConsumer<Fight, String> onFirstTurn) {
@@ -55,8 +53,7 @@ public class FightStartService {
               ? runtimeFight.getFighter2().getLogin()
               : runtimeFight.getFighter1().getLogin();
       webSocketsController.sendStart(requester, opponent, fightUuid);
-      fightTurnScheduler.schedule(
-          fightUuid, () -> onFirstTurn.accept(runtimeFight, fightUuid), 3010, TimeUnit.MILLISECONDS);
+      onFirstTurn.accept(runtimeFight, fightUuid);
       return buildCreatedResponse(fightUuid, result.fight().getFightMode().name(), result.fight().getParticipantUuidsList());
     }
 
@@ -79,8 +76,7 @@ public class FightStartService {
             webSocketsController.sendStart(requester, user, fightUuid);
           }
         });
-    fightTurnScheduler.schedule(
-        fightUuid, () -> onFirstTurn.accept(runtimeFight, fightUuid), 3010, TimeUnit.MILLISECONDS);
+    onFirstTurn.accept(runtimeFight, fightUuid);
     return buildCreatedResponse(fightUuid, result.fight().getFightMode().name(), result.fight().getParticipantUuidsList());
   }
 

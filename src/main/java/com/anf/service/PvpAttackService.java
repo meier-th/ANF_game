@@ -5,7 +5,7 @@ import com.anf.model.database.FightPVP;
 import com.anf.model.database.Spell;
 import com.anf.model.database.SpellKnowledge;
 import com.anf.model.database.User;
-import com.anf.service.state.LegacyFightRuntimeStore;
+import com.anf.service.state.FightRuntimeStore;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,8 +16,7 @@ public class PvpAttackService {
   private final SpellKnowledgeService spellKnowledgeService;
   private final StatsService statsService;
   private final PVPFightsService pvpFightsService;
-  private final LegacyFightRuntimeStore fightStateStore;
-  private final InMemoryFightTurnScheduler fightTurnScheduler;
+  private final FightRuntimeStore fightStateStore;
   private final FightSnapshotService fightSnapshotService;
   private final FightStateNotifier fightStateNotifier;
 
@@ -207,8 +206,6 @@ public class PvpAttackService {
         fight.setFirstFighter(fight.getFighter1().getCharacter());
         fight.setSecondFighter(fight.getFighter2().getCharacter());
         pvpFightsService.addFight(fight);
-        fightTurnScheduler.cancel(fightUuid);
-        fightTurnScheduler.remove(fightUuid);
         fightSnapshotService.deleteFightArtifacts(fightUuid, () -> fightStateStore.removeFight(fightUuid));
         fightStateStore.unmarkUserInFight(attackerName);
         fightStateStore.unmarkUserInFight(enemyName);

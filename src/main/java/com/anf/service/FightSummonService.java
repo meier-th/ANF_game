@@ -6,7 +6,7 @@ import com.anf.model.NinjaAnimalRace;
 import com.anf.model.database.FightPVP;
 import com.anf.model.database.FightVsAI;
 import com.anf.model.database.User;
-import com.anf.service.state.LegacyFightRuntimeStore;
+import com.anf.service.state.FightRuntimeStore;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 public class FightSummonService {
   private final UserService userService;
   private final NinjaAnimalResolverService ninjaAnimalResolverService;
-  private final LegacyFightRuntimeStore fightStateStore;
+  private final FightRuntimeStore fightStateStore;
   private final WebSocketsController webSocketsController;
 
   public ResponseEntity<?> summonPvp(String fightUuid, String username) {

@@ -15,17 +15,15 @@ import com.anf.model.database.FightVsAI;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Stats;
 import com.anf.model.database.User;
-import com.anf.service.state.LegacyFightRuntimeStore;
+import com.anf.service.state.FightRuntimeStore;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class AnimalTurnServiceTest {
-  private LegacyFightRuntimeStore fightStateStore;
+  private FightRuntimeStore fightStateStore;
   private FightSnapshotService fightSnapshotService;
-  private InMemoryFightTurnScheduler fightTurnScheduler;
   private FightStateNotifier fightStateNotifier;
   private PVPFightsService pvpFightsService;
   private FightVsAIService fightVsAIService;
@@ -36,9 +34,8 @@ class AnimalTurnServiceTest {
 
   @BeforeEach
   void setUp() {
-    fightStateStore = mock(LegacyFightRuntimeStore.class);
+    fightStateStore = mock(FightRuntimeStore.class);
     fightSnapshotService = mock(FightSnapshotService.class);
-    fightTurnScheduler = mock(InMemoryFightTurnScheduler.class);
     fightStateNotifier = mock(FightStateNotifier.class);
     pvpFightsService = mock(PVPFightsService.class);
     fightVsAIService = mock(FightVsAIService.class);
@@ -49,7 +46,6 @@ class AnimalTurnServiceTest {
         new AnimalTurnService(
             fightStateStore,
             fightSnapshotService,
-            fightTurnScheduler,
             fightStateNotifier,
             pvpFightsService,
             fightVsAIService,
@@ -76,15 +72,6 @@ class AnimalTurnServiceTest {
     when(ninjaAnimalResolverService.resolveByPvePvpAttackerToken(any())).thenReturn(attacker);
 
     var nextTurnCalled = new AtomicBoolean(false);
-    doAnswer(
-            (invocation) -> {
-              var task = invocation.getArgument(1, Runnable.class);
-              task.run();
-              return null;
-            })
-        .when(fightTurnScheduler)
-        .schedule(eq("fight-1"), any(Runnable.class), any(Long.class), eq(TimeUnit.MILLISECONDS));
-
     animalTurnService.handleAnimalPveAttack(fight, "fight-1", () -> nextTurnCalled.set(true));
 
     assertThat(nextTurnCalled.get()).isTrue();

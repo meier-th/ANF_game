@@ -4,7 +4,7 @@ import com.anf.model.Fight;
 import java.util.Collection;
 import java.util.Optional;
 
-public interface LegacyFightRuntimeStore {
+public interface FightRuntimeStore {
   Optional<Fight> getFight(String fightUuid);
 
   void saveFight(String fightUuid, Fight fight);

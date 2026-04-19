@@ -13,7 +13,7 @@ import com.anf.model.database.FightVsAI;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Stats;
 import com.anf.model.database.User;
-import com.anf.service.state.LegacyFightRuntimeStore;
+import com.anf.service.state.FightRuntimeStore;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ class PveAttackServiceTest {
   private FightVsAIService fightVsAIService;
   private UserAIFightService userAiFightService;
   private StatsService statsService;
-  private LegacyFightRuntimeStore fightStateStore;
+  private FightRuntimeStore fightStateStore;
   private FightSnapshotService fightSnapshotService;
   private FightStateNotifier fightStateNotifier;
   private PveAttackService pveAttackService;
@@ -38,7 +38,7 @@ class PveAttackServiceTest {
     fightVsAIService = mock(FightVsAIService.class);
     userAiFightService = mock(UserAIFightService.class);
     statsService = mock(StatsService.class);
-    fightStateStore = mock(LegacyFightRuntimeStore.class);
+    fightStateStore = mock(FightRuntimeStore.class);
     fightSnapshotService = mock(FightSnapshotService.class);
     fightStateNotifier = mock(FightStateNotifier.class);
     pveAttackService =
