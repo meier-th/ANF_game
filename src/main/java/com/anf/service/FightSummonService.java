@@ -1,12 +1,12 @@
 package com.anf.service;
 
-import com.anf.config.WebSocketsController;
-import com.anf.model.NinjaAnimal;
-import com.anf.model.NinjaAnimalRace;
+import com.anf.configuration.WebSocketsController;
+import com.anf.service.fight.model.NinjaAnimal;
+import com.anf.service.fight.model.NinjaAnimalRace;
 import com.anf.model.database.FightPVP;
 import com.anf.model.database.FightVsAI;
 import com.anf.model.database.User;
-import com.anf.service.state.FightRuntimeStore;
+import com.anf.infrastructure.state.FightRuntimeStore;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

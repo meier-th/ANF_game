@@ -14,7 +14,7 @@ import com.anf.model.database.FightVsAI;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Stats;
 import com.anf.model.database.User;
-import com.anf.service.state.FightRuntimeStore;
+import com.anf.infrastructure.state.FightRuntimeStore;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,9 +24,8 @@ class BossTurnServiceTest {
   private FightRuntimeStore fightStateStore;
   private FightSnapshotService fightSnapshotService;
   private FightStateNotifier fightStateNotifier;
-  private FightVsAIService fightVsAIService;
-  private UserAIFightService userAiFightService;
-  private StatsService statsService;
+  private FightDamageService fightDamageService;
+  private FightStatsUpdateService fightStatsUpdateService;
   private BossTurnService bossTurnService;
 
   @BeforeEach
@@ -34,17 +33,17 @@ class BossTurnServiceTest {
     fightStateStore = mock(FightRuntimeStore.class);
     fightSnapshotService = mock(FightSnapshotService.class);
     fightStateNotifier = mock(FightStateNotifier.class);
-    fightVsAIService = mock(FightVsAIService.class);
-    userAiFightService = mock(UserAIFightService.class);
-    statsService = mock(StatsService.class);
+    fightDamageService = mock(FightDamageService.class);
+    fightStatsUpdateService = mock(FightStatsUpdateService.class);
     bossTurnService =
         new BossTurnService(
             fightStateStore,
             fightSnapshotService,
             fightStateNotifier,
-            fightVsAIService,
-            userAiFightService,
-            statsService);
+            fightDamageService,
+            fightStatsUpdateService);
+
+    when(fightDamageService.computeBossAttackDamage(any(Integer.class), any(Float.class))).thenReturn(20);
   }
 
   @Test

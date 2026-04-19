@@ -5,8 +5,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.anf.service.state.FightRuntimeFacade;
-import com.anf.service.state.LobbyStore;
+import com.anf.infrastructure.state.FightRuntimeFacade;
+import com.anf.infrastructure.state.LobbyStore;
 import com.anf.service.state.proto.GameStateModels.FightMode;
 import com.anf.service.state.proto.GameStateModels.Lobby;
 import java.util.Optional;

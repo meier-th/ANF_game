@@ -1,7 +1,7 @@
 package com.anf.service;
 
-import com.anf.config.WebSocketsController;
-import com.anf.model.State;
+import com.anf.configuration.WebSocketsController;
+import com.anf.service.fight.model.State;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

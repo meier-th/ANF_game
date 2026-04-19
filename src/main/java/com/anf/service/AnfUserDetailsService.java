@@ -1,7 +1,7 @@
 package com.anf.service;
 
 import com.anf.model.database.User;
-import com.anf.repository.UserRepository;
+import com.anf.infrastructure.persistence.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

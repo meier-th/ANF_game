@@ -3,7 +3,7 @@ package com.anf.service;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Spell;
 import com.anf.model.database.SpellKnowledge;
-import com.anf.repository.SpellKnowledgeRepository;
+import com.anf.infrastructure.persistence.repository.SpellKnowledgeRepository;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

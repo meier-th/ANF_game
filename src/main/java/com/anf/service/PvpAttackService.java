@@ -1,24 +1,26 @@
 package com.anf.service;
 
-import com.anf.model.Attack;
+import com.anf.service.fight.model.Attack;
 import com.anf.model.database.FightPVP;
 import com.anf.model.database.Spell;
 import com.anf.model.database.SpellKnowledge;
 import com.anf.model.database.User;
-import com.anf.service.state.FightRuntimeStore;
+import com.anf.infrastructure.state.FightRuntimeStore;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 @AllArgsConstructor
 public class PvpAttackService {
   private final SpellService spellService;
   private final SpellKnowledgeService spellKnowledgeService;
-  private final StatsService statsService;
-  private final PVPFightsService pvpFightsService;
   private final FightRuntimeStore fightStateStore;
   private final FightSnapshotService fightSnapshotService;
   private final FightStateNotifier fightStateNotifier;
+  private final FightDamageService fightDamageService;
+  private final FightStatsUpdateService fightStatsUpdateService;
 
   public Attack attackPvp(String attackerName, String enemyName, String fightUuid, String spellName) {
     Attack attack = new Attack();
@@ -29,7 +31,7 @@ public class PvpAttackService {
     }
     User attacker = fight.getFighter1();
     User enemy = fight.getFighter2();
-    com.anf.model.NinjaAnimal targetAnimal = null;
+    com.anf.service.fight.model.NinjaAnimal targetAnimal = null;
     boolean userIsTarget = true;
     if (enemyName.length() < 6) {
       userIsTarget = false;
@@ -50,54 +52,38 @@ public class PvpAttackService {
     if (userIsTarget)
       if (!spellName.equalsIgnoreCase("Physical attack")) {
         Spell spell = spellService.get(spellName);
-        SpellKnowledge handling = spellKnowledgeService.getSpellKnowledge(attacker.getCharacter(), spell);
         if (spell == null) {
           attack.setCode(8);
           return attack;
         }
-        if (spellName.equals("Air Strike")) {
-          damage = spell.getBaseDamage() + handling.getSpellLevel() * spell.getDamagePerLevel();
-        } else {
-          damage =
-              Math.round(
-                  (spell.getBaseDamage() + handling.getSpellLevel() * spell.getDamagePerLevel())
-                      * (1 - enemy.getCharacter().getResistance()));
-        }
-        if (spellName.equals("Fire Strike") && enemy.getCharacter().getResistance() < 0.8) {
-          damage *= 2;
-        }
-        chakra =
-            spell.getBaseChakraConsumption()
-                + handling.getSpellLevel() * spell.getChakraConsumptionPerLevel();
+        SpellKnowledge handling = spellKnowledgeService.getSpellKnowledge(attacker.getCharacter(), spell);
+        damage =
+            fightDamageService.computeSpellDamage(
+                spellName, spell, handling, enemy.getCharacter().getResistance());
+        chakra = fightDamageService.computeChakraCost(spell, handling);
       } else {
-        damage = Math.round(attacker.getCharacter().getPhysicalDamage() * (1 - enemy.getCharacter().getResistance()));
+        damage =
+            fightDamageService.computePhysicalDamage(
+                attacker.getCharacter().getPhysicalDamage(), enemy.getCharacter().getResistance());
         chakra = 0;
       }
     // animal is a target
     else {
       if (!spellName.equalsIgnoreCase("Physical attack")) {
         Spell spell = spellService.get(spellName);
-        SpellKnowledge handling = spellKnowledgeService.getSpellKnowledge(attacker.getCharacter(), spell);
         if (spell == null) {
           attack.setCode(8);
           return attack;
         }
-        if (spellName.equals("Air Strike")) {
-          damage = spell.getBaseDamage() + handling.getSpellLevel() * spell.getDamagePerLevel();
-        } else {
-          damage =
-              Math.round(
-                  (spell.getBaseDamage() + handling.getSpellLevel() * spell.getDamagePerLevel())
-                      * (1 - targetAnimal.getResistance()));
-        }
-        if (spellName.equals("Fire Strike") && targetAnimal.getResistance() < 0.8) {
-          damage *= 2;
-        }
-        chakra =
-            spell.getBaseChakraConsumption()
-                + handling.getSpellLevel() * spell.getChakraConsumptionPerLevel();
+        SpellKnowledge handling = spellKnowledgeService.getSpellKnowledge(attacker.getCharacter(), spell);
+        damage =
+            fightDamageService.computeSpellDamage(
+                spellName, spell, handling, targetAnimal.getResistance());
+        chakra = fightDamageService.computeChakraCost(spell, handling);
       } else {
-        damage = Math.round(attacker.getCharacter().getPhysicalDamage() * (1 - targetAnimal.getResistance()));
+        damage =
+            fightDamageService.computePhysicalDamage(
+                attacker.getCharacter().getPhysicalDamage(), targetAnimal.getResistance());
         chakra = 0;
       }
     }
@@ -165,47 +151,14 @@ public class PvpAttackService {
       if (!userIsTarget) {
         if (enemyName.charAt(3) == 1) {
           fight.getAnimals1().clear();
-          System.out.println("animal 1 died");
+          log.debug("Animal from slot 1 died in fight {}", fightUuid);
         } else {
           fight.getAnimals2().clear();
-          System.out.println("animal 2 died");
+          log.debug("Animal from slot 2 died in fight {}", fightUuid);
         }
       } else {
-        if (fight.getFighter1().getLogin().equals(enemyName)) {
-          fight.setFirstWon(false);
-        } else {
-          fight.setFirstWon(true);
-        }
-        int firstFighterPreviousRating = fight.getFighter1().getStats().getRating();
-        int secondFighterPreviousRating = fight.getFighter2().getStats().getRating();
-        int rating;
-        if (firstFighterPreviousRating >= secondFighterPreviousRating && fight.isFirstWon()
-            || secondFighterPreviousRating >= firstFighterPreviousRating && !fight.isFirstWon()) {
-          rating = fight.getLessRatingChange();
-        } else {
-          rating = fight.getBiggerRatingChange();
-        }
-        fight.setRatingChange(rating);
-        if (fight.isFirstWon()) {
-          fight.getFighter1().getStats().setRating(fight.getFighter1().getStats().getRating() + rating);
-          fight.getFighter1().getStats().setFights(fight.getFighter1().getStats().getFights() + 1);
-          fight.getFighter1().getStats().setWins(fight.getFighter1().getStats().getWins() + 1);
-          fight.getFighter2().getStats().setRating(fight.getFighter2().getStats().getRating() - rating);
-          fight.getFighter2().getStats().setFights(fight.getFighter2().getStats().getFights() + 1);
-          fight.getFighter2().getStats().setLosses(fight.getFighter2().getStats().getLosses() + 1);
-        } else {
-          fight.getFighter1().getStats().setRating(fight.getFighter1().getStats().getRating() - rating);
-          fight.getFighter1().getStats().setFights(fight.getFighter1().getStats().getFights() + 1);
-          fight.getFighter1().getStats().setLosses(fight.getFighter1().getStats().getLosses() + 1);
-          fight.getFighter2().getStats().setRating(fight.getFighter2().getStats().getRating() + rating);
-          fight.getFighter2().getStats().setFights(fight.getFighter2().getStats().getFights() + 1);
-          fight.getFighter2().getStats().setWins(fight.getFighter2().getStats().getWins() + 1);
-        }
-        statsService.addStats(fight.getFighter1().getStats());
-        statsService.addStats(fight.getFighter2().getStats());
-        fight.setFirstFighter(fight.getFighter1().getCharacter());
-        fight.setSecondFighter(fight.getFighter2().getCharacter());
-        pvpFightsService.addFight(fight);
+        var firstWon = !fight.getFighter1().getLogin().equals(enemyName);
+        fightStatsUpdateService.finalizePvpFight(fight, firstWon);
         fightSnapshotService.deleteFightArtifacts(fightUuid, () -> fightStateStore.removeFight(fightUuid));
         fightStateStore.unmarkUserInFight(attackerName);
         fightStateStore.unmarkUserInFight(enemyName);

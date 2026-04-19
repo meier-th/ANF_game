@@ -1,7 +1,7 @@
 package com.anf.service;
 
 import com.anf.model.database.Spell;
-import com.anf.repository.SpellRepository;
+import com.anf.infrastructure.persistence.repository.SpellRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

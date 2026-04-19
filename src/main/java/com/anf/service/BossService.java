@@ -1,7 +1,7 @@
 package com.anf.service;
 
 import com.anf.model.database.Boss;
-import com.anf.repository.BossRepository;
+import com.anf.infrastructure.persistence.repository.BossRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

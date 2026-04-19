@@ -1,9 +1,9 @@
 package com.anf.service;
 
-import com.anf.model.Attack;
-import com.anf.model.Fight;
+import com.anf.service.fight.model.Attack;
+import com.anf.service.fight.model.Fight;
 import com.anf.model.database.FightPVP;
-import com.anf.service.state.FightRuntimeStore;
+import com.anf.infrastructure.state.FightRuntimeStore;
 import java.util.function.Function;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;

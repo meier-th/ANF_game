@@ -1,10 +1,10 @@
 package com.anf.service;
 
-import com.anf.model.Fight;
+import com.anf.service.fight.model.Fight;
 import com.anf.model.database.FightPVP;
 import com.anf.model.database.FightVsAI;
-import com.anf.service.state.FightStateStore;
-import com.anf.service.state.FightStore;
+import com.anf.infrastructure.state.FightStateStore;
+import com.anf.infrastructure.state.FightStore;
 import com.anf.service.state.proto.GameStateModels.AttackEvent;
 import com.anf.service.state.proto.GameStateModels.AttackEventType;
 import com.anf.service.state.proto.GameStateModels.CreatureStatus;

@@ -2,7 +2,7 @@ package com.anf.service;
 
 import com.anf.model.database.PrivateMessage;
 import com.anf.model.database.User;
-import com.anf.repository.MessagesRepository;
+import com.anf.infrastructure.persistence.repository.MessagesRepository;
 import java.util.List;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;

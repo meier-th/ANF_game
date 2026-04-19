@@ -3,7 +3,7 @@ package com.anf.service;
 import com.anf.model.database.AiFightParticipation;
 import com.anf.model.database.FightVsAI;
 import com.anf.model.database.GameCharacter;
-import com.anf.repository.FightVsAIRepository;
+import com.anf.infrastructure.persistence.repository.FightVsAIRepository;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

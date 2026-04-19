@@ -1,7 +1,7 @@
 package com.anf.service;
 
 import com.anf.model.database.AiFightParticipation;
-import com.anf.repository.UserAIFightRepository;
+import com.anf.infrastructure.persistence.repository.UserAIFightRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

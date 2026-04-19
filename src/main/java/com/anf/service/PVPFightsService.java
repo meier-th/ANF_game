@@ -2,7 +2,7 @@ package com.anf.service;
 
 import com.anf.model.database.FightPVP;
 import com.anf.model.database.GameCharacter;
-import com.anf.repository.PVPFightsRepository;
+import com.anf.infrastructure.persistence.repository.PVPFightsRepository;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

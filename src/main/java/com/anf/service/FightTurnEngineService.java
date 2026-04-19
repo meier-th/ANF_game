@@ -1,18 +1,18 @@
 package com.anf.service;
 
-import com.anf.config.WebSocketsController;
-import com.anf.model.Fight;
+import com.anf.configuration.WebSocketsController;
+import com.anf.service.fight.model.Fight;
 import com.anf.model.database.FightPVP;
 import com.anf.model.database.FightVsAI;
-import com.anf.service.state.FightRuntimeStore;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import com.anf.infrastructure.state.FightRuntimeStore;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 @AllArgsConstructor
 public class FightTurnEngineService {
   private static final long TURN_TIMEOUT_MILLIS = 30_000L;
@@ -105,12 +105,7 @@ public class FightTurnEngineService {
   }
 
   private void notifySwitch(Fight fight) {
-    System.out.println(
-        "Attacker switched: to "
-            + fight.getCurrentAttacker(0)
-            + " At: "
-            + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)
-            + '\n');
+    log.debug("Attacker switched to {}", fight.getCurrentAttacker(0));
 
     if (fight instanceof FightPVP) {
       webSocketsController.sendSwitch(((FightPVP) fight).getFighter1().getLogin(), fight.getCurrentAttacker(0));

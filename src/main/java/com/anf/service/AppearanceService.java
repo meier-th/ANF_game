@@ -1,7 +1,7 @@
 package com.anf.service;
 
 import com.anf.model.database.CharacterAppearance;
-import com.anf.repository.AppearanceRepository;
+import com.anf.infrastructure.persistence.repository.AppearanceRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

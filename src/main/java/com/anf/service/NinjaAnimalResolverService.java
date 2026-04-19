@@ -1,7 +1,7 @@
 package com.anf.service;
 
-import com.anf.model.NinjaAnimal;
-import com.anf.model.NinjaAnimalRace;
+import com.anf.service.fight.model.NinjaAnimal;
+import com.anf.service.fight.model.NinjaAnimalRace;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

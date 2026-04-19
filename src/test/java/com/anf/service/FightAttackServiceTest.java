@@ -7,12 +7,12 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.anf.model.Attack;
+import com.anf.service.fight.model.Attack;
 import com.anf.model.database.FightPVP;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Stats;
 import com.anf.model.database.User;
-import com.anf.service.state.FightRuntimeStore;
+import com.anf.infrastructure.state.FightRuntimeStore;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,7 +1,7 @@
 package com.anf.service;
 
 import com.anf.model.database.User;
-import com.anf.repository.UserRepository;
+import com.anf.infrastructure.persistence.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;

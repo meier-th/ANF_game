@@ -1,7 +1,7 @@
 package com.anf.service;
 
 import com.anf.model.database.GameCharacter;
-import com.anf.repository.CharacterRepository;
+import com.anf.infrastructure.persistence.repository.CharacterRepository;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;

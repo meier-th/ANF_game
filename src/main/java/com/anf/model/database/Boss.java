@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.io.Serializable;
 
-import com.anf.model.Creature;
+import com.anf.service.fight.model.Creature;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;

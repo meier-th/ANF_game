@@ -7,12 +7,12 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.anf.config.WebSocketsController;
+import com.anf.configuration.WebSocketsController;
 import com.anf.model.database.FightPVP;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Stats;
 import com.anf.model.database.User;
-import com.anf.service.state.FightRuntimeStore;
+import com.anf.infrastructure.state.FightRuntimeStore;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

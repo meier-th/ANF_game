@@ -1,9 +1,9 @@
 package com.anf.service;
 
-import com.anf.config.WebSocketsController;
-import com.anf.model.Fight;
-import com.anf.service.state.FightRuntimeFacade;
-import com.anf.service.state.FightRuntimeStore;
+import com.anf.configuration.WebSocketsController;
+import com.anf.service.fight.model.Fight;
+import com.anf.infrastructure.state.FightRuntimeFacade;
+import com.anf.infrastructure.state.FightRuntimeStore;
 import com.anf.service.state.proto.GameStateModels.FightMode;
 import java.util.Map;
 import java.util.function.BiConsumer;

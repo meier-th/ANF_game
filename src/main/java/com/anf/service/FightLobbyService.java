@@ -1,7 +1,7 @@
 package com.anf.service;
 
-import com.anf.service.state.FightRuntimeFacade;
-import com.anf.service.state.LobbyStore;
+import com.anf.infrastructure.state.FightRuntimeFacade;
+import com.anf.infrastructure.state.LobbyStore;
 import com.anf.service.state.proto.GameStateModels.FightMode;
 import java.util.Map;
 import lombok.AllArgsConstructor;
