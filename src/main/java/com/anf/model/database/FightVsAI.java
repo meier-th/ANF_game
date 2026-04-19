@@ -1,6 +1,6 @@
 package com.anf.model.database;
 
-import com.anf.service.fight.model.Fight;
+import com.anf.domain.fight.model.Fight;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

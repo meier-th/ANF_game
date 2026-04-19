@@ -1,7 +1,7 @@
 package com.anf.configuration;
 
-import com.anf.service.fight.model.NinjaAnimal;
-import com.anf.service.fight.model.State;
+import com.anf.domain.fight.model.NinjaAnimal;
+import com.anf.domain.fight.model.State;
 import com.anf.model.StompPrincipal;
 import java.security.Principal;
 import java.text.SimpleDateFormat;

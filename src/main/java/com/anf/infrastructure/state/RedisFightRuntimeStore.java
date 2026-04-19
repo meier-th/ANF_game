@@ -1,6 +1,6 @@
 package com.anf.infrastructure.state;
 
-import com.anf.service.fight.model.Fight;
+import com.anf.domain.fight.model.Fight;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Optional;
