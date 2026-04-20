@@ -1,6 +1,6 @@
 package com.anf.model.database;
 
-import com.anf.model.Attack;
+import com.anf.domain.fight.model.Attack;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

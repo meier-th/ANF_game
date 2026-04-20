@@ -1,5 +1,11 @@
 package com.anf.service;
 
+import com.anf.domain.auth.*;
+import com.anf.domain.combat.*;
+import com.anf.domain.fight.*;
+import com.anf.domain.social.*;
+import com.anf.domain.user.*;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -7,13 +13,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.anf.model.Attack;
+import com.anf.domain.fight.model.Attack;
 import com.anf.model.database.Boss;
 import com.anf.model.database.FightVsAI;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Stats;
 import com.anf.model.database.User;
-import com.anf.service.state.FightRuntimeStore;
+import com.anf.infrastructure.state.FightRuntimeStore;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,12 +28,11 @@ class PveAttackServiceTest {
   private UserService userService;
   private SpellService spellService;
   private SpellKnowledgeService spellKnowledgeService;
-  private FightVsAIService fightVsAIService;
-  private UserAIFightService userAiFightService;
-  private StatsService statsService;
   private FightRuntimeStore fightStateStore;
   private FightSnapshotService fightSnapshotService;
   private FightStateNotifier fightStateNotifier;
+  private FightDamageService fightDamageService;
+  private FightStatsUpdateService fightStatsUpdateService;
   private PveAttackService pveAttackService;
 
   @BeforeEach
@@ -35,23 +40,23 @@ class PveAttackServiceTest {
     userService = mock(UserService.class);
     spellService = mock(SpellService.class);
     spellKnowledgeService = mock(SpellKnowledgeService.class);
-    fightVsAIService = mock(FightVsAIService.class);
-    userAiFightService = mock(UserAIFightService.class);
-    statsService = mock(StatsService.class);
     fightStateStore = mock(FightRuntimeStore.class);
     fightSnapshotService = mock(FightSnapshotService.class);
     fightStateNotifier = mock(FightStateNotifier.class);
+    fightDamageService = mock(FightDamageService.class);
+    fightStatsUpdateService = mock(FightStatsUpdateService.class);
     pveAttackService =
         new PveAttackService(
             userService,
             spellService,
             spellKnowledgeService,
-            fightVsAIService,
-            userAiFightService,
-            statsService,
             fightStateStore,
             fightSnapshotService,
-            fightStateNotifier);
+            fightStateNotifier,
+            fightDamageService,
+            fightStatsUpdateService);
+
+    when(fightDamageService.computePhysicalDamage(any(Integer.class), any(Float.class))).thenReturn(20);
   }
 
   @Test

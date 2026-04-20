@@ -1,5 +1,11 @@
 package com.anf.service;
 
+import com.anf.domain.auth.*;
+import com.anf.domain.combat.*;
+import com.anf.domain.fight.*;
+import com.anf.domain.social.*;
+import com.anf.domain.user.*;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -8,14 +14,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.anf.model.NinjaAnimal;
+import com.anf.domain.fight.model.NinjaAnimal;
 import com.anf.model.database.AiFightParticipation;
 import com.anf.model.database.Boss;
 import com.anf.model.database.FightVsAI;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Stats;
 import com.anf.model.database.User;
-import com.anf.service.state.FightRuntimeStore;
+import com.anf.infrastructure.state.FightRuntimeStore;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,11 +31,8 @@ class AnimalTurnServiceTest {
   private FightRuntimeStore fightStateStore;
   private FightSnapshotService fightSnapshotService;
   private FightStateNotifier fightStateNotifier;
-  private PVPFightsService pvpFightsService;
-  private FightVsAIService fightVsAIService;
-  private UserAIFightService userAiFightService;
-  private StatsService statsService;
   private NinjaAnimalResolverService ninjaAnimalResolverService;
+  private FightStatsUpdateService fightStatsUpdateService;
   private AnimalTurnService animalTurnService;
 
   @BeforeEach
@@ -37,21 +40,15 @@ class AnimalTurnServiceTest {
     fightStateStore = mock(FightRuntimeStore.class);
     fightSnapshotService = mock(FightSnapshotService.class);
     fightStateNotifier = mock(FightStateNotifier.class);
-    pvpFightsService = mock(PVPFightsService.class);
-    fightVsAIService = mock(FightVsAIService.class);
-    userAiFightService = mock(UserAIFightService.class);
-    statsService = mock(StatsService.class);
     ninjaAnimalResolverService = mock(NinjaAnimalResolverService.class);
+    fightStatsUpdateService = mock(FightStatsUpdateService.class);
     animalTurnService =
         new AnimalTurnService(
             fightStateStore,
             fightSnapshotService,
             fightStateNotifier,
-            pvpFightsService,
-            fightVsAIService,
-            userAiFightService,
-            statsService,
-            ninjaAnimalResolverService);
+            ninjaAnimalResolverService,
+            fightStatsUpdateService);
   }
 
   @Test

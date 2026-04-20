@@ -1,0 +1,21 @@
+package com.anf.domain.user;
+
+import com.anf.model.database.Stats;
+import com.anf.infrastructure.persistence.repository.StatsRepository;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@AllArgsConstructor
+public class StatsService {
+
+  private final StatsRepository repository;
+
+  public void addStats(Stats stats) {
+    repository.save(stats);
+  }
+
+  public void removeStats(int id) {
+    repository.deleteById(id);
+  }
+}

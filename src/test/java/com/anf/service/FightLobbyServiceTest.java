@@ -1,12 +1,18 @@
 package com.anf.service;
 
+import com.anf.domain.auth.*;
+import com.anf.domain.combat.*;
+import com.anf.domain.fight.*;
+import com.anf.domain.social.*;
+import com.anf.domain.user.*;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.anf.service.state.FightRuntimeFacade;
-import com.anf.service.state.LobbyStore;
+import com.anf.infrastructure.state.FightRuntimeFacade;
+import com.anf.infrastructure.state.LobbyStore;
 import com.anf.service.state.proto.GameStateModels.FightMode;
 import com.anf.service.state.proto.GameStateModels.Lobby;
 import java.util.Optional;

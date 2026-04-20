@@ -1,5 +1,11 @@
 package com.anf.service;
 
+import com.anf.domain.auth.*;
+import com.anf.domain.combat.*;
+import com.anf.domain.fight.*;
+import com.anf.domain.social.*;
+import com.anf.domain.user.*;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -12,8 +18,8 @@ import com.anf.model.database.FightPVP;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Stats;
 import com.anf.model.database.User;
-import com.anf.service.state.FightStateStore;
-import com.anf.service.state.FightStore;
+import com.anf.infrastructure.state.FightStateStore;
+import com.anf.infrastructure.state.FightStore;
 import com.anf.service.state.proto.GameStateModels.Fight;
 import com.anf.service.state.proto.GameStateModels.FightState;
 import java.util.Optional;

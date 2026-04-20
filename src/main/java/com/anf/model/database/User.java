@@ -11,10 +11,12 @@ import java.util.Set;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
 
 /** Represents User entity. Used to operate on users' registration data */
 @Entity
 @Table(name = "users")
+@Slf4j
 public class User implements Serializable {
 
   /** User's login */
@@ -203,7 +205,7 @@ public class User implements Serializable {
     try {
       return new ObjectMapper().writeValueAsString(this);
     } catch (JacksonException e) {
-      System.out.println(e.getMessage());
+      log.error("Could not serialize user {}", login, e);
       return "{}";
     }
   }

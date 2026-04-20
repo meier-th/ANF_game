@@ -1,7 +1,7 @@
 package com.anf.model.database;
 
-import com.anf.model.Creature;
-import com.anf.model.NinjaAnimalRace;
+import com.anf.domain.fight.model.Creature;
+import com.anf.domain.fight.model.NinjaAnimalRace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
