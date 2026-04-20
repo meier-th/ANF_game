@@ -1,5 +1,6 @@
 package com.anf.domain.fight;
 
+import com.anf.domain.shared.GameplayConstants;
 import com.anf.model.database.AiFightParticipation;
 import com.anf.model.database.FightPVP;
 import com.anf.model.database.FightVsAI;
@@ -30,11 +31,15 @@ public class FightRuntimeFactoryService {
     fighter2.prepareForFight();
     fight.setFighters(fighter1, fighter2);
     int biggerRating =
-        15 + Math.abs(fighter1.getUser().getStats().getRating() - fighter2.getUser().getStats().getRating()) / 4;
+        GameplayConstants.PVP_BASE_RATING_CHANGE
+            + Math.abs(fighter1.getUser().getStats().getRating() - fighter2.getUser().getStats().getRating())
+                / GameplayConstants.PVP_BIGGER_RATING_GAP_DIVISOR;
     int lesserRating =
-        15 - Math.abs(fighter1.getUser().getStats().getRating() - fighter2.getUser().getStats().getRating()) / 8;
-    if (lesserRating < 5) {
-      lesserRating = 5;
+        GameplayConstants.PVP_BASE_RATING_CHANGE
+            - Math.abs(fighter1.getUser().getStats().getRating() - fighter2.getUser().getStats().getRating())
+                / GameplayConstants.PVP_LESSER_RATING_GAP_DIVISOR;
+    if (lesserRating < GameplayConstants.PVP_MIN_RATING_CHANGE) {
+      lesserRating = GameplayConstants.PVP_MIN_RATING_CHANGE;
     }
     fight.setBiggerRatingChange(biggerRating);
     fight.setLessRatingChange(lesserRating);

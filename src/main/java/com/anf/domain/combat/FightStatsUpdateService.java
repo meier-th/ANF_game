@@ -1,5 +1,6 @@
 package com.anf.domain.combat;
 
+import com.anf.domain.shared.GameplayConstants;
 import com.anf.model.database.AiFightParticipation;
 import com.anf.model.database.Boss;
 import com.anf.model.database.FightPVP;
@@ -57,7 +58,9 @@ public class FightStatsUpdateService {
       if (fightData.getResult() == null) {
         fightData.setResult(AiFightParticipation.Result.WON);
       }
-      var experience = 500 + 200 * boss.getNumberOfTails();
+      var experience =
+          GameplayConstants.PVE_BASE_EXPERIENCE
+              + GameplayConstants.PVE_EXPERIENCE_PER_TAIL * boss.getNumberOfTails();
       if (fightData.getResult().equals(AiFightParticipation.Result.DIED)) {
         experience /= 2;
         fightData
@@ -92,11 +95,11 @@ public class FightStatsUpdateService {
   public void finalizePvePlayersDefeated(FightVsAI fight) {
     fightVsAIService.addFight(fight);
     for (var userData : fight.getSetFighters()) {
-      userData.setExperience(50);
+      userData.setExperience(GameplayConstants.PVE_DEFEAT_EXPERIENCE);
       userData.setResult(AiFightParticipation.Result.LOST);
       userData.getFighter().getUser().getStats().setFights(userData.getFighter().getUser().getStats().getFights() + 1);
       userData.getFighter().getUser().getStats().setLosses(userData.getFighter().getUser().getStats().getLosses() + 1);
-      userData.getFighter().changeXP(50);
+      userData.getFighter().changeXP(GameplayConstants.PVE_DEFEAT_EXPERIENCE);
       statsService.addStats(userData.getFighter().getUser().getStats());
       userAiFightService.add(userData);
     }

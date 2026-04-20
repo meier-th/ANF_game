@@ -2,6 +2,11 @@ package com.anf.domain.fight;
 
 import com.anf.configuration.WebSocketsController;
 import com.anf.domain.fight.model.Fight;
+import com.anf.domain.shared.ApiAnswer;
+import com.anf.domain.shared.ApiField;
+import com.anf.domain.shared.ApiMessage;
+import com.anf.domain.shared.ErrorCode;
+import com.anf.domain.shared.GameplayConstants;
 import com.anf.model.database.FightPVP;
 import com.anf.model.database.FightVsAI;
 import com.anf.infrastructure.state.FightRuntimeStore;
@@ -53,30 +58,55 @@ public class FightTurnEngineService {
   public ResponseEntity<?> timeoutCurrentTurn(String fightUuid, String reporter, String timedOutAttacker) {
     var runtimeFight = fightStateStore.getFight(fightUuid).orElse(null);
     if (runtimeFight == null) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"code\":2,\"error\":\"Fight doesn't exist\"}");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(
+              "{\"code\":"
+                  + ErrorCode.NOT_FOUND.getValue()
+                  + ",\"error\":\""
+                  + ApiMessage.FIGHT_NOT_FOUND.getValue()
+                  + "\"}");
     }
     if (!isParticipant(runtimeFight, reporter)) {
-      return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"code\":10,\"error\":\"Not a participant\"}");
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(
+              "{\"code\":"
+                  + ErrorCode.FORBIDDEN.getValue()
+                  + ",\"error\":\""
+                  + ApiMessage.NOT_A_PARTICIPANT.getValue()
+                  + "\"}");
     }
     var currentAttacker = runtimeFight.getCurrentAttacker(0);
     if (!currentAttacker.equals(timedOutAttacker)) {
-      return ResponseEntity.ok(java.util.Map.of("answer", "ALREADY_PROCESSED"));
+      return ResponseEntity.ok(
+          java.util.Map.of(ApiField.ANSWER.getValue(), ApiAnswer.ALREADY_PROCESSED.getValue()));
     }
     var now = System.currentTimeMillis();
     var turnAgeMillis = now - fightSnapshotService.currentTurnStartedAt(fightUuid);
     if (turnAgeMillis < TURN_TIMEOUT_MILLIS) {
       return ResponseEntity.status(HttpStatus.CONFLICT)
-          .body(java.util.Map.of("code", 9, "error", "Current turn has not timed out yet"));
+          .body(
+              java.util.Map.of(
+                  ApiField.CODE.getValue(),
+                  ErrorCode.CONFLICT.getValue(),
+                  ApiField.ERROR.getValue(),
+                  ApiMessage.CURRENT_TURN_NOT_TIMED_OUT.getValue()));
     }
     var nextAttacker = nextAttackerToken(runtimeFight);
     var timeoutResult =
         fightSnapshotService.timeoutCurrentTurnIfExpired(
             fightUuid, timedOutAttacker, nextAttacker, now, TURN_TIMEOUT_MILLIS);
     if (timeoutResult == FightSnapshotService.TimeoutReportResult.FIGHT_NOT_FOUND) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"code\":2,\"error\":\"Fight doesn't exist\"}");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(
+              "{\"code\":"
+                  + ErrorCode.NOT_FOUND.getValue()
+                  + ",\"error\":\""
+                  + ApiMessage.FIGHT_NOT_FOUND.getValue()
+                  + "\"}");
     }
     if (timeoutResult == FightSnapshotService.TimeoutReportResult.ALREADY_PROCESSED) {
-      return ResponseEntity.ok(java.util.Map.of("answer", "ALREADY_PROCESSED"));
+      return ResponseEntity.ok(
+          java.util.Map.of(ApiField.ANSWER.getValue(), ApiAnswer.ALREADY_PROCESSED.getValue()));
     }
 
     switchAttacker(runtimeFight, false);
@@ -84,7 +114,12 @@ public class FightTurnEngineService {
     fightSnapshotService.syncFightSnapshot(fightUuid, runtimeFight);
     notifySwitch(runtimeFight);
     processAiTurnsIfNeeded(runtimeFight, fightUuid);
-    return ResponseEntity.ok(java.util.Map.of("answer", "TIMED_OUT", "nextAttacker", runtimeFight.getCurrentAttacker(0)));
+    return ResponseEntity.ok(
+        java.util.Map.of(
+            ApiField.ANSWER.getValue(),
+            ApiAnswer.TIMED_OUT.getValue(),
+            ApiField.NEXT_ATTACKER.getValue(),
+            runtimeFight.getCurrentAttacker(0)));
   }
 
   private String switchAttacker(Fight fight, boolean firstTurn) {
@@ -121,14 +156,16 @@ public class FightTurnEngineService {
   }
 
   private void processAiTurnsIfNeeded(Fight fight, String fightUuid) {
-    if (fight instanceof FightPVP pvpFight && fight.getCurrentAttacker(0).length() == 4) {
+    if (fight instanceof FightPVP pvpFight
+        && fight.getCurrentAttacker(0).length() == GameplayConstants.PVP_ANIMAL_TOKEN_LENGTH) {
       animalPvpAttack(pvpFight, fightUuid);
       return;
     }
     if (fight instanceof FightVsAI pveFight) {
-      if (fight.getCurrentAttacker(0).length() < 3) {
+      if (fight.getCurrentAttacker(0).length() <= GameplayConstants.PVE_BOSS_TOKEN_MAX_LENGTH) {
         bossAttack(pveFight, fightUuid);
-      } else if (fight.getCurrentAttacker(0).length() >= 3 && fight.getCurrentAttacker(0).length() < 5) {
+      } else if (fight.getCurrentAttacker(0).length() >= GameplayConstants.PVE_ANIMAL_TOKEN_MIN_LENGTH
+          && fight.getCurrentAttacker(0).length() <= GameplayConstants.PVE_ANIMAL_TOKEN_MAX_LENGTH) {
         animalPveAttack(pveFight, fightUuid);
       }
     }

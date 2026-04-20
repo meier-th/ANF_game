@@ -1,5 +1,7 @@
 package com.anf.domain.combat;
 
+import com.anf.domain.shared.ErrorCode;
+import com.anf.domain.shared.SpellName;
 import com.anf.domain.fight.model.Attack;
 import com.anf.model.database.AiFightParticipation;
 import com.anf.model.database.Boss;
@@ -34,7 +36,7 @@ public class PveAttackService {
     Attack attack = new Attack();
     FightVsAI fight = (FightVsAI) fightStateStore.getFight(fightUuid).orElse(null);
     if (fight == null) {
-      attack.setCode(2);
+      attack.setCode(ErrorCode.NOT_FOUND.getValue());
       return attack;
     }
     // Boss is a target
@@ -43,10 +45,10 @@ public class PveAttackService {
     int damage;
     int chakra;
     // count damage
-    if (!spellName.equalsIgnoreCase("Physical attack")) {
+    if (!SpellName.PHYSICAL_ATTACK.matches(spellName)) {
       Spell spell = spellService.get(spellName);
       if (spell == null) {
-        attack.setCode(8);
+        attack.setCode(ErrorCode.INVALID_REQUEST.getValue());
         return attack;
       }
       SpellKnowledge handling = spellKnowledgeService.getSpellKnowledge(attacker.getCharacter(), spell);

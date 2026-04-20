@@ -1,5 +1,7 @@
 package com.anf.infrastructure.web.rest;
 
+import com.anf.domain.shared.ApiField;
+import com.anf.domain.shared.ApiMessage;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Role;
 import com.anf.model.database.Stats;
@@ -34,6 +36,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
+  private static final String RESERVED_USERNAME = "SYSTEM";
+  private static final String ANONYMOUS_USERNAME = "anonymoususer";
+  private static final int MIN_PASSWORD_LENGTH = 6;
   private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
   private final UserService userService;
@@ -49,34 +54,39 @@ public class AuthController {
       if (!SecurityContextHolder.getContext()
           .getAuthentication()
           .getName()
-          .equalsIgnoreCase("anonymoususer"))
+          .equalsIgnoreCase(ANONYMOUS_USERNAME))
         return ResponseEntity.status(HttpStatus.OK)
             .body(
-                "{\"authorized\": true, \"login\":\""
+                "{\""
+                    + ApiField.AUTHORIZED.getValue()
+                    + "\": true, \""
+                    + ApiField.LOGIN.getValue()
+                    + "\":\""
                     + SecurityContextHolder.getContext().getAuthentication().getName()
                     + "\"}");
-      else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{\"authorized\": false}");
+      else
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body("{\"" + ApiField.AUTHORIZED.getValue() + "\": false}");
     } catch (Exception e) {
       logger.error("An exception occurred: {}", e.getMessage());
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{\"authorized\": false}");
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body("{\"" + ApiField.AUTHORIZED.getValue() + "\": false}");
     }
   }
 
   @PostMapping(value = "/registration")
   public ResponseEntity createNewUser(@RequestBody @Valid User user, BindingResult bindingResult) {
-    if (user.getLogin().equalsIgnoreCase("SYSTEM"))
+    if (user.getLogin().equalsIgnoreCase(RESERVED_USERNAME))
       return ResponseEntity.status(HttpStatus.FORBIDDEN)
-          .body(
-              "{\"text\":\"'SYSTEM' in any case is a reserved word. Users can not use it as their"
-                  + " usernames.\"}");
+          .body("{\"" + ApiField.TEXT.getValue() + "\":\"" + ApiMessage.RESERVED_SYSTEM_USERNAME.getValue() + "\"}");
     if (bindingResult.hasErrors()) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body("{\"text\":\"User object validation failed.\"}");
+          .body("{\"" + ApiField.TEXT.getValue() + "\":\"" + ApiMessage.USER_VALIDATION_FAILED.getValue() + "\"}");
     }
     User userExists = userService.getUser(user.getLogin());
     if (userExists != null) {
       return ResponseEntity.status(HttpStatus.CONFLICT)
-          .body("{\"text\":\"This username is already occupied\"}");
+          .body("{\"" + ApiField.TEXT.getValue() + "\":\"" + ApiMessage.USERNAME_OCCUPIED.getValue() + "\"}");
     }
     Stats stats = new Stats(50, 0, 0, 0, 0, 0, 1, 3);
     user.setStats(stats);
@@ -91,20 +101,18 @@ public class AuthController {
     wsController.notify(warning);
     wsController.sendOnline("new:" + user.getLogin());
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body("{\"text\":\"User successfully registered!\"}");
+        .body("{\"" + ApiField.TEXT.getValue() + "\":\"" + ApiMessage.USER_REGISTERED.getValue() + "\"}");
   }
 
   @PostMapping("/confirm")
   public ResponseEntity confirm(
       @RequestParam(name = "login") String login,
       @RequestParam(name = "password") String password) {
-    if (login.equalsIgnoreCase("SYSTEM"))
+    if (login.equalsIgnoreCase(RESERVED_USERNAME))
       return ResponseEntity.status(HttpStatus.FORBIDDEN)
-          .body(
-              "{\"text\":\"'SYSTEM' in any case is a reserved word. Users can not use it as their"
-                  + " usernames.\"}");
+          .body("{\"" + ApiField.TEXT.getValue() + "\":\"" + ApiMessage.RESERVED_SYSTEM_USERNAME.getValue() + "\"}");
     if (!userService.exists(login)) {
-      if (password.length() >= 6 || password.isEmpty()) {
+      if (password.length() >= MIN_PASSWORD_LENGTH || password.isEmpty()) {
         User user = new User(login, password.isEmpty() ? null : password);
         String tmpName = SecurityContextHolder.getContext().getAuthentication().getName();
         if (SecurityContextHolder.getContext()
@@ -126,17 +134,17 @@ public class AuthController {
         Authentication auth = authManager.authenticate(authReq);
         SecurityContextHolder.getContext().setAuthentication(auth);
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body("{\"text\":\"User successfully registered!\"}");
+            .body("{\"" + ApiField.TEXT.getValue() + "\":\"" + ApiMessage.USER_REGISTERED.getValue() + "\"}");
       }
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body("{\"text\":\"Password is too short.\"}");
+          .body("{\"" + ApiField.TEXT.getValue() + "\":\"" + ApiMessage.PASSWORD_TOO_SHORT.getValue() + "\"}");
     }
     return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body("{\"text\":\"This username is already occupied\"}");
+        .body("{\"" + ApiField.TEXT.getValue() + "\":\"" + ApiMessage.USERNAME_OCCUPIED.getValue() + "\"}");
   }
 
   @RequestMapping("/logout-success")
   public String logout() {
-    return "{\"text\":\"You are a stranger now.\"}";
+    return "{\"" + ApiField.TEXT.getValue() + "\":\"" + ApiMessage.USER_NOW_STRANGER.getValue() + "\"}";
   }
 }

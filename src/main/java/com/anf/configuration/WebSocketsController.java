@@ -2,6 +2,7 @@ package com.anf.configuration;
 
 import com.anf.domain.fight.model.NinjaAnimal;
 import com.anf.domain.fight.model.State;
+import com.anf.domain.shared.SpellName;
 import com.anf.model.StompPrincipal;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
@@ -21,7 +22,16 @@ public class WebSocketsController {
   public void notify(String message) {
     if (message.substring(message.length() - 4, message.length()).equals("test")) {
       State state =
-          new State("Attacker", "Victim", "Air Strike", 100, 120, 70, false, false, "nextAttacker");
+          new State(
+              "Attacker",
+              "Victim",
+              SpellName.AIR_STRIKE.getValue(),
+              100,
+              120,
+              70,
+              false,
+              false,
+              "nextAttacker");
       sendFightState(state, message.substring(0, message.length() - 6));
     }
     messagingTemplate.convertAndSend(

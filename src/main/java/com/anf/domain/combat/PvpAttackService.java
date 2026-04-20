@@ -1,6 +1,9 @@
 package com.anf.domain.combat;
 
 import com.anf.domain.fight.model.Attack;
+import com.anf.domain.shared.ErrorCode;
+import com.anf.domain.shared.GameplayConstants;
+import com.anf.domain.shared.SpellName;
 import com.anf.model.database.FightPVP;
 import com.anf.model.database.Spell;
 import com.anf.model.database.SpellKnowledge;
@@ -28,7 +31,7 @@ public class PvpAttackService {
     Attack attack = new Attack();
     FightPVP fight = (FightPVP) fightStateStore.getFight(fightUuid).orElse(null);
     if (fight == null) {
-      attack.setCode(2);
+      attack.setCode(ErrorCode.NOT_FOUND.getValue());
       return attack;
     }
     User attacker = fight.getFighter1();
@@ -37,11 +40,13 @@ public class PvpAttackService {
     boolean userIsTarget = true;
     if (enemyName.length() < 6) {
       userIsTarget = false;
-      if (enemyName.charAt(3) == 0) targetAnimal = fight.getAnimals2().get(0);
+      if (enemyName.charAt(GameplayConstants.ANIMAL_SLOT_MARKER_INDEX) == '0') {
+        targetAnimal = fight.getAnimals2().get(0);
+      }
       else targetAnimal = fight.getAnimals1().get(0);
     }
     if (attacker == null || enemy == null) {
-      attack.setCode(6);
+      attack.setCode(ErrorCode.INVALID_TARGET.getValue());
       return attack;
     }
     if (userIsTarget && enemy.getLogin().equals(attackerName)) {
@@ -52,10 +57,10 @@ public class PvpAttackService {
     int damage;
     int chakra;
     if (userIsTarget)
-      if (!spellName.equalsIgnoreCase("Physical attack")) {
+      if (!SpellName.PHYSICAL_ATTACK.matches(spellName)) {
         Spell spell = spellService.get(spellName);
         if (spell == null) {
-          attack.setCode(8);
+          attack.setCode(ErrorCode.INVALID_REQUEST.getValue());
           return attack;
         }
         SpellKnowledge handling = spellKnowledgeService.getSpellKnowledge(attacker.getCharacter(), spell);
@@ -71,10 +76,10 @@ public class PvpAttackService {
       }
     // animal is a target
     else {
-      if (!spellName.equalsIgnoreCase("Physical attack")) {
+      if (!SpellName.PHYSICAL_ATTACK.matches(spellName)) {
         Spell spell = spellService.get(spellName);
         if (spell == null) {
-          attack.setCode(8);
+          attack.setCode(ErrorCode.INVALID_REQUEST.getValue());
           return attack;
         }
         SpellKnowledge handling = spellKnowledgeService.getSpellKnowledge(attacker.getCharacter(), spell);
@@ -90,8 +95,8 @@ public class PvpAttackService {
       }
     }
     int chakraBurn = 0;
-    if (spellName.equals("Water Strike")) {
-      chakraBurn = damage / 10;
+    if (SpellName.WATER_STRIKE.matches(spellName)) {
+      chakraBurn = damage / GameplayConstants.WATER_STRIKE_CHAKRA_BURN_DIVISOR;
     }
     attack.setDamage(damage);
     attack.setChakra(chakra);
@@ -151,7 +156,8 @@ public class PvpAttackService {
     boolean fightFinished = false;
     if (attack.isDeadly()) {
       if (!userIsTarget) {
-        if (enemyName.charAt(3) == 1) {
+        if (enemyName.charAt(GameplayConstants.ANIMAL_SLOT_MARKER_INDEX)
+            == GameplayConstants.ANIMAL_SLOT_ONE) {
           fight.getAnimals1().clear();
           log.debug("Animal from slot 1 died in fight {}", fightUuid);
         } else {

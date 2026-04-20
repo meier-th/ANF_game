@@ -1,5 +1,9 @@
 package com.anf.domain.fight;
 
+import com.anf.domain.shared.ApiAnswer;
+import com.anf.domain.shared.ApiField;
+import com.anf.domain.shared.ApiMessage;
+import com.anf.domain.shared.ErrorCode;
 import com.anf.infrastructure.state.FightRuntimeFacade;
 import com.anf.infrastructure.state.LobbyStore;
 import com.anf.service.state.proto.GameStateModels.FightMode;
@@ -18,16 +22,21 @@ public class FightLobbyService {
     var parsedMode = parseFightMode(modeRaw);
     if (parsedMode == FightMode.FIGHT_MODE_UNSPECIFIED) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(Map.of("code", 8, "error", "Unsupported fight mode"));
+          .body(
+              Map.of(
+                  ApiField.CODE.getValue(),
+                  ErrorCode.INVALID_REQUEST.getValue(),
+                  ApiField.ERROR.getValue(),
+                  ApiMessage.UNSUPPORTED_FIGHT_MODE.getValue()));
     }
     var lobby = fightRuntimeFacade.createLobby(parsedMode, leader);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             Map.of(
-                "lobbyUuid", lobby.getLobbyUuid(),
-                "fightMode", lobby.getFightMode().name(),
-                "leader", lobby.getLeaderPlayerId(),
-                "players", lobby.getPlayerIdsList()));
+                ApiField.LOBBY_UUID.getValue(), lobby.getLobbyUuid(),
+                ApiField.FIGHT_MODE.getValue(), lobby.getFightMode().name(),
+                ApiField.LEADER.getValue(), lobby.getLeaderPlayerId(),
+                ApiField.PLAYERS.getValue(), lobby.getPlayerIdsList()));
   }
 
   public ResponseEntity<?> getLobby(String lobbyUuid) {
@@ -37,43 +46,79 @@ public class FightLobbyService {
             (lobby) ->
                 ResponseEntity.ok(
                     Map.of(
-                        "lobbyUuid", lobby.getLobbyUuid(),
-                        "fightMode", lobby.getFightMode().name(),
-                        "leader", lobby.getLeaderPlayerId(),
-                        "players", lobby.getPlayerIdsList())))
+                        ApiField.LOBBY_UUID.getValue(), lobby.getLobbyUuid(),
+                        ApiField.FIGHT_MODE.getValue(), lobby.getFightMode().name(),
+                        ApiField.LEADER.getValue(), lobby.getLeaderPlayerId(),
+                        ApiField.PLAYERS.getValue(), lobby.getPlayerIdsList())))
         .orElseGet(
             () ->
                 ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("code", 2, "error", "Lobby doesn't exist")));
+                    .body(
+                        Map.of(
+                            ApiField.CODE.getValue(),
+                            ErrorCode.NOT_FOUND.getValue(),
+                            ApiField.ERROR.getValue(),
+                            ApiMessage.LOBBY_NOT_FOUND.getValue())));
   }
 
   public ResponseEntity<?> joinLobby(String lobbyUuid, String player) {
     var result = fightRuntimeFacade.joinLobby(lobbyUuid, player);
     return switch (result) {
-      case JOINED -> ResponseEntity.ok(Map.of("answer", "OK"));
-      case ALREADY_IN_LOBBY -> ResponseEntity.ok(Map.of("answer", "ALREADY_IN_LOBBY"));
+      case JOINED ->
+          ResponseEntity.ok(Map.of(ApiField.ANSWER.getValue(), ApiAnswer.OK.getValue()));
+      case ALREADY_IN_LOBBY ->
+          ResponseEntity.ok(Map.of(ApiField.ANSWER.getValue(), ApiAnswer.ALREADY_IN_LOBBY.getValue()));
       case LOBBY_FULL ->
-          ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("code", 8, "error", "Lobby is full"));
+          ResponseEntity.status(HttpStatus.BAD_REQUEST)
+              .body(
+                  Map.of(
+                      ApiField.CODE.getValue(),
+                      ErrorCode.INVALID_REQUEST.getValue(),
+                      ApiField.ERROR.getValue(),
+                      ApiMessage.LOBBY_IS_FULL.getValue()));
       case LOBBY_NOT_FOUND ->
           ResponseEntity.status(HttpStatus.NOT_FOUND)
-              .body(Map.of("code", 2, "error", "Lobby doesn't exist"));
+              .body(
+                  Map.of(
+                      ApiField.CODE.getValue(),
+                      ErrorCode.NOT_FOUND.getValue(),
+                      ApiField.ERROR.getValue(),
+                      ApiMessage.LOBBY_NOT_FOUND.getValue()));
       case TRANSACTION_CONFLICT ->
           ResponseEntity.status(HttpStatus.CONFLICT)
-              .body(Map.of("code", 9, "error", "Could not join lobby due to contention"));
+              .body(
+                  Map.of(
+                      ApiField.CODE.getValue(),
+                      ErrorCode.CONFLICT.getValue(),
+                      ApiField.ERROR.getValue(),
+                      ApiMessage.COULD_NOT_JOIN_LOBBY.getValue()));
     };
   }
 
   public ResponseEntity<?> leaveLobby(String lobbyUuid, String player) {
     var result = fightRuntimeFacade.leaveLobby(lobbyUuid, player);
     return switch (result) {
-      case LEFT -> ResponseEntity.ok(Map.of("answer", "LEFT"));
-      case LEFT_AND_LOBBY_CLOSED -> ResponseEntity.ok(Map.of("answer", "LEFT_AND_LOBBY_CLOSED"));
+      case LEFT ->
+          ResponseEntity.ok(Map.of(ApiField.ANSWER.getValue(), ApiAnswer.LEFT.getValue()));
+      case LEFT_AND_LOBBY_CLOSED ->
+          ResponseEntity.ok(
+              Map.of(ApiField.ANSWER.getValue(), ApiAnswer.LEFT_AND_LOBBY_CLOSED.getValue()));
       case PLAYER_NOT_IN_LOBBY ->
           ResponseEntity.status(HttpStatus.BAD_REQUEST)
-              .body(Map.of("code", 8, "error", "Player is not in lobby"));
+              .body(
+                  Map.of(
+                      ApiField.CODE.getValue(),
+                      ErrorCode.INVALID_REQUEST.getValue(),
+                      ApiField.ERROR.getValue(),
+                      ApiMessage.PLAYER_NOT_IN_LOBBY.getValue()));
       case LOBBY_NOT_FOUND ->
           ResponseEntity.status(HttpStatus.NOT_FOUND)
-              .body(Map.of("code", 2, "error", "Lobby doesn't exist"));
+              .body(
+                  Map.of(
+                      ApiField.CODE.getValue(),
+                      ErrorCode.NOT_FOUND.getValue(),
+                      ApiField.ERROR.getValue(),
+                      ApiMessage.LOBBY_NOT_FOUND.getValue()));
     };
   }
 
@@ -85,12 +130,28 @@ public class FightLobbyService {
     return switch (result.status()) {
       case LOBBY_NOT_FOUND ->
           ResponseEntity.status(HttpStatus.NOT_FOUND)
-              .body(Map.of("code", 2, "error", "Lobby doesn't exist"));
+              .body(
+                  Map.of(
+                      ApiField.CODE.getValue(),
+                      ErrorCode.NOT_FOUND.getValue(),
+                      ApiField.ERROR.getValue(),
+                      ApiMessage.LOBBY_NOT_FOUND.getValue()));
       case INVALID_PLAYER_COUNT ->
           ResponseEntity.status(HttpStatus.BAD_REQUEST)
-              .body(Map.of("code", 8, "error", "Invalid number of players for the selected mode"));
+              .body(
+                  Map.of(
+                      ApiField.CODE.getValue(),
+                      ErrorCode.INVALID_REQUEST.getValue(),
+                      ApiField.ERROR.getValue(),
+                      ApiMessage.INVALID_PLAYER_COUNT.getValue()));
       default ->
-          ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("code", 9, "error", "Could not start fight"));
+          ResponseEntity.status(HttpStatus.CONFLICT)
+              .body(
+                  Map.of(
+                      ApiField.CODE.getValue(),
+                      ErrorCode.CONFLICT.getValue(),
+                      ApiField.ERROR.getValue(),
+                      ApiMessage.COULD_NOT_START_FIGHT.getValue()));
     };
   }
 

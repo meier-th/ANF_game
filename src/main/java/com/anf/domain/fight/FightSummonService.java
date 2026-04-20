@@ -3,6 +3,10 @@ package com.anf.domain.fight;
 import com.anf.configuration.WebSocketsController;
 import com.anf.domain.fight.model.NinjaAnimal;
 import com.anf.domain.fight.model.NinjaAnimalRace;
+import com.anf.domain.shared.ApiField;
+import com.anf.domain.shared.ApiMessage;
+import com.anf.domain.shared.ErrorCode;
+import com.anf.domain.shared.GameplayConstants;
 import com.anf.model.database.FightPVP;
 import com.anf.model.database.FightVsAI;
 import com.anf.model.database.User;
@@ -27,15 +31,23 @@ public class FightSummonService {
     FightPVP fight = (FightPVP) fightStateStore.getFight(fightUuid).orElse(null);
     if (fight == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body("{\"code\": 2,\"error\":\"Fight doesn't exist\"}");
+          .body(
+              "{\"code\": "
+                  + ErrorCode.NOT_FOUND.getValue()
+                  + ",\"error\":\"Fight doesn't exist\"}");
     }
     NinjaAnimalRace race = user.getCharacter().getAnimalRace();
     if (race == null) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN)
-          .body("{\"answer\":\"You haven't chosen your animal\"}");
+          .body(
+              "{\""
+                  + ApiField.ANSWER.getValue()
+                  + "\":\""
+                  + ApiMessage.ANIMAL_NOT_CHOSEN.getValue()
+                  + "\"}");
     }
 
-    boolean lvl2 = user.getCharacter().getLevel() >= 10;
+    boolean lvl2 = user.getCharacter().getLevel() >= GameplayConstants.SUMMON_LEVEL_TWO_THRESHOLD;
     String animalName = ninjaAnimalResolverService.animalNameForRace(race, lvl2);
     NinjaAnimal animal = ninjaAnimalResolverService.resolveByAnimalName(animalName);
     animal.prepareForFight();
@@ -55,10 +67,13 @@ public class FightSummonService {
     FightVsAI fight = (FightVsAI) fightStateStore.getFight(fightUuid).orElse(null);
     if (fight == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body("{\"code\": 2,\"error\":\"Fight doesn't exist\"}");
+          .body(
+              "{\"code\": "
+                  + ErrorCode.NOT_FOUND.getValue()
+                  + ",\"error\":\"Fight doesn't exist\"}");
     }
     NinjaAnimalRace race = user.getCharacter().getAnimalRace();
-    boolean lvl2 = user.getCharacter().getLevel() >= 10;
+    boolean lvl2 = user.getCharacter().getLevel() >= GameplayConstants.SUMMON_LEVEL_TWO_THRESHOLD;
     String animalName = ninjaAnimalResolverService.animalNameForRace(race, lvl2);
     NinjaAnimal animal = ninjaAnimalResolverService.resolveByAnimalName(animalName);
     animal.prepareForFight();

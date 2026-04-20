@@ -1,6 +1,7 @@
 package com.anf.domain.fight;
 
 import com.anf.domain.fight.model.NinjaAnimal;
+import com.anf.domain.shared.SpellName;
 import com.anf.model.database.AiFightParticipation;
 import com.anf.model.database.FightVsAI;
 import com.anf.model.database.User;
@@ -82,7 +83,7 @@ public class BossTurnService {
                     fight.getNextAttacker(),
                     deadly,
                     everyoneDied,
-                    "Boss attack",
+                    SpellName.BOSS_ATTACK.getValue(),
                     0,
                     0));
 

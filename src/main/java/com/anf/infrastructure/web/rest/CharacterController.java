@@ -1,6 +1,10 @@
 package com.anf.infrastructure.web.rest;
 
 import com.anf.domain.fight.model.PvpRecord;
+import com.anf.domain.shared.ApiField;
+import com.anf.domain.shared.ApiMessage;
+import com.anf.domain.shared.CharacterUpgradeQuality;
+import com.anf.domain.shared.GameplayConstants;
 import com.anf.model.database.CharacterAppearance;
 import com.anf.model.database.FightPVP;
 import com.anf.model.database.GameCharacter;
@@ -77,7 +81,8 @@ public class CharacterController {
       ch.setAppearance(appearance);
       appearanceServ.addAppearance(appearance);
       charServ.addCharacter(ch);
-      return ResponseEntity.status(HttpStatus.OK).body("{ \"msg\": \"Appearance is created\" }");
+      return ResponseEntity.status(HttpStatus.OK)
+          .body("{ \"" + ApiField.MSG.getValue() + "\": \"" + ApiMessage.APPEARANCE_CREATED.getValue() + "\" }");
     } catch (Throwable error) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
     }
@@ -98,33 +103,40 @@ public class CharacterController {
       User us = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
       if (us.getStats().getUpgradePoints() == 0)
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-            .body("{\"User doesn't have upgrade points.\"}");
+            .body(
+                "{\""
+                    + ApiField.ERROR.getValue()
+                    + "\":\""
+                    + ApiMessage.NO_UPGRADE_POINTS.getValue()
+                    + "\"}");
       GameCharacter ch = us.getCharacter();
-      switch (quality) {
-        case "damage":
+      var parsedQuality = CharacterUpgradeQuality.fromRequest(quality);
+      if (parsedQuality == null) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body("{\"Quality " + quality + " doesn't exist.\"}");
+      }
+      switch (parsedQuality) {
+        case DAMAGE:
           {
-            ch.setPhysicalDamage(ch.getPhysicalDamage() + 4);
+            ch.setPhysicalDamage(ch.getPhysicalDamage() + GameplayConstants.DAMAGE_UPGRADE_INCREMENT);
             break;
           }
-        case "hp":
+        case HP:
           {
-            ch.setMaxHP(ch.getMaxHp() + 15);
+            ch.setMaxHP(ch.getMaxHp() + GameplayConstants.HP_UPGRADE_INCREMENT);
             break;
           }
-        case "resistance":
+        case RESISTANCE:
           {
-            ch.setResistance(ch.getResistance() + (1 - ch.getResistance()) / 4);
+            ch.setResistance(
+                ch.getResistance()
+                    + (1 - ch.getResistance()) / GameplayConstants.RESISTANCE_GROWTH_DIVISOR);
             break;
           }
-        case "chakra":
+        case CHAKRA:
           {
-            ch.setMaxChakraAmount(ch.getMaxChakra() + 7);
+            ch.setMaxChakraAmount(ch.getMaxChakra() + GameplayConstants.CHAKRA_UPGRADE_INCREMENT);
             break;
-          }
-        default:
-          {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("{\"Quality " + quality + " doesn't exist.\"}");
           }
       }
       charServ.addCharacter(ch);
@@ -132,7 +144,13 @@ public class CharacterController {
       stats.setUpgradePoints(stats.getUpgradePoints() - 1);
       statsServ.addStats(stats);
       userServ.saveUserWithoutBCrypt(us);
-      return ResponseEntity.status(HttpStatus.OK).body("{\"answer\":\"Character is updated.\"}");
+      return ResponseEntity.status(HttpStatus.OK)
+          .body(
+              "{\""
+                  + ApiField.ANSWER.getValue()
+                  + "\":\""
+                  + ApiMessage.CHARACTER_UPDATED.getValue()
+                  + "\"}");
     } catch (Throwable error) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error.getMessage());
     }
@@ -257,7 +275,13 @@ public class CharacterController {
       String username = SecurityContextHolder.getContext().getAuthentication().getName();
       onlinePresenceStore.markOnline(username);
       wsController.sendOnline(username + ":online");
-      return ResponseEntity.status(HttpStatus.OK).body("{\"response\":\"ok\"}");
+      return ResponseEntity.status(HttpStatus.OK)
+          .body(
+              "{\""
+                  + ApiField.RESPONSE.getValue()
+                  + "\":\""
+                  + ApiMessage.RESPONSE_OK.getValue()
+                  + "\"}");
     } catch (Throwable exc) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exc.getMessage());
     }
@@ -269,7 +293,13 @@ public class CharacterController {
       String username = SecurityContextHolder.getContext().getAuthentication().getName();
       onlinePresenceStore.markOffline(username);
       wsController.sendOnline(username + ":offline");
-      return ResponseEntity.status(HttpStatus.OK).body("{\"response\":\"ok\"}");
+      return ResponseEntity.status(HttpStatus.OK)
+          .body(
+              "{\""
+                  + ApiField.RESPONSE.getValue()
+                  + "\":\""
+                  + ApiMessage.RESPONSE_OK.getValue()
+                  + "\"}");
     } catch (Throwable exc) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exc.getMessage());
     }

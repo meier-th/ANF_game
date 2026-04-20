@@ -1,5 +1,7 @@
 package com.anf.domain.combat;
 
+import com.anf.domain.shared.GameplayConstants;
+import com.anf.domain.shared.SpellName;
 import com.anf.model.database.Spell;
 import com.anf.model.database.SpellKnowledge;
 import org.springframework.stereotype.Service;
@@ -9,8 +11,12 @@ public class FightDamageService {
 
   public int computeSpellDamage(String spellName, Spell spell, SpellKnowledge handling, float targetResistance) {
     var baseDamage = spell.getBaseDamage() + handling.getSpellLevel() * spell.getDamagePerLevel();
-    var damage = "Air Strike".equals(spellName) ? baseDamage : Math.round(baseDamage * (1 - targetResistance));
-    if ("Fire Strike".equals(spellName) && targetResistance < 0.8f) {
+    var damage =
+        SpellName.AIR_STRIKE.matches(spellName)
+            ? baseDamage
+            : Math.round(baseDamage * (1 - targetResistance));
+    if (SpellName.FIRE_STRIKE.matches(spellName)
+        && targetResistance < GameplayConstants.FIRE_STRIKE_DOUBLE_DAMAGE_RESISTANCE_CAP) {
       damage *= 2;
     }
     return damage;
@@ -26,6 +32,10 @@ public class FightDamageService {
   }
 
   public int computeBossAttackDamage(int tails, float targetResistance) {
-    return (int) Math.round(30 * Math.pow(tails, 1.5) * (1 - targetResistance));
+    return (int)
+        Math.round(
+            GameplayConstants.BOSS_ATTACK_BASE_DAMAGE
+                * Math.pow(tails, GameplayConstants.BOSS_ATTACK_TAILS_POWER)
+                * (1 - targetResistance));
   }
 }

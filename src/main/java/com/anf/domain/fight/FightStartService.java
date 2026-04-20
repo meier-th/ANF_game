@@ -2,6 +2,9 @@ package com.anf.domain.fight;
 
 import com.anf.configuration.WebSocketsController;
 import com.anf.domain.fight.model.Fight;
+import com.anf.domain.shared.ApiField;
+import com.anf.domain.shared.ApiMessage;
+import com.anf.domain.shared.ErrorCode;
 import com.anf.infrastructure.state.FightRuntimeFacade;
 import com.anf.infrastructure.state.FightRuntimeStore;
 import com.anf.service.state.proto.GameStateModels.FightMode;
@@ -28,7 +31,12 @@ public class FightStartService {
     var lobby = fightRuntimeFacade.getLobby(lobbyUuid);
     if (lobby.isEmpty()) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body(Map.of("code", 2, "error", "Lobby doesn't exist"));
+          .body(
+              Map.of(
+                  ApiField.CODE.getValue(),
+                  ErrorCode.NOT_FOUND.getValue(),
+                  ApiField.ERROR.getValue(),
+                  ApiMessage.LOBBY_NOT_FOUND.getValue()));
     }
 
     var result = fightRuntimeFacade.startFightFromLobby(lobbyUuid);
@@ -40,7 +48,8 @@ public class FightStartService {
     if (lobby.get().getFightMode() == FightMode.FIGHT_MODE_PVP) {
       var runtimeFight = fightRuntimeFactoryService.createPvpRuntimeFight(participants);
       if (runtimeFight == null) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"code\": 3}");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body("{ \"code\": " + ErrorCode.CREATION_FAILED.getValue() + "}");
       }
       var fightUuid = result.fight().getFightUuid();
       fightStateStore.saveFight(fightUuid, runtimeFight);
@@ -59,11 +68,17 @@ public class FightStartService {
 
     if (bossName == null || bossName.isBlank()) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(Map.of("code", 8, "error", "bossId is required for PvE fights"));
+          .body(
+              Map.of(
+                  ApiField.CODE.getValue(),
+                  ErrorCode.INVALID_REQUEST.getValue(),
+                  ApiField.ERROR.getValue(),
+                  ApiMessage.PVE_BOSS_ID_REQUIRED.getValue()));
     }
     var runtimeFight = fightRuntimeFactoryService.createPveRuntimeFight(participants, bossName);
     if (runtimeFight == null) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"code\": 3}");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body("{ \"code\": " + ErrorCode.CREATION_FAILED.getValue() + "}");
     }
 
     var fightUuid = result.fight().getFightUuid();
@@ -83,6 +98,13 @@ public class FightStartService {
   private ResponseEntity<?> buildCreatedResponse(String fightUuid, String fightMode, java.util.List<String> participants) {
     return ResponseEntity.status(HttpStatus.CREATED)
         .header(HttpHeaders.LOCATION, "/fight/" + fightUuid)
-        .body(Map.of("fightUuid", fightUuid, "fightMode", fightMode, "participants", participants));
+        .body(
+            Map.of(
+                ApiField.FIGHT_UUID.getValue(),
+                fightUuid,
+                ApiField.FIGHT_MODE.getValue(),
+                fightMode,
+                ApiField.PARTICIPANTS.getValue(),
+                participants));
   }
 }

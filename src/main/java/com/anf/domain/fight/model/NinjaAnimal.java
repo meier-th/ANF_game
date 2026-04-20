@@ -1,5 +1,7 @@
 package com.anf.domain.fight.model;
 
+import com.anf.domain.shared.GameplayConstants;
+import com.anf.domain.shared.NinjaAnimalDefinition;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import java.io.Serializable;
@@ -10,22 +12,15 @@ public class NinjaAnimal extends Creature implements Serializable {
   public static final ArrayList<NinjaAnimal> animals = new ArrayList<>();
 
   static {
-    NinjaAnimal veseliba1 = new NinjaAnimal("Vertet", NinjaAnimalRace.Veseliba, 10, 200, 1);
-    NinjaAnimal veseliba2 = new NinjaAnimal("Ubele", NinjaAnimalRace.Veseliba, 35, 500, 10);
-    NinjaAnimal bojajumus1 = new NinjaAnimal("Lauva", NinjaAnimalRace.Bojajumus, 30, 50, 1);
-    NinjaAnimal bojajumus2 = new NinjaAnimal("Lusis", NinjaAnimalRace.Bojajumus, 120, 150, 10);
-    NinjaAnimal lidzsvaru1 = new NinjaAnimal("Erglis", NinjaAnimalRace.Lidzsvaru, 20, 100, 1);
-    NinjaAnimal lidzsvaru2 = new NinjaAnimal("Lapsa", NinjaAnimalRace.Lidzsvaru, 70, 250, 10);
-    NinjaAnimal rodstvennik1 = new NinjaAnimal("Тётя Срака", NinjaAnimalRace.Bugurt, 18, 250, 1);
-    NinjaAnimal rodstvennik2 = new NinjaAnimal("Дядя Бафомет", NinjaAnimalRace.Bugurt, 55, 370, 10);
-    animals.add(veseliba1);
-    animals.add(veseliba2);
-    animals.add(bojajumus1);
-    animals.add(bojajumus2);
-    animals.add(lidzsvaru1);
-    animals.add(lidzsvaru2);
-    animals.add(rodstvennik1);
-    animals.add(rodstvennik2);
+    for (var definition : NinjaAnimalDefinition.values()) {
+      animals.add(
+          new NinjaAnimal(
+              definition.getName(),
+              definition.getRace(),
+              definition.getDamage(),
+              definition.getMaxHp(),
+              definition.getRequiredLevel()));
+    }
   }
 
   private final String name;
@@ -79,7 +74,7 @@ public class NinjaAnimal extends Creature implements Serializable {
 
   @Override
   public float getResistance() {
-    return 0.0f;
+    return GameplayConstants.NO_RESISTANCE;
   }
 
   @Override

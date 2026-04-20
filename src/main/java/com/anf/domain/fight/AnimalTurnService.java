@@ -1,6 +1,7 @@
 package com.anf.domain.fight;
 
 import com.anf.domain.fight.model.NinjaAnimal;
+import com.anf.domain.shared.SpellName;
 import com.anf.model.database.AiFightParticipation;
 import com.anf.model.database.Boss;
 import com.anf.model.database.FightPVP;
@@ -61,7 +62,7 @@ public class AnimalTurnService {
         fight.getNextAttacker(),
         deadly,
         finish,
-        "Physical attack",
+        SpellName.PHYSICAL_ATTACK.getValue(),
         0,
         0);
     fightStateNotifier.sendAfterAttack(
@@ -72,7 +73,7 @@ public class AnimalTurnService {
         fight.getNextAttacker(),
         deadly,
         finish,
-        "Physical attack",
+        SpellName.PHYSICAL_ATTACK.getValue(),
         0,
         0);
     if (deadly && !finish) {
@@ -117,7 +118,7 @@ public class AnimalTurnService {
                     fight.getNextAttacker(),
                     dead,
                     dead,
-                    "Physical attack",
+                    SpellName.PHYSICAL_ATTACK.getValue(),
                     0,
                     0));
     if (deadly) {

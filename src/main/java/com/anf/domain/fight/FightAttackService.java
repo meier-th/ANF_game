@@ -2,6 +2,8 @@ package com.anf.domain.fight;
 
 import com.anf.domain.fight.model.Attack;
 import com.anf.domain.fight.model.Fight;
+import com.anf.domain.shared.ApiField;
+import com.anf.domain.shared.ErrorCode;
 import com.anf.model.database.FightPVP;
 import com.anf.infrastructure.state.FightRuntimeStore;
 import java.util.function.Function;
@@ -24,18 +26,20 @@ public class FightAttackService {
       Function<AttackContext, Attack> pveAttack,
       Runnable scheduleNextTurn) {
     if (!fightSnapshotService.hasProtobufState(context.fightUuid())) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\n\"code\": 2\n}");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body("{\n\"" + ApiField.CODE.getValue() + "\": " + ErrorCode.NOT_FOUND.getValue() + "\n}");
     }
 
     Fight fight = fightStateStore.getFight(context.fightUuid()).orElse(null);
     if (fight == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body("{\n\"code\": 2\n}"); // code 2 means fight doesn't exist
+          .body("{\n\"" + ApiField.CODE.getValue() + "\": " + ErrorCode.NOT_FOUND.getValue() + "\n}");
     }
 
     if (!fightSnapshotService.isCurrentAttacker(
         context.fightUuid(), context.attackerName(), fight.getCurrentAttacker(0))) {
-      return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"code\": 10}"); // 10 - not your turn
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body("{\"" + ApiField.CODE.getValue() + "\": " + ErrorCode.FORBIDDEN.getValue() + "}");
     }
 
     Attack attack = fight instanceof FightPVP ? pvpAttack.apply(context) : pveAttack.apply(context);

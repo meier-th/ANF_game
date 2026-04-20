@@ -1,6 +1,8 @@
 package com.anf.infrastructure.web.rest;
 
 import com.anf.domain.fight.model.Fight;
+import com.anf.domain.shared.ApiField;
+import com.anf.domain.shared.ErrorCode;
 import com.anf.domain.fight.FightAttackService;
 import com.anf.domain.fight.FightSnapshotService;
 import com.anf.domain.fight.FightSummonService;
@@ -33,12 +35,13 @@ public class FightMovesController {
   @PostMapping("info")
   public ResponseEntity info(@RequestParam String fightUuid) {
     if (!fightSnapshotService.hasProtobufState(fightUuid)) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\n\"code\": 2\n}");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body("{\n\"" + ApiField.CODE.getValue() + "\": " + ErrorCode.NOT_FOUND.getValue() + "\n}");
     }
     Fight fight = fightStateStore.getFight(fightUuid).orElse(null);
     if (fight == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body("{\n\"code\": 2\n}"); // code 2 means fight doesn't exist
+          .body("{\n\"" + ApiField.CODE.getValue() + "\": " + ErrorCode.NOT_FOUND.getValue() + "\n}");
     }
     var turnStartedAt = fightSnapshotService.currentTurnStartedAt(fightUuid);
     if (turnStartedAt > 0) {
