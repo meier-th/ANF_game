@@ -17,11 +17,12 @@ public class SpellKnowledge {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "handling_id")
   private int spellKnowledgeId;
 
   /** Character */
   @ManyToOne
-  @JoinColumn(name = "character", nullable = false)
+  @JoinColumn(name = "character_id", nullable = false)
   @JsonIgnore
   private GameCharacter characterHandler;
 

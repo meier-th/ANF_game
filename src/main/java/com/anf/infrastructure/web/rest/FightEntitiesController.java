@@ -157,9 +157,6 @@ public class FightEntitiesController {
       User user =
           userService.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
       GameCharacter ch = user.getCharacter();
-      if (ch.getAnimalRace() != null)
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-            .body("\"User can not change his character's ninja animal's race.\"");
       try {
         NinjaAnimalRace.valueOf(racename);
       } catch (IllegalArgumentException exc) {
@@ -168,7 +165,7 @@ public class FightEntitiesController {
       NinjaAnimalRace race = NinjaAnimalRace.valueOf(racename);
       ch.setAnimalRace(race);
       charService.addCharacter(ch);
-      return ResponseEntity.status(HttpStatus.CREATED).body("\"Animal race is set for user.\"");
+      return ResponseEntity.status(HttpStatus.OK).body("\"Animal race is set for user.\"");
     } catch (Throwable error) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body("\"" + error.getMessage() + "\"");

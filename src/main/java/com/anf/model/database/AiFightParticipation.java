@@ -25,6 +25,7 @@ public class AiFightParticipation {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "fidentity")
   private int fIdentity;
 
   @ManyToOne(fetch = FetchType.EAGER)

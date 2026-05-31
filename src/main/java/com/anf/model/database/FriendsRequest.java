@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Column;
 
 @Entity
 @Table(name = "friend_requests")
@@ -14,10 +15,11 @@ public class FriendsRequest {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "request_id")
   public int request_id;
 
   @ManyToOne
-  @JoinColumn(name = "friend_request", nullable = false)
+  @JoinColumn(name = "friend_user", nullable = false)
   User friendUser;
 
   @ManyToOne
