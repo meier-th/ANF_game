@@ -31,6 +31,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-websocket")
   implementation("org.springframework.boot:spring-boot-starter-security-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-data-redis")
+  implementation("com.fasterxml.jackson.core:jackson-databind")
   implementation("com.google.protobuf:protobuf-java:4.31.1")
 
   // Database

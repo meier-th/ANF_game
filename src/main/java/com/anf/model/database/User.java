@@ -76,7 +76,7 @@ public class User implements Serializable {
       cascade = {CascadeType.PERSIST, CascadeType.MERGE},
       fetch = FetchType.EAGER)
   @JoinTable(
-      name = "user_role",
+      name = "user_roles",
       joinColumns = @JoinColumn(name = "login"),
       inverseJoinColumns = @JoinColumn(name = "role"))
   private Set<Role> roles;

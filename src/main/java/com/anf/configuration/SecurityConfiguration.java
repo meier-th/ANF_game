@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -41,7 +42,7 @@ public class SecurityConfiguration {
   public UserDetailsService userDetailsService() {
     var manager = new JdbcUserDetailsManager(dataSource);
     manager.setUsersByUsernameQuery("select login, password, true from users where login=?");
-    manager.setAuthoritiesByUsernameQuery("select login, role from user_role where login=?");
+    manager.setAuthoritiesByUsernameQuery("select login, role from user_roles where login=?");
     return manager;
   }
 
@@ -56,7 +57,7 @@ public class SecurityConfiguration {
   public CorsConfigurationSource corsConfigurationSource() {
     var config = new CorsConfiguration();
     config.setAllowedOriginPatterns(List.of("*"));
-    config.setAllowedMethods(List.of("POST", "GET", "DELETE"));
+    config.setAllowedMethods(List.of("OPTIONS", "POST", "GET", "DELETE"));
     config.setAllowCredentials(true);
     config.setAllowedHeaders(List.of("*"));
     var source = new UrlBasedCorsConfigurationSource();
@@ -71,17 +72,21 @@ public class SecurityConfiguration {
         .exceptionHandling(ex -> ex.authenticationEntryPoint(restAuthenticationEntryPoint))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers(
+                auth
+                    .requestMatchers(HttpMethod.OPTIONS, "/**")
+                    .permitAll()
+                    .requestMatchers(
+                        "/",
                         "/checkCookies",
                         "/registration",
                         "/confirm",
+                        "/logout-success",
                         "/oauth2/**",
-                        "/login/oauth2/code/google")
+                        "/login/**",
+                        "/error")
                     .permitAll()
                     .requestMatchers("/admin/**")
                     .hasRole("ADMIN")
-                    .requestMatchers("/")
-                    .permitAll()
                     .anyRequest()
                     .authenticated())
         .formLogin(form -> form.successHandler(successHandler).failureHandler(FAILURE_HANDLER))

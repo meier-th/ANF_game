@@ -3,6 +3,7 @@ package com.anf.model.database;
 import com.anf.domain.fight.model.Creature;
 import com.anf.domain.fight.model.NinjaAnimalRace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -106,6 +107,7 @@ public class GameCharacter extends Creature implements Serializable {
   }
 
   /** The maximum amount of HP */
+  @Column(name = "max_hp")
   private int maxHP;
 
   /** The damage of a physical attack */

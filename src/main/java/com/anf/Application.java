@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-@EntityScan("com.anf.model")
-@EnableJpaRepositories("com.anf.repository")
+@EntityScan("com.anf.model.database")
+@EnableJpaRepositories("com.anf.infrastructure.persistence.repository")
 @EnableScheduling
 public class Application {
 
