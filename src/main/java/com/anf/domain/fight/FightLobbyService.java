@@ -5,7 +5,6 @@ import com.anf.domain.shared.ApiField;
 import com.anf.domain.shared.ApiMessage;
 import com.anf.domain.shared.ErrorCode;
 import com.anf.infrastructure.state.FightRuntimeFacade;
-import com.anf.infrastructure.state.LobbyStore;
 import com.anf.service.state.proto.GameStateModels.FightMode;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -59,6 +58,44 @@ public class FightLobbyService {
                             ErrorCode.NOT_FOUND.getValue(),
                             ApiField.ERROR.getValue(),
                             ApiMessage.LOBBY_NOT_FOUND.getValue())));
+  }
+
+  public ResponseEntity<?> listLobbies(String modeRaw) {
+    var parsedMode = parseFightMode(modeRaw);
+    if (modeRaw != null && parsedMode == FightMode.FIGHT_MODE_UNSPECIFIED) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(
+              Map.of(
+                  ApiField.CODE.getValue(),
+                  ErrorCode.INVALID_REQUEST.getValue(),
+                  ApiField.ERROR.getValue(),
+                  ApiMessage.UNSUPPORTED_FIGHT_MODE.getValue()));
+    }
+    var lobbies = fightRuntimeFacade.listLobbies(parsedMode);
+    var response =
+        lobbies.stream()
+            .map(
+                (lobby) -> {
+                  var capacity = modeCapacity(lobby.getFightMode());
+                  var playersCount = lobby.getPlayerIdsCount();
+                  return Map.of(
+                      ApiField.LOBBY_UUID.getValue(),
+                      lobby.getLobbyUuid(),
+                      ApiField.FIGHT_MODE.getValue(),
+                      lobby.getFightMode().name(),
+                      ApiField.LEADER.getValue(),
+                      lobby.getLeaderPlayerId(),
+                      ApiField.PLAYERS.getValue(),
+                      lobby.getPlayerIdsList(),
+                      "playerCount",
+                      playersCount,
+                      "capacity",
+                      capacity,
+                      "availableSlots",
+                      Math.max(0, capacity - playersCount));
+                })
+            .toList();
+    return ResponseEntity.ok(Map.of("lobbies", response));
   }
 
   public ResponseEntity<?> joinLobby(String lobbyUuid, String player) {
@@ -165,6 +202,15 @@ public class FightLobbyService {
       case "SOLO_PVE", "SOLOPVE", "FIGHT_MODE_SOLO_PVE" -> FightMode.FIGHT_MODE_SOLO_PVE;
       case "TEAM_PVE", "TEAMPVE", "FIGHT_MODE_TEAM_PVE" -> FightMode.FIGHT_MODE_TEAM_PVE;
       default -> FightMode.FIGHT_MODE_UNSPECIFIED;
+    };
+  }
+
+  private int modeCapacity(FightMode mode) {
+    return switch (mode) {
+      case FIGHT_MODE_PVP -> 2;
+      case FIGHT_MODE_SOLO_PVE -> 1;
+      case FIGHT_MODE_TEAM_PVE -> 4;
+      default -> 0;
     };
   }
 }

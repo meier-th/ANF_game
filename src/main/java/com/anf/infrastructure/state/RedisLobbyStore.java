@@ -1,16 +1,21 @@
 package com.anf.infrastructure.state;
 
 import com.anf.service.state.proto.GameStateModels.FightMode;
+import com.anf.service.state.proto.GameStateModels.CacheKey;
 import com.anf.service.state.proto.GameStateModels.Lobby;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisOperations;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -41,6 +46,43 @@ public class RedisLobbyStore implements LobbyStore {
     } catch (InvalidProtocolBufferException ex) {
       throw new IllegalStateException("Invalid lobby payload", ex);
     }
+  }
+
+  @Override
+  public List<Lobby> listLobbies(FightMode mode) {
+    return redisTemplate.execute(
+        (RedisCallback<List<Lobby>>)
+            (connection) -> {
+              var lobbies = new ArrayList<Lobby>();
+              try (var cursor = connection.scan(ScanOptions.scanOptions().count(1000).build())) {
+                while (cursor.hasNext()) {
+                  var key = cursor.next();
+                  CacheKey cacheKey;
+                  try {
+                    cacheKey = CacheKey.parseFrom(key);
+                  } catch (InvalidProtocolBufferException ex) {
+                    continue;
+                  }
+                  if (cacheKey.getDataset() != CacheKey.Dataset.DATASET_LOBBY) {
+                    continue;
+                  }
+                  var payload = connection.get(key);
+                  if (payload == null) {
+                    continue;
+                  }
+                  Lobby lobby;
+                  try {
+                    lobby = Lobby.parseFrom(payload);
+                  } catch (InvalidProtocolBufferException ex) {
+                    continue;
+                  }
+                  if (mode == null || mode == FightMode.FIGHT_MODE_UNSPECIFIED || lobby.getFightMode() == mode) {
+                    lobbies.add(lobby);
+                  }
+                }
+              }
+              return lobbies;
+            });
   }
 
   @Override

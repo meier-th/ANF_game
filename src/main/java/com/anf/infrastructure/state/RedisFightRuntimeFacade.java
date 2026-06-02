@@ -5,6 +5,7 @@ import com.anf.service.state.proto.GameStateModels.Fight;
 import com.anf.service.state.proto.GameStateModels.FightMode;
 import com.anf.service.state.proto.GameStateModels.FightState;
 import com.anf.service.state.proto.GameStateModels.Lobby;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -37,6 +38,11 @@ public class RedisFightRuntimeFacade implements FightRuntimeFacade {
   @Override
   public Optional<Lobby> getLobby(String lobbyUuid) {
     return lobbyStore.getLobby(lobbyUuid);
+  }
+
+  @Override
+  public List<Lobby> listLobbies(FightMode mode) {
+    return lobbyStore.listLobbies(mode);
   }
 
   @Override

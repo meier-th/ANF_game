@@ -1,6 +1,8 @@
 package com.anf.infrastructure.state;
 
 import com.anf.service.state.proto.GameStateModels.Lobby;
+import com.anf.service.state.proto.GameStateModels.FightMode;
+import java.util.List;
 import java.util.Optional;
 
 public interface LobbyStore {
@@ -24,6 +26,8 @@ public interface LobbyStore {
   void createLobby(Lobby lobby);
 
   Optional<Lobby> getLobby(String lobbyUuid);
+
+  List<Lobby> listLobbies(FightMode mode);
 
   LobbyJoinResult joinLobby(String lobbyUuid, String playerId);
 

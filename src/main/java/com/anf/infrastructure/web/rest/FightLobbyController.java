@@ -34,6 +34,12 @@ public class FightLobbyController {
     return fightLobbyService.getLobby(lobbyUuid);
   }
 
+  @GetMapping("/lobbies")
+  public ResponseEntity<?> listLobbies(
+      @RequestParam(name = "mode", required = false) String mode) {
+    return fightLobbyService.listLobbies(mode);
+  }
+
   @PostMapping("/lobbies/{lobbyUuid}/join")
   public ResponseEntity<?> joinLobby(@PathVariable String lobbyUuid) {
     var player = SecurityContextHolder.getContext().getAuthentication().getName();

@@ -4,6 +4,7 @@ import com.anf.service.state.proto.GameStateModels.Fight;
 import com.anf.service.state.proto.GameStateModels.FightMode;
 import com.anf.service.state.proto.GameStateModels.FightState;
 import com.anf.service.state.proto.GameStateModels.Lobby;
+import java.util.List;
 import java.util.Optional;
 
 public interface FightRuntimeFacade {
@@ -19,6 +20,8 @@ public interface FightRuntimeFacade {
   Lobby createLobby(FightMode mode, String leaderPlayerId);
 
   Optional<Lobby> getLobby(String lobbyUuid);
+
+  List<Lobby> listLobbies(FightMode mode);
 
   LobbyStore.LobbyJoinResult joinLobby(String lobbyUuid, String playerId);
 
