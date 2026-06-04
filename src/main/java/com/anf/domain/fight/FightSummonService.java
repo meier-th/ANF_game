@@ -53,9 +53,11 @@ public class FightSummonService {
     animal.prepareForFight();
     if (fight.getFighter1().getLogin().equals(username)) {
       fight.getAnimals1().add(animal);
+      webSocketsController.sendSummon(fight.getFighter1().getLogin(), username, animal, animalName);
       webSocketsController.sendSummon(fight.getFighter2().getLogin(), username, animal, animalName);
     } else {
       fight.getAnimals2().add(animal);
+      webSocketsController.sendSummon(fight.getFighter2().getLogin(), username, animal, animalName);
       webSocketsController.sendSummon(fight.getFighter1().getLogin(), username, animal, animalName);
     }
     fightStateStore.saveFight(fightUuid, fight);
@@ -81,12 +83,9 @@ public class FightSummonService {
     fight
         .getSetFighters()
         .forEach(
-            (set) -> {
-              if (!set.getFighter().getUser().getLogin().equals(username)) {
+            (set) ->
                 webSocketsController.sendSummon(
-                    set.getFighter().getUser().getLogin(), username, animal, animalName);
-              }
-            });
+                    set.getFighter().getUser().getLogin(), username, animal, animalName));
     fightStateStore.saveFight(fightUuid, fight);
     return ResponseEntity.ok(animal.toString());
   }

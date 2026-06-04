@@ -2,6 +2,8 @@ package com.anf.domain.fight.model;
 
 import com.anf.domain.shared.GameplayConstants;
 import com.anf.domain.shared.NinjaAnimalDefinition;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import java.io.Serializable;
@@ -59,7 +61,13 @@ public class NinjaAnimal extends Creature implements Serializable {
     return race;
   }
 
-  private NinjaAnimal(String name, NinjaAnimalRace race, int damage, int hp, int reqlevel) {
+  @JsonCreator
+  public NinjaAnimal(
+      @JsonProperty("name") String name,
+      @JsonProperty("race") NinjaAnimalRace race,
+      @JsonProperty("damage") int damage,
+      @JsonProperty("maxHP") int hp,
+      @JsonProperty("requiredLevel") int reqlevel) {
     this.damage = damage;
     this.maxHP = hp;
     this.name = name;

@@ -1,6 +1,7 @@
 package com.anf.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,6 +16,7 @@ import tools.jackson.databind.ObjectMapper;
 /** Represents Stats entity. Used to operate on users' statistic data. */
 @Entity
 @Table(name = "statistics")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Stats {
 
   /** Rating of a user */
@@ -26,6 +28,7 @@ public class Stats {
   @JsonIgnore
   private User user;
 
+  @JsonIgnore
   public String getLogin() {
     return user.getLogin();
   }

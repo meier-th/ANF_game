@@ -61,7 +61,8 @@ public class FightStartService {
           requester.equals(runtimeFight.getFighter1().getLogin())
               ? runtimeFight.getFighter2().getLogin()
               : runtimeFight.getFighter1().getLogin();
-      webSocketsController.sendStart(requester, opponent, fightUuid);
+      webSocketsController.sendStart(
+          requester, opponent, fightUuid, result.fight().getFightMode().name());
       onFirstTurn.accept(runtimeFight, fightUuid);
       return buildCreatedResponse(fightUuid, result.fight().getFightMode().name(), result.fight().getParticipantUuidsList());
     }
@@ -88,7 +89,8 @@ public class FightStartService {
     participants.forEach(
         (user) -> {
           if (!user.equals(requester)) {
-            webSocketsController.sendStart(requester, user, fightUuid);
+            webSocketsController.sendStart(
+                requester, user, fightUuid, result.fight().getFightMode().name());
           }
         });
     onFirstTurn.accept(runtimeFight, fightUuid);

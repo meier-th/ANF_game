@@ -28,7 +28,8 @@ class NinjaAnimalResolverServiceTest {
 
   @Test
   void animalNameForRace_returnsExpectedMapping() {
-    assertThat(resolverService.animalNameForRace(NinjaAnimalRace.Bugurt, true)).isEqualTo("Дядя Бафомет");
+    assertThat(resolverService.animalNameForRace(NinjaAnimalRace.Bugurt, true))
+        .isEqualTo("Uncle Baphomet");
     assertThat(resolverService.animalNameForRace(NinjaAnimalRace.Veseliba, false)).isEqualTo("Vertet");
     assertThat(resolverService.animalNameForRace(NinjaAnimalRace.Lidzsvaru, true)).isEqualTo("Lapsa");
   }

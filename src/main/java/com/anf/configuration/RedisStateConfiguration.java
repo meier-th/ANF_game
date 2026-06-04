@@ -1,5 +1,10 @@
 package com.anf.configuration;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -15,7 +20,13 @@ public class RedisStateConfiguration {
   public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
     var redisTemplate = new RedisTemplate<String, Object>();
     var stringSerializer = new StringRedisSerializer();
-    var valueSerializer = new GenericJackson2JsonRedisSerializer();
+    var mapper =
+        JsonMapper.builder().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build();
+    mapper.activateDefaultTyping(
+        LaissezFaireSubTypeValidator.instance,
+        ObjectMapper.DefaultTyping.NON_FINAL,
+        JsonTypeInfo.As.PROPERTY);
+    var valueSerializer = new GenericJackson2JsonRedisSerializer(mapper);
     redisTemplate.setConnectionFactory(connectionFactory);
     redisTemplate.setKeySerializer(stringSerializer);
     redisTemplate.setHashKeySerializer(stringSerializer);

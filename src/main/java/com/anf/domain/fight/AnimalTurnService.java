@@ -25,9 +25,20 @@ public class AnimalTurnService {
   private final FightStatsUpdateService fightStatsUpdateService;
 
   public void handleAnimalPvpAttack(FightPVP fight, String fightUuid, Runnable scheduleNextTurn) {
-    String animName = fight.getCurrentAttacker(0).substring(0, 3);
-    boolean fromAnimals1 = animName.charAt(3) == '1';
+    String attackerToken = fight.getCurrentAttacker(0);
+    if (attackerToken == null || attackerToken.length() < 3) {
+      log.warn("Invalid animal attacker token '{}' for fight {}", attackerToken, fightUuid);
+      scheduleNextTurn.run();
+      return;
+    }
+    String animName = attackerToken.substring(0, 3);
+    boolean fromAnimals1 = attackerToken.length() > 3 && attackerToken.charAt(3) == '1';
     NinjaAnimal attacker = ninjaAnimalResolverService.resolveByPvePvpAttackerToken(animName);
+    if (attacker == null) {
+      log.warn("Animal attacker '{}' could not be resolved in fight {}", attackerToken, fightUuid);
+      scheduleNextTurn.run();
+      return;
+    }
     User target;
     NinjaAnimal targetAnimal;
     boolean targetUser;
@@ -35,12 +46,12 @@ public class AnimalTurnService {
       int targetNum = (int) Math.round(Math.random() * fight.getAnimals1().size());
       targetUser = targetNum == 0;
       target = targetUser ? fight.getFighter1() : null;
-      targetAnimal = targetUser ? null : fight.getAnimals1().get(targetNum - fight.getAnimals1().size());
+      targetAnimal = targetUser ? null : fight.getAnimals1().get(targetNum - 1);
     } else {
       int targetNum = (int) Math.round(Math.random() * fight.getAnimals2().size());
       targetUser = targetNum == 0;
       target = targetUser ? fight.getFighter2() : null;
-      targetAnimal = targetUser ? null : fight.getAnimals2().get(targetNum - fight.getAnimals2().size());
+      targetAnimal = targetUser ? null : fight.getAnimals2().get(targetNum - 1);
     }
     boolean deadly = false;
     int damage = attacker.getDamage();

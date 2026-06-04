@@ -4,9 +4,12 @@ import com.anf.model.database.FightPVP;
 import com.anf.model.database.FightVsAI;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.ArrayList;
 
 /** Represents statistics during a fight */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Fight {
 
   public Fight() {
@@ -65,8 +68,25 @@ public class Fight {
 
   public void switchAttacker() {
     if (this instanceof FightPVP) {
-      currentAttacker = (currentAttacker + 1) % (2 + animals1.size() + animals2.size());
-      // 0 - first, 1 - second, 2 - animals1[0], 3 - animals2[0]
+      var turnSlots = 0;
+      if (fighter1 != null) {
+        turnSlots++;
+      }
+      if (fighter2 != null) {
+        turnSlots++;
+      }
+      if (!animals1.isEmpty()) {
+        turnSlots++;
+      }
+      if (!animals2.isEmpty()) {
+        turnSlots++;
+      }
+      if (turnSlots == 0) {
+        currentAttacker = -1;
+        currentName = "";
+        return;
+      }
+      currentAttacker = Math.floorMod(currentAttacker + 1, turnSlots);
     } else {
       currentAttacker = (currentAttacker + 1) % (fighters.size() + animals1.size() + 1);
       // 0-4 fighters[i], 5 - boss, 6-10 - animals1[i]
@@ -76,26 +96,30 @@ public class Fight {
 
   public String getCurrentAttacker(int offset) {
     if (this instanceof FightPVP) {
-      switch ((currentAttacker + offset) % (2 + animals1.size() + animals2.size())) {
-        case 0:
-          return fighter1.getLogin();
-
-        case 1:
-          return fighter2.getLogin();
-
-        case 2:
-          return animals1.get(0).getName().substring(0, 3) + '1';
-
-        case 3:
-          return animals2.get(0).getName().substring(0, 3) + '0';
+      var order = new ArrayList<String>();
+      if (fighter1 != null) {
+        order.add(fighter1.getLogin());
       }
+      if (fighter2 != null) {
+        order.add(fighter2.getLogin());
+      }
+      if (!animals1.isEmpty()) {
+        order.add(animals1.get(0).getName().substring(0, 3) + '1');
+      }
+      if (!animals2.isEmpty()) {
+        order.add(animals2.get(0).getName().substring(0, 3) + '0');
+      }
+      if (order.isEmpty()) {
+        return "";
+      }
+      return order.get(Math.floorMod(currentAttacker + offset, order.size()));
     } else {
       if ((currentAttacker + offset) % (1 + animals1.size() + fighters.size()) < fighters.size()) {
         return fighters
             .get((currentAttacker + offset) % (1 + animals1.size() + fighters.size()))
             .getLogin();
       }
-      if ((currentAttacker + offset) % (1 + fighters.size() + animals2.size()) == fighters.size()) {
+      if ((currentAttacker + offset) % (1 + fighters.size() + animals1.size()) == fighters.size()) {
         return String.valueOf(((FightVsAI) this).getBoss().getNumberOfTails());
       } else {
         return animals1
@@ -107,9 +131,9 @@ public class Fight {
             .substring(0, 3);
       }
     }
-    return null;
   }
 
+  @JsonIgnore
   public String getNextAttacker() {
     return getCurrentAttacker(1);
   }
@@ -124,5 +148,13 @@ public class Fight {
 
   public ArrayList<NinjaAnimal> getAnimals2() {
     return animals2;
+  }
+
+  public int getCurrentAttackerIndex() {
+    return currentAttacker;
+  }
+
+  public void setCurrentAttackerIndex(int currentAttacker) {
+    this.currentAttacker = currentAttacker;
   }
 }

@@ -1,6 +1,7 @@
 package com.anf.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import tools.jackson.core.JacksonException;
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Entity
 @Table(name = "users")
 @Slf4j
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class User implements Serializable {
 
   /** User's login */
@@ -75,6 +77,7 @@ public class User implements Serializable {
   @ManyToMany(
       cascade = {CascadeType.PERSIST, CascadeType.MERGE},
       fetch = FetchType.EAGER)
+  @JsonIgnore
   @JoinTable(
       name = "user_roles",
       joinColumns = @JoinColumn(name = "login"),

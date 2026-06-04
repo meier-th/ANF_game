@@ -14,8 +14,8 @@ public enum NinjaAnimalDefinition {
   BOJAJUMUS_TIER_2("Lusis", NinjaAnimalRace.Bojajumus, "Lus", 120, 150, 10),
   LIDZSVARU_TIER_1("Erglis", NinjaAnimalRace.Lidzsvaru, "Erg", 20, 100, 1),
   LIDZSVARU_TIER_2("Lapsa", NinjaAnimalRace.Lidzsvaru, "Lap", 70, 250, 10),
-  BUGURT_TIER_1("Тётя Срака", NinjaAnimalRace.Bugurt, "Тёт", 18, 250, 1),
-  BUGURT_TIER_2("Дядя Бафомет", NinjaAnimalRace.Bugurt, "Дяд", 55, 370, 10);
+  BUGURT_TIER_1("Auntie Ass", NinjaAnimalRace.Bugurt, "Aun", 18, 250, 1),
+  BUGURT_TIER_2("Uncle Baphomet", NinjaAnimalRace.Bugurt, "Unc", 55, 370, 10);
 
   private final String name;
   private final NinjaAnimalRace race;

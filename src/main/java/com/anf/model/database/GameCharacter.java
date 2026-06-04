@@ -3,6 +3,7 @@ package com.anf.model.database;
 import com.anf.domain.fight.model.Creature;
 import com.anf.domain.fight.model.NinjaAnimalRace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -26,6 +27,7 @@ import tools.jackson.databind.ObjectMapper;
 /** Represents Person entity Used to operate on in-game character's properties */
 @Entity
 @Table(name = "game_characters")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class GameCharacter extends Creature implements Serializable {
 
   /** The date of creating a character */
@@ -36,6 +38,7 @@ public class GameCharacter extends Creature implements Serializable {
   private NinjaAnimalRace animalRace;
 
   @OneToMany(mappedBy = "fighter", fetch = FetchType.LAZY)
+  @JsonIgnore
   private List<AiFightParticipation> fights;
 
   public NinjaAnimalRace getAnimalRace() {
@@ -47,6 +50,7 @@ public class GameCharacter extends Creature implements Serializable {
   }
 
   @OneToMany(mappedBy = "characterHandler")
+  @JsonIgnore
   private List<SpellKnowledge> spellsKnown;
 
   public List<SpellKnowledge> getSpellsKnown() {
@@ -210,6 +214,7 @@ public class GameCharacter extends Creature implements Serializable {
   }
 
   @Override
+  @JsonIgnore
   public int getLevel() {
     return user.getStats().getLevel();
   }

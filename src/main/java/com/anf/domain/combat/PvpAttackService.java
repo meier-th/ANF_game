@@ -38,12 +38,43 @@ public class PvpAttackService {
     User enemy = fight.getFighter2();
     com.anf.domain.fight.model.NinjaAnimal targetAnimal = null;
     boolean userIsTarget = true;
+    boolean targetFromAnimals1 = false;
     if (enemyName.length() < 6) {
       userIsTarget = false;
-      if (enemyName.charAt(GameplayConstants.ANIMAL_SLOT_MARKER_INDEX) == '0') {
-        targetAnimal = fight.getAnimals2().get(0);
+      var marker =
+          enemyName.length() > GameplayConstants.ANIMAL_SLOT_MARKER_INDEX
+              ? enemyName.charAt(GameplayConstants.ANIMAL_SLOT_MARKER_INDEX)
+              : '\0';
+      if (marker == '0') {
+        if (!fight.getAnimals2().isEmpty()) {
+          targetAnimal = fight.getAnimals2().get(0);
+        }
+      } else if (marker == GameplayConstants.ANIMAL_SLOT_ONE) {
+        if (!fight.getAnimals1().isEmpty()) {
+          targetAnimal = fight.getAnimals1().get(0);
+          targetFromAnimals1 = true;
+        }
+      } else {
+        var token = enemyName.substring(0, Math.min(3, enemyName.length())).toLowerCase();
+        targetAnimal =
+            fight.getAnimals1().stream()
+                .filter((animal) -> animal.getName().substring(0, 3).equalsIgnoreCase(token))
+                .findFirst()
+                .orElse(null);
+        if (targetAnimal != null) {
+          targetFromAnimals1 = true;
+        } else {
+          targetAnimal =
+              fight.getAnimals2().stream()
+                  .filter((animal) -> animal.getName().substring(0, 3).equalsIgnoreCase(token))
+                  .findFirst()
+                  .orElse(null);
+        }
       }
-      else targetAnimal = fight.getAnimals1().get(0);
+      if (targetAnimal == null) {
+        attack.setCode(ErrorCode.INVALID_TARGET.getValue());
+        return attack;
+      }
     }
     if (attacker == null || enemy == null) {
       attack.setCode(ErrorCode.INVALID_TARGET.getValue());
@@ -156,8 +187,7 @@ public class PvpAttackService {
     boolean fightFinished = false;
     if (attack.isDeadly()) {
       if (!userIsTarget) {
-        if (enemyName.charAt(GameplayConstants.ANIMAL_SLOT_MARKER_INDEX)
-            == GameplayConstants.ANIMAL_SLOT_ONE) {
+        if (targetFromAnimals1) {
           fight.getAnimals1().clear();
           log.debug("Animal from slot 1 died in fight {}", fightUuid);
         } else {

@@ -77,15 +77,15 @@ class FightSummonServiceTest {
     when(fightStateStore.getFight("fight-1")).thenReturn(Optional.of(fight));
     var animal = NinjaAnimal.animals.get(0);
     when(ninjaAnimalResolverService.animalNameForRace(NinjaAnimalRace.Bugurt, true))
-        .thenReturn("Дядя Бафомет");
-    when(ninjaAnimalResolverService.resolveByAnimalName("Дядя Бафомет")).thenReturn(animal);
+        .thenReturn("Uncle Baphomet");
+    when(ninjaAnimalResolverService.resolveByAnimalName("Uncle Baphomet")).thenReturn(animal);
 
     var response = fightSummonService.summonPvp("fight-1", "alice");
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(fight.getAnimals1()).hasSize(1);
     verify(fightStateStore).saveFight("fight-1", fight);
-    verify(webSocketsController).sendSummon("bob", "alice", animal, "Дядя Бафомет");
+    verify(webSocketsController).sendSummon("bob", "alice", animal, "Uncle Baphomet");
   }
 
   @Test
