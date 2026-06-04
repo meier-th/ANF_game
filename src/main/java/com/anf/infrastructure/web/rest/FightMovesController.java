@@ -5,6 +5,7 @@ import com.anf.domain.shared.ApiField;
 import com.anf.domain.shared.ErrorCode;
 import com.anf.domain.fight.FightAttackService;
 import com.anf.domain.fight.FightSnapshotService;
+import com.anf.domain.fight.FightSurrenderService;
 import com.anf.domain.fight.FightSummonService;
 import com.anf.domain.fight.FightTurnEngineService;
 import com.anf.domain.combat.PveAttackService;
@@ -36,6 +37,7 @@ public class FightMovesController {
 
   private final FightAttackService fightAttackService;
   private final FightSnapshotService fightSnapshotService;
+  private final FightSurrenderService fightSurrenderService;
   private final FightSummonService fightSummonService;
   private final FightTurnEngineService fightTurnEngineService;
   private final PvpAttackService pvpAttackService;
@@ -195,5 +197,11 @@ public class FightMovesController {
       @RequestParam String fightUuid, @RequestParam String timedOutAttacker) {
     var reporter = SecurityContextHolder.getContext().getAuthentication().getName();
     return fightTurnEngineService.timeoutCurrentTurn(fightUuid, reporter, timedOutAttacker);
+  }
+
+  @PostMapping("/surrender")
+  public ResponseEntity<?> surrender(@RequestParam String fightUuid) {
+    var username = SecurityContextHolder.getContext().getAuthentication().getName();
+    return fightSurrenderService.surrender(fightUuid, username);
   }
 }

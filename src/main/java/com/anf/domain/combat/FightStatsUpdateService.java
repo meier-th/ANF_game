@@ -5,6 +5,7 @@ import com.anf.model.database.AiFightParticipation;
 import com.anf.model.database.Boss;
 import com.anf.model.database.FightPVP;
 import com.anf.model.database.FightVsAI;
+import com.anf.model.database.Stats;
 import com.anf.domain.fight.FightVsAIService;
 import com.anf.domain.fight.PVPFightsService;
 import com.anf.domain.fight.UserAIFightService;
@@ -22,6 +23,8 @@ public class FightStatsUpdateService {
 
   public void finalizePvpFight(FightPVP fight, boolean firstWon) {
     fight.setFirstWon(firstWon);
+    var firstStats = fight.getFighter1().getStats();
+    var secondStats = fight.getFighter2().getStats();
     var firstFighterPreviousRating = fight.getFighter1().getStats().getRating();
     var secondFighterPreviousRating = fight.getFighter2().getStats().getRating();
     var rating =
@@ -31,22 +34,35 @@ public class FightStatsUpdateService {
             : fight.getBiggerRatingChange();
     fight.setRatingChange(rating);
     if (fight.isFirstWon()) {
-      fight.getFighter1().getStats().setRating(fight.getFighter1().getStats().getRating() + rating);
-      fight.getFighter1().getStats().setFights(fight.getFighter1().getStats().getFights() + 1);
-      fight.getFighter1().getStats().setWins(fight.getFighter1().getStats().getWins() + 1);
-      fight.getFighter2().getStats().setRating(fight.getFighter2().getStats().getRating() - rating);
-      fight.getFighter2().getStats().setFights(fight.getFighter2().getStats().getFights() + 1);
-      fight.getFighter2().getStats().setLosses(fight.getFighter2().getStats().getLosses() + 1);
+      firstStats.setRating(firstStats.getRating() + rating);
+      firstStats.setFights(firstStats.getFights() + 1);
+      firstStats.setWins(firstStats.getWins() + 1);
+      secondStats.setRating(secondStats.getRating() - rating);
+      secondStats.setFights(secondStats.getFights() + 1);
+      secondStats.setLosses(secondStats.getLosses() + 1);
+      secondStats.setDeaths(secondStats.getDeaths() + 1);
     } else {
-      fight.getFighter1().getStats().setRating(fight.getFighter1().getStats().getRating() - rating);
-      fight.getFighter1().getStats().setFights(fight.getFighter1().getStats().getFights() + 1);
-      fight.getFighter1().getStats().setLosses(fight.getFighter1().getStats().getLosses() + 1);
-      fight.getFighter2().getStats().setRating(fight.getFighter2().getStats().getRating() + rating);
-      fight.getFighter2().getStats().setFights(fight.getFighter2().getStats().getFights() + 1);
-      fight.getFighter2().getStats().setWins(fight.getFighter2().getStats().getWins() + 1);
+      firstStats.setRating(firstStats.getRating() - rating);
+      firstStats.setFights(firstStats.getFights() + 1);
+      firstStats.setLosses(firstStats.getLosses() + 1);
+      firstStats.setDeaths(firstStats.getDeaths() + 1);
+      secondStats.setRating(secondStats.getRating() + rating);
+      secondStats.setFights(secondStats.getFights() + 1);
+      secondStats.setWins(secondStats.getWins() + 1);
     }
-    statsService.addStats(fight.getFighter1().getStats());
-    statsService.addStats(fight.getFighter2().getStats());
+    applyExperience(
+        firstStats,
+        fight.isFirstWon()
+            ? GameplayConstants.PVP_WIN_EXPERIENCE
+            : GameplayConstants.PVP_LOSS_EXPERIENCE);
+    applyExperience(
+        secondStats,
+        fight.isFirstWon()
+            ? GameplayConstants.PVP_LOSS_EXPERIENCE
+            : GameplayConstants.PVP_WIN_EXPERIENCE);
+
+    statsService.addStats(firstStats);
+    statsService.addStats(secondStats);
     fight.setFirstFighter(fight.getFighter1().getCharacter());
     fight.setSecondFighter(fight.getFighter2().getCharacter());
     pvpFightsService.addFight(fight);
@@ -99,9 +115,21 @@ public class FightStatsUpdateService {
       userData.setResult(AiFightParticipation.Result.LOST);
       userData.getFighter().getUser().getStats().setFights(userData.getFighter().getUser().getStats().getFights() + 1);
       userData.getFighter().getUser().getStats().setLosses(userData.getFighter().getUser().getStats().getLosses() + 1);
+      userData.getFighter().getUser().getStats().setDeaths(userData.getFighter().getUser().getStats().getDeaths() + 1);
       userData.getFighter().changeXP(GameplayConstants.PVE_DEFEAT_EXPERIENCE);
       statsService.addStats(userData.getFighter().getUser().getStats());
       userAiFightService.add(userData);
+    }
+  }
+
+  private void applyExperience(Stats stats, int experienceGain) {
+    int previousXP = stats.getExperience();
+    int newXP = previousXP + experienceGain;
+    int levelsAcquired = (newXP - newXP % 1000 - (previousXP - previousXP % 1000)) / 1000;
+    stats.setExperience(newXP);
+    if (levelsAcquired > 0) {
+      stats.setLevel(stats.getLevel() + levelsAcquired);
+      stats.setUpgradePoints(stats.getUpgradePoints() + levelsAcquired * 3);
     }
   }
 }

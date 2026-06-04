@@ -66,7 +66,7 @@ public class NinjaAnimal extends Creature implements Serializable {
       @JsonProperty("name") String name,
       @JsonProperty("race") NinjaAnimalRace race,
       @JsonProperty("damage") int damage,
-      @JsonProperty("maxHP") int hp,
+      @JsonProperty("maxHp") int hp,
       @JsonProperty("requiredLevel") int reqlevel) {
     this.damage = damage;
     this.maxHP = hp;

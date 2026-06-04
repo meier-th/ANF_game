@@ -26,6 +26,8 @@ public class GameplayConstants {
   public static final int PVE_BASE_EXPERIENCE = 500;
   public static final int PVE_EXPERIENCE_PER_TAIL = 200;
   public static final int PVE_DEFEAT_EXPERIENCE = 50;
+  public static final int PVP_WIN_EXPERIENCE = 300;
+  public static final int PVP_LOSS_EXPERIENCE = 120;
 
   public static final int PVP_ANIMAL_TOKEN_LENGTH = 4;
   public static final int PVE_BOSS_TOKEN_MAX_LENGTH = 2;
