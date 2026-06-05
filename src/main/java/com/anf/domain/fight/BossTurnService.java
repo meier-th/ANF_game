@@ -44,12 +44,14 @@ public class BossTurnService {
             break;
           }
         }
+        var targetCharacterId = target.getCharacter() != null ? target.getCharacter().getId() : -1;
         fight
             .getSetFighters()
             .forEach(
                 (set) -> {
-                  if (set.getFighter().getUser().getLogin().equals(target.getLogin()))
+                  if (set.getFighter() != null && set.getFighter().getId() == targetCharacterId) {
                     set.setResult(AiFightParticipation.Result.DIED);
+                  }
                 });
       }
     } else {
@@ -71,12 +73,13 @@ public class BossTurnService {
     log.debug("All fighters dead in fight {}: {}", fightUuid, allDead);
     final boolean everyoneDied = allDead;
 
-    fight
-        .getSetFighters()
+    fight.getFighters().stream()
+        .map(User::getLogin)
+        .filter((login) -> login != null && !login.isBlank())
         .forEach(
-            (fighter) ->
+            (login) ->
                 fightStateNotifier.sendAfterAttack(
-                    fighter.getFighter().getUser().getLogin(),
+                    login,
                     damage,
                     targetUser ? target.getLogin() : targetAnimal.getName().substring(0, 3),
                     fight.getCurrentAttacker(0),
@@ -90,9 +93,7 @@ public class BossTurnService {
     if (allDead) {
       log.info("Fight {} ended with all players defeated", fightUuid);
       fightStatsUpdateService.finalizePvePlayersDefeated(fight);
-      for (AiFightParticipation fighter : fight.getSetFighters()) {
-        fightStateStore.unmarkUserInFight(fighter.getFighter().getUser().getLogin());
-      }
+      fight.getFighters().forEach((fighter) -> fightStateStore.unmarkUserInFight(fighter.getLogin()));
       fightSnapshotService.deleteFightArtifacts(fightUuid, () -> fightStateStore.removeFight(fightUuid));
       return;
     }

@@ -17,6 +17,7 @@ import com.anf.configuration.WebSocketsController;
 import com.anf.domain.fight.model.NinjaAnimal;
 import com.anf.domain.fight.model.NinjaAnimalRace;
 import com.anf.model.database.FightPVP;
+import com.anf.model.database.FightVsAI;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Stats;
 import com.anf.model.database.User;
@@ -96,6 +97,26 @@ class FightSummonServiceTest {
     var response = fightSummonService.summonPve("fight-2", "alice");
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+  }
+
+  @Test
+  void summonPve_addsAnimalAndNotifiesParticipants_usingFighterLogins() {
+    var alice = userWithRace("alice", NinjaAnimalRace.Bugurt);
+    when(userService.getUser("alice")).thenReturn(alice);
+    var fight = new FightVsAI();
+    fight.addFighter(alice.getCharacter());
+    var animal = NinjaAnimal.animals.get(0);
+    when(ninjaAnimalResolverService.animalNameForRace(NinjaAnimalRace.Bugurt, true))
+        .thenReturn("Uncle Baphomet");
+    when(ninjaAnimalResolverService.resolveByAnimalName("Uncle Baphomet")).thenReturn(animal);
+    when(fightStateStore.getFight("fight-3")).thenReturn(Optional.of(fight));
+
+    var response = fightSummonService.summonPve("fight-3", "alice");
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(fight.getAnimals1()).hasSize(1);
+    verify(webSocketsController).sendSummon("alice", "alice", animal, "Uncle Baphomet");
+    verify(fightStateStore).saveFight("fight-3", fight);
   }
 
   private User userWithRace(String login, NinjaAnimalRace race) {

@@ -3,7 +3,6 @@ package com.anf.domain.combat;
 import com.anf.domain.shared.ErrorCode;
 import com.anf.domain.shared.SpellName;
 import com.anf.domain.fight.model.Attack;
-import com.anf.model.database.AiFightParticipation;
 import com.anf.model.database.Boss;
 import com.anf.model.database.FightVsAI;
 import com.anf.model.database.Spell;
@@ -87,9 +86,7 @@ public class PveAttackService {
     if (attack.isDeadly()) {
       fightStatsUpdateService.finalizePveBossKilled(fight, boss);
       // close fight
-      for (AiFightParticipation fighter : fight.getSetFighters()) {
-        fightStateStore.unmarkUserInFight(fighter.getFighter().getUser().getLogin());
-      }
+      fight.getFighters().forEach((fighter) -> fightStateStore.unmarkUserInFight(fighter.getLogin()));
       fightSnapshotService.deleteFightArtifacts(fightUuid, () -> fightStateStore.removeFight(fightUuid));
       fightFinished = true;
     }

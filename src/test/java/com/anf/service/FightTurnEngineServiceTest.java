@@ -14,7 +14,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.anf.configuration.WebSocketsController;
+import com.anf.model.database.Boss;
 import com.anf.model.database.FightPVP;
+import com.anf.model.database.FightVsAI;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Stats;
 import com.anf.model.database.User;
@@ -87,6 +89,24 @@ class FightTurnEngineServiceTest {
     assertThat(fight.getCurrentAttacker(0)).isEqualTo("bobbbbb");
     verify(fightStateStore).saveFight("fight-1", fight);
     verify(fightSnapshotService).syncFightSnapshot("fight-1", fight);
+  }
+
+  @Test
+  void timeoutCurrentTurn_pveParticipantCheck_worksWhenSetFightersIsNull() {
+    var fight = new FightVsAI();
+    var alice = user("alice111");
+    fight.addFighter(alice.getCharacter());
+    fight.setSetFighters(null);
+    var boss = new Boss("Shukaku", 1, 180);
+    boss.prepareForFight();
+    fight.setBoss(boss);
+
+    when(fightStateStore.getFight("fight-1")).thenReturn(Optional.of(fight));
+    when(fightSnapshotService.currentTurnStartedAt("fight-1")).thenReturn(System.currentTimeMillis());
+
+    var response = fightTurnEngineService.timeoutCurrentTurn("fight-1", "alice111", "alice111");
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
   }
 
   private FightPVP pvpFight(String user1, String user2) {

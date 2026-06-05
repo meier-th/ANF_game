@@ -92,7 +92,6 @@ public class RedisFightRuntimeFacade implements FightRuntimeFacade {
 
     fightStore.createFight(fight);
     fightStateStore.createFightState(fightState);
-    lobbyStore.deleteLobby(lobbyUuid);
     return new StartFightResult(StartFightResultStatus.STARTED, fight, fightState);
   }
 

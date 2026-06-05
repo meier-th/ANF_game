@@ -15,7 +15,10 @@ public class BossService {
   }
 
   public Boss getBossByName(String name) {
-    return bossRepository.getByName(name);
+    if (name == null) {
+      return null;
+    }
+    return bossRepository.getByName(name.trim());
   }
 
   public Boss getBoss(int id) {

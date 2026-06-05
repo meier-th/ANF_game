@@ -75,17 +75,24 @@ public class FightSummonService {
                   + ",\"error\":\"Fight doesn't exist\"}");
     }
     NinjaAnimalRace race = user.getCharacter().getAnimalRace();
+    if (race == null) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(
+              "{\""
+                  + ApiField.ANSWER.getValue()
+                  + "\":\""
+                  + ApiMessage.ANIMAL_NOT_CHOSEN.getValue()
+                  + "\"}");
+    }
     boolean lvl2 = user.getCharacter().getLevel() >= GameplayConstants.SUMMON_LEVEL_TWO_THRESHOLD;
     String animalName = ninjaAnimalResolverService.animalNameForRace(race, lvl2);
     NinjaAnimal animal = ninjaAnimalResolverService.resolveByAnimalName(animalName);
     animal.prepareForFight();
     fight.getAnimals1().add(animal);
-    fight
-        .getSetFighters()
-        .forEach(
-            (set) ->
-                webSocketsController.sendSummon(
-                    set.getFighter().getUser().getLogin(), username, animal, animalName));
+    fight.getFighters().stream()
+        .map(User::getLogin)
+        .filter((login) -> login != null && !login.isBlank())
+        .forEach((login) -> webSocketsController.sendSummon(login, username, animal, animalName));
     fightStateStore.saveFight(fightUuid, fight);
     return ResponseEntity.ok(animal.toString());
   }

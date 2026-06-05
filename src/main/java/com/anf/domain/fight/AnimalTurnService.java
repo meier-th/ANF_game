@@ -2,7 +2,6 @@ package com.anf.domain.fight;
 
 import com.anf.domain.fight.model.NinjaAnimal;
 import com.anf.domain.shared.SpellName;
-import com.anf.model.database.AiFightParticipation;
 import com.anf.model.database.Boss;
 import com.anf.model.database.FightPVP;
 import com.anf.model.database.FightVsAI;
@@ -117,12 +116,13 @@ public class AnimalTurnService {
     boolean deadly = false;
     if (target.getCurrentHP() <= 0) deadly = true;
     final boolean dead = deadly;
-    fight
-        .getSetFighters()
+    fight.getFighters().stream()
+        .map(User::getLogin)
+        .filter((login) -> login != null && !login.isBlank())
         .forEach(
-            (set) ->
+            (login) ->
                 fightStateNotifier.sendAfterAttack(
-                    set.getFighter().getUser().getLogin(),
+                    login,
                     damage,
                     String.valueOf(target.getNumberOfTails()),
                     fight.getCurrentAttacker(0),
@@ -134,9 +134,7 @@ public class AnimalTurnService {
                     0));
     if (deadly) {
       fightStatsUpdateService.finalizePveBossKilled(fight, target);
-      for (AiFightParticipation fighter : fight.getSetFighters()) {
-        fightStateStore.unmarkUserInFight(fighter.getFighter().getUser().getLogin());
-      }
+      fight.getFighters().forEach((fighter) -> fightStateStore.unmarkUserInFight(fighter.getLogin()));
       fightSnapshotService.deleteFightArtifacts(fightUuid, () -> fightStateStore.removeFight(fightUuid));
       return;
     }

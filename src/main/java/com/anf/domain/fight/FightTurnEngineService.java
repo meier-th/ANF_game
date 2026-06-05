@@ -146,12 +146,10 @@ public class FightTurnEngineService {
       webSocketsController.sendSwitch(((FightPVP) fight).getFighter1().getLogin(), fight.getCurrentAttacker(0));
       webSocketsController.sendSwitch(((FightPVP) fight).getFighter2().getLogin(), fight.getCurrentAttacker(0));
     } else {
-      ((FightVsAI) fight)
-          .getSetFighters()
-          .forEach(
-              (user) ->
-                  webSocketsController.sendSwitch(
-                      user.getFighter().getUser().getLogin(), fight.getCurrentAttacker(0)));
+      fight.getFighters().stream()
+          .map((user) -> user != null ? user.getLogin() : null)
+          .filter((login) -> login != null && !login.isBlank())
+          .forEach((login) -> webSocketsController.sendSwitch(login, fight.getCurrentAttacker(0)));
     }
   }
 
@@ -197,8 +195,8 @@ public class FightTurnEngineService {
       return pvp.getFighter1().getLogin().equals(username) || pvp.getFighter2().getLogin().equals(username);
     }
     if (fight instanceof FightVsAI pve) {
-      return pve.getSetFighters().stream()
-          .anyMatch((participant) -> participant.getFighter().getUser().getLogin().equals(username));
+      return pve.getFighters().stream()
+          .anyMatch((participant) -> participant != null && username.equals(participant.getLogin()));
     }
     return false;
   }

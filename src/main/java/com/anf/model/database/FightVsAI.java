@@ -13,6 +13,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -44,6 +45,37 @@ public class FightVsAI extends Fight {
   }
 
   public List<AiFightParticipation> getSetFighters() {
+    if (setFighters == null) {
+      setFighters = new ArrayList<>();
+      for (var fighterUser : fighters) {
+        if (fighterUser == null || fighterUser.getCharacter() == null) {
+          continue;
+        }
+        var participation = new AiFightParticipation();
+        participation.setFight(this);
+        participation.setFighter(fighterUser.getCharacter());
+        setFighters.add(participation);
+      }
+    } else {
+      var usersByCharacterId = new java.util.HashMap<Integer, User>();
+      for (var fighterUser : fighters) {
+        if (fighterUser != null && fighterUser.getCharacter() != null) {
+          usersByCharacterId.put(fighterUser.getCharacter().getId(), fighterUser);
+        }
+      }
+      for (var participation : setFighters) {
+        if (participation == null || participation.getFighter() == null) {
+          continue;
+        }
+        if (participation.getFighter().getUser() != null) {
+          continue;
+        }
+        var resolvedUser = usersByCharacterId.get(participation.getFighter().getId());
+        if (resolvedUser != null) {
+          participation.getFighter().setUser(resolvedUser);
+        }
+      }
+    }
     return setFighters;
   }
 

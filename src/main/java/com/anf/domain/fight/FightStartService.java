@@ -38,6 +38,15 @@ public class FightStartService {
                   ApiField.ERROR.getValue(),
                   ApiMessage.LOBBY_NOT_FOUND.getValue()));
     }
+    if (isPveMode(lobby.get().getFightMode()) && (bossName == null || bossName.isBlank())) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(
+              Map.of(
+                  ApiField.CODE.getValue(),
+                  ErrorCode.INVALID_REQUEST.getValue(),
+                  ApiField.ERROR.getValue(),
+                  ApiMessage.PVE_BOSS_ID_REQUIRED.getValue()));
+    }
 
     var result = fightRuntimeFacade.startFightFromLobby(lobbyUuid);
     if (result.status() != FightRuntimeFacade.StartFightResultStatus.STARTED) {
@@ -48,6 +57,7 @@ public class FightStartService {
     if (lobby.get().getFightMode() == FightMode.FIGHT_MODE_PVP) {
       var runtimeFight = fightRuntimeFactoryService.createPvpRuntimeFight(participants);
       if (runtimeFight == null) {
+        rollbackGeneratedFight(result.fight().getFightUuid());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body("{ \"code\": " + ErrorCode.CREATION_FAILED.getValue() + "}");
       }
@@ -64,20 +74,13 @@ public class FightStartService {
       webSocketsController.sendStart(
           requester, opponent, fightUuid, result.fight().getFightMode().name());
       onFirstTurn.accept(runtimeFight, fightUuid);
+      fightLobbyService.closeLobby(lobbyUuid);
       return buildCreatedResponse(fightUuid, result.fight().getFightMode().name(), result.fight().getParticipantUuidsList());
     }
 
-    if (bossName == null || bossName.isBlank()) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(
-              Map.of(
-                  ApiField.CODE.getValue(),
-                  ErrorCode.INVALID_REQUEST.getValue(),
-                  ApiField.ERROR.getValue(),
-                  ApiMessage.PVE_BOSS_ID_REQUIRED.getValue()));
-    }
     var runtimeFight = fightRuntimeFactoryService.createPveRuntimeFight(participants, bossName);
     if (runtimeFight == null) {
+      rollbackGeneratedFight(result.fight().getFightUuid());
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body("{ \"code\": " + ErrorCode.CREATION_FAILED.getValue() + "}");
     }
@@ -94,7 +97,16 @@ public class FightStartService {
           }
         });
     onFirstTurn.accept(runtimeFight, fightUuid);
+    fightLobbyService.closeLobby(lobbyUuid);
     return buildCreatedResponse(fightUuid, result.fight().getFightMode().name(), result.fight().getParticipantUuidsList());
+  }
+
+  private void rollbackGeneratedFight(String fightUuid) {
+    fightSnapshotService.deleteFightArtifacts(fightUuid, () -> {});
+  }
+
+  private boolean isPveMode(FightMode fightMode) {
+    return fightMode == FightMode.FIGHT_MODE_SOLO_PVE || fightMode == FightMode.FIGHT_MODE_TEAM_PVE;
   }
 
   private ResponseEntity<?> buildCreatedResponse(String fightUuid, String fightMode, java.util.List<String> participants) {

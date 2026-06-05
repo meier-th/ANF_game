@@ -126,6 +126,7 @@ class FightStartServiceTest {
     verify(legacyFightRuntimeStore).markUserInFight("alice");
     verify(legacyFightRuntimeStore).markUserInFight("bob");
     verify(fightSnapshotService).syncFightSnapshot("fight-1", runtimeFight);
+    verify(fightLobbyService).closeLobby("lobby-1");
   }
 
   @Test
@@ -152,7 +153,38 @@ class FightStartServiceTest {
     var response = fightStartService.startFightFromLobby("lobby-1", " ", "alice", (fight, id) -> {});
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    verify(fightRuntimeFacade, never()).startFightFromLobby("lobby-1");
     verify(runtimeFactoryService, never()).createPveRuntimeFight(any(), any());
+  }
+
+  @Test
+  void startFightFromLobby_keepsLobbyAndRollsBackGeneratedFight_whenPveRuntimeCreationFails() {
+    var lobby =
+        Lobby.newBuilder()
+            .setLobbyUuid("lobby-1")
+            .setFightMode(FightMode.FIGHT_MODE_TEAM_PVE)
+            .addPlayerIds("alice")
+            .setLeaderPlayerId("alice")
+            .build();
+    when(fightRuntimeFacade.getLobby("lobby-1")).thenReturn(Optional.of(lobby));
+    var startedFight =
+        com.anf.service.state.proto.GameStateModels.Fight.newBuilder()
+            .setFightUuid("fight-1")
+            .setFightMode(FightMode.FIGHT_MODE_TEAM_PVE)
+            .addParticipantUuids("alice")
+            .build();
+    when(fightRuntimeFacade.startFightFromLobby("lobby-1"))
+        .thenReturn(
+            new FightRuntimeFacade.StartFightResult(
+                FightRuntimeFacade.StartFightResultStatus.STARTED, startedFight, null));
+    when(runtimeFactoryService.createPveRuntimeFight(List.of("alice"), "Shukaku")).thenReturn(null);
+
+    var response =
+        fightStartService.startFightFromLobby("lobby-1", "Shukaku", "alice", (fight, id) -> {});
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    verify(fightSnapshotService).deleteFightArtifacts(eq("fight-1"), any());
+    verify(fightLobbyService, never()).closeLobby("lobby-1");
   }
 
   private FightPVP pvpFight(String user1, String user2) {

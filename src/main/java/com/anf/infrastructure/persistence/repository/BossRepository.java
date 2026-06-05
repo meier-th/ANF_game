@@ -10,6 +10,6 @@ import com.anf.model.database.Boss;
 @Repository
 public interface BossRepository extends CrudRepository<Boss, Integer> {
 
-  @Query("select b from Boss b where b.name = :name")
+  @Query("select b from Boss b where lower(b.name) = lower(:name)")
   public Boss getByName(@Param("name") String name);
 }

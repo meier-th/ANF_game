@@ -112,23 +112,17 @@ public class Fight {
       if (order.isEmpty()) {
         return "";
       }
-      return order.get(Math.floorMod(currentAttacker + offset, order.size()));
+      return order.get(normalizedTurnIndex(order.size(), offset));
     } else {
-      if ((currentAttacker + offset) % (1 + animals1.size() + fighters.size()) < fighters.size()) {
-        return fighters
-            .get((currentAttacker + offset) % (1 + animals1.size() + fighters.size()))
-            .getLogin();
+      var turnSlots = 1 + animals1.size() + fighters.size();
+      var attackerIndex = normalizedTurnIndex(turnSlots, offset);
+      if (attackerIndex < fighters.size()) {
+        return fighters.get(attackerIndex).getLogin();
       }
-      if ((currentAttacker + offset) % (1 + fighters.size() + animals1.size()) == fighters.size()) {
+      if (attackerIndex == fighters.size()) {
         return String.valueOf(((FightVsAI) this).getBoss().getNumberOfTails());
       } else {
-        return animals1
-            .get(
-                ((currentAttacker + offset) % (1 + animals1.size() + fighters.size()))
-                    - fighters.size()
-                    - 1)
-            .getName()
-            .substring(0, 3);
+        return animals1.get(attackerIndex - fighters.size() - 1).getName().substring(0, 3);
       }
     }
   }
@@ -156,5 +150,13 @@ public class Fight {
 
   public void setCurrentAttackerIndex(int currentAttacker) {
     this.currentAttacker = currentAttacker;
+  }
+
+  private int normalizedTurnIndex(int turnSlots, int offset) {
+    if (turnSlots <= 0) {
+      return 0;
+    }
+    var baseIndex = currentAttacker < 0 ? 0 : currentAttacker;
+    return Math.floorMod(baseIndex + offset, turnSlots);
   }
 }

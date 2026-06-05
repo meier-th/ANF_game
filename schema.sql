@@ -178,3 +178,13 @@ CREATE TABLE user_roles (
 -- Initial Data for roles
 INSERT INTO roles (role) VALUES ('USER');
 INSERT INTO roles (role) VALUES ('ADMIN');
+
+-- Initial Data for bidjus (bosses)
+INSERT INTO bidjus (name, number_of_tails, max_chakra_amount, max_hp, physical_damage, current_hp, current_chakra)
+VALUES ('Shukaku', 1, 180, 700, 70, 700, 180);
+INSERT INTO bidjus (name, number_of_tails, max_chakra_amount, max_hp, physical_damage, current_hp, current_chakra)
+VALUES ('Isobu', 3, 260, 2100, 110, 2100, 260);
+INSERT INTO bidjus (name, number_of_tails, max_chakra_amount, max_hp, physical_damage, current_hp, current_chakra)
+VALUES ('Gyuki', 8, 420, 5600, 180, 5600, 420);
+INSERT INTO bidjus (name, number_of_tails, max_chakra_amount, max_hp, physical_damage, current_hp, current_chakra)
+VALUES ('Kurama', 9, 500, 6300, 200, 6300, 500);

@@ -70,6 +70,32 @@ class BossTurnServiceTest {
     verify(fightStateStore).saveFight("fight-1", fight);
   }
 
+  @Test
+  void handleBossAttack_usesFighterLogins_whenParticipationBackrefsMissing() {
+    var fight = new FightVsAI();
+    var user = user("alice");
+    fight.addFighter(user.getCharacter());
+
+    var detachedCharacter = new GameCharacter(0.9f, 200, 10, 30);
+    var detachedParticipation = new AiFightParticipation();
+    detachedParticipation.setFight(fight);
+    detachedParticipation.setFighter(detachedCharacter);
+    fight.setSetFighters(new ArrayList<>(java.util.List.of(detachedParticipation)));
+
+    var boss = mock(Boss.class);
+    when(boss.getNumberOfTails()).thenReturn(1);
+    fight.setBoss(boss);
+    fight.switchAttacker();
+
+    var nextTurnCalled = new AtomicBoolean(false);
+    bossTurnService.handleBossAttack(fight, "fight-2", () -> nextTurnCalled.set(true));
+
+    assertThat(nextTurnCalled.get()).isTrue();
+    verify(fightStateNotifier)
+        .sendAfterAttack(
+            eq("alice"), any(Integer.class), any(), any(), any(), any(Boolean.class), any(Boolean.class), any(), eq(0), eq(0));
+  }
+
   private User user(String login) {
     var user = new User();
     user.setLogin(login);

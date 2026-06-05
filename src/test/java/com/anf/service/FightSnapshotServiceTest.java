@@ -14,7 +14,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.anf.model.database.Boss;
 import com.anf.model.database.FightPVP;
+import com.anf.model.database.FightVsAI;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Stats;
 import com.anf.model.database.User;
@@ -73,6 +75,34 @@ class FightSnapshotServiceTest {
 
     assertThat(updatedState.get()).isNotNull();
     assertThat(updatedState.get().getCreatureStatusesMap()).containsKeys("alice", "bob");
+    assertThat(updatedState.get().getTakenTurnsCount()).isEqualTo(1);
+    assertThat(updatedState.get().getTakenTurns(0).getCharacterUuid()).isEqualTo("alice");
+  }
+
+  @Test
+  void syncFightSnapshot_forPveWithoutSwitchedTurn_doesNotCrashAndRecordsFirstFighter() {
+    var updatedState = new AtomicReference<FightState>();
+    doAnswer(
+            (invocation) -> {
+              var updater = invocation.getArgument(1, java.util.function.UnaryOperator.class);
+              var baseState = FightState.newBuilder().setFightUuid("fight-1").build();
+              updatedState.set((FightState) updater.apply(baseState));
+              return FightStateStore.FightStateUpdateResult.UPDATED;
+            })
+        .when(fightStateStore)
+        .updateFightState(eq("fight-1"), any());
+
+    var fight = new FightVsAI();
+    var alice = userWithCharacter("alice", 90);
+    fight.addFighter(alice.getCharacter());
+    var boss = new Boss("Shukaku", 1, 180);
+    boss.prepareForFight();
+    fight.setBoss(boss);
+
+    fightSnapshotService.syncFightSnapshot("fight-1", fight);
+
+    assertThat(updatedState.get()).isNotNull();
+    assertThat(updatedState.get().getCreatureStatusesMap()).containsKeys("alice", "boss:1");
     assertThat(updatedState.get().getTakenTurnsCount()).isEqualTo(1);
     assertThat(updatedState.get().getTakenTurns(0).getCharacterUuid()).isEqualTo("alice");
   }
