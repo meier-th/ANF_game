@@ -17,6 +17,7 @@ import com.anf.domain.user.AppearanceService;
 import com.anf.domain.user.CharacterService;
 import com.anf.domain.user.StatsService;
 import com.anf.domain.user.UserService;
+import com.anf.domain.fight.FightVsAIService;
 import com.anf.infrastructure.state.OnlinePresenceStore;
 import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
@@ -50,6 +51,7 @@ public class CharacterControllerTest {
             mock(RoleRepository.class),
             userService,
             statsService,
+            mock(FightVsAIService.class),
             mock(WebSocketsController.class),
             mock(OnlinePresenceStore.class));
   }

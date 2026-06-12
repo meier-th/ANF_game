@@ -9,17 +9,21 @@ import com.anf.model.database.Stats;
 import com.anf.domain.fight.FightVsAIService;
 import com.anf.domain.fight.PVPFightsService;
 import com.anf.domain.fight.UserAIFightService;
+import com.anf.domain.user.CharacterService;
 import com.anf.domain.user.StatsService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class FightStatsUpdateService {
   private final StatsService statsService;
   private final PVPFightsService pvpFightsService;
   private final FightVsAIService fightVsAIService;
   private final UserAIFightService userAiFightService;
+  private final CharacterService characterService;
 
   public void finalizePvpFight(FightPVP fight, boolean firstWon) {
     fight.setFirstWon(firstWon);
@@ -72,37 +76,30 @@ public class FightStatsUpdateService {
     fightVsAIService.addFight(fight);
     for (var fightData : fight.getSetFighters()) {
       if (fightData.getResult() == null) {
-        fightData.setResult(AiFightParticipation.Result.WON);
+        var fighter = fightData.getFighter();
+        var fighterDied = fighter != null && fighter.getCurrentHP() <= 0;
+        fightData.setResult(fighterDied ? AiFightParticipation.Result.DIED : AiFightParticipation.Result.WON);
       }
       var experience =
           GameplayConstants.PVE_BASE_EXPERIENCE
               + GameplayConstants.PVE_EXPERIENCE_PER_TAIL * boss.getNumberOfTails();
+      var fighterStats = resolveStats(fightData);
+      if (fighterStats == null) {
+        log.warn("Skipping PvE boss-kill stats update due to missing fighter stats for participation {}", fightData.getId());
+        fightData.setExperience(0);
+        userAiFightService.add(fightData);
+        continue;
+      }
       if (fightData.getResult().equals(AiFightParticipation.Result.DIED)) {
         experience /= 2;
-        fightData
-            .getFighter()
-            .getUser()
-            .getStats()
-            .setFights(fightData.getFighter().getUser().getStats().getFights() + 1);
-        fightData
-            .getFighter()
-            .getUser()
-            .getStats()
-            .setDeaths(fightData.getFighter().getUser().getStats().getDeaths() + 1);
+        fighterStats.setFights(fighterStats.getFights() + 1);
+        fighterStats.setDeaths(fighterStats.getDeaths() + 1);
       } else {
-        fightData
-            .getFighter()
-            .getUser()
-            .getStats()
-            .setFights(fightData.getFighter().getUser().getStats().getFights() + 1);
-        fightData
-            .getFighter()
-            .getUser()
-            .getStats()
-            .setWins(fightData.getFighter().getUser().getStats().getWins() + 1);
+        fighterStats.setFights(fighterStats.getFights() + 1);
+        fighterStats.setWins(fighterStats.getWins() + 1);
       }
-      fightData.getFighter().changeXP(experience);
-      statsService.addStats(fightData.getFighter().getUser().getStats());
+      applyExperience(fighterStats, experience);
+      statsService.addStats(fighterStats);
       fightData.setExperience(experience);
       userAiFightService.add(fightData);
     }
@@ -113,13 +110,37 @@ public class FightStatsUpdateService {
     for (var userData : fight.getSetFighters()) {
       userData.setExperience(GameplayConstants.PVE_DEFEAT_EXPERIENCE);
       userData.setResult(AiFightParticipation.Result.LOST);
-      userData.getFighter().getUser().getStats().setFights(userData.getFighter().getUser().getStats().getFights() + 1);
-      userData.getFighter().getUser().getStats().setLosses(userData.getFighter().getUser().getStats().getLosses() + 1);
-      userData.getFighter().getUser().getStats().setDeaths(userData.getFighter().getUser().getStats().getDeaths() + 1);
-      userData.getFighter().changeXP(GameplayConstants.PVE_DEFEAT_EXPERIENCE);
-      statsService.addStats(userData.getFighter().getUser().getStats());
+      var fighterStats = resolveStats(userData);
+      if (fighterStats != null) {
+        fighterStats.setFights(fighterStats.getFights() + 1);
+        fighterStats.setLosses(fighterStats.getLosses() + 1);
+        fighterStats.setDeaths(fighterStats.getDeaths() + 1);
+        applyExperience(fighterStats, GameplayConstants.PVE_DEFEAT_EXPERIENCE);
+        statsService.addStats(fighterStats);
+      } else {
+        log.warn("Skipping PvE defeat stats update due to missing fighter stats for participation {}", userData.getId());
+        userData.setExperience(0);
+      }
       userAiFightService.add(userData);
     }
+  }
+
+  private Stats resolveStats(AiFightParticipation participation) {
+    if (participation == null || participation.getFighter() == null) {
+      return null;
+    }
+    var fighter = participation.getFighter();
+    if (fighter.getUser() != null && fighter.getUser().getStats() != null) {
+      return fighter.getUser().getStats();
+    }
+    if (fighter.getId() > 0) {
+      var persistedFighter = characterService.getCharacter(fighter.getId());
+      if (persistedFighter != null && persistedFighter.getUser() != null && persistedFighter.getUser().getStats() != null) {
+        participation.setFighter(persistedFighter);
+        return persistedFighter.getUser().getStats();
+      }
+    }
+    return null;
   }
 
   private void applyExperience(Stats stats, int experienceGain) {

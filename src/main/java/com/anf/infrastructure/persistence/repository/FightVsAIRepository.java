@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FightVsAIRepository extends CrudRepository<FightVsAI, Integer> {
-  @Query("SELECT uf FROM FightVsAI f inner join AiFightParticipation uf WHERE uf.id = :id")
+  @Query("SELECT uf FROM AiFightParticipation uf WHERE uf.fighter.id = :id ORDER BY uf.fight.fight_date DESC")
   List<AiFightParticipation> getAIFightsByUser(@Param("id") int id);
 }

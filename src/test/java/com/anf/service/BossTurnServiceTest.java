@@ -9,8 +9,8 @@ import com.anf.domain.user.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -94,6 +94,29 @@ class BossTurnServiceTest {
     verify(fightStateNotifier)
         .sendAfterAttack(
             eq("alice"), any(Integer.class), any(), any(), any(), any(Boolean.class), any(Boolean.class), any(), eq(0), eq(0));
+  }
+
+  @Test
+  void handleBossAttack_notifiesAndUnmarksKilledLastFighter_whenFightEnds() {
+    var fight = new FightVsAI();
+    var user = user("alice");
+    fight.addFighter(user.getCharacter());
+    fight.setSetFighters(new ArrayList<>(java.util.List.of(participation(fight, user))));
+    var boss = mock(Boss.class);
+    when(boss.getNumberOfTails()).thenReturn(1);
+    fight.setBoss(boss);
+    fight.switchAttacker();
+    when(fightDamageService.computeBossAttackDamage(any(Integer.class), any(Float.class))).thenReturn(9999);
+
+    var nextTurnCalled = new AtomicBoolean(false);
+    bossTurnService.handleBossAttack(fight, "fight-3", () -> nextTurnCalled.set(true));
+
+    assertThat(nextTurnCalled.get()).isFalse();
+    verify(fightStateNotifier)
+        .sendAfterAttack(
+            eq("alice"), any(Integer.class), eq("alice"), any(), any(), eq(true), eq(true), any(), eq(0), eq(0));
+    verify(fightStateStore).unmarkUserInFight("alice");
+    verify(fightStateStore, never()).saveFight("fight-3", fight);
   }
 
   private User user(String login) {

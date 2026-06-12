@@ -86,7 +86,7 @@ public class SecurityConfiguration {
                         "/error")
                     .permitAll()
                     .requestMatchers("/admin/**")
-                    .hasRole("ADMIN")
+                    .hasAnyAuthority("ADMIN", "ROLE_ADMIN")
                     .anyRequest()
                     .authenticated())
         .formLogin(form -> form.successHandler(successHandler).failureHandler(FAILURE_HANDLER))

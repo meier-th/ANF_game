@@ -1,10 +1,12 @@
 package com.anf.infrastructure.web.rest;
 
 import com.anf.domain.fight.model.PvpRecord;
+import com.anf.domain.fight.model.PveRecord;
 import com.anf.domain.shared.ApiField;
 import com.anf.domain.shared.ApiMessage;
 import com.anf.domain.shared.CharacterUpgradeQuality;
 import com.anf.domain.shared.GameplayConstants;
+import com.anf.model.database.AiFightParticipation;
 import com.anf.model.database.CharacterAppearance;
 import com.anf.model.database.FightPVP;
 import com.anf.model.database.GameCharacter;
@@ -16,10 +18,12 @@ import com.anf.domain.user.AppearanceService;
 import com.anf.domain.user.CharacterService;
 import com.anf.domain.user.StatsService;
 import com.anf.domain.user.UserService;
+import com.anf.domain.fight.FightVsAIService;
 import com.anf.configuration.WebSocketsController;
 import com.anf.infrastructure.state.OnlinePresenceStore;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +45,7 @@ public class CharacterController {
   private final RoleRepository roleRep;
   private final UserService userServ;
   private final StatsService statsServ;
+  private final FightVsAIService fightVsAIService;
   private final WebSocketsController wsController;
   private final OnlinePresenceStore onlinePresenceStore;
 
@@ -60,6 +65,19 @@ public class CharacterController {
     } catch (Throwable error) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error.getMessage());
     }
+  }
+
+  @GetMapping("/profile/isAdmin")
+  public ResponseEntity<?> isAdmin() {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    boolean admin =
+        authentication != null
+            && authentication.getAuthorities().stream()
+                .anyMatch(
+                    (authority) ->
+                        "ROLE_ADMIN".equals(authority.getAuthority())
+                            || "ADMIN".equals(authority.getAuthority()));
+    return ResponseEntity.ok(Map.of("admin", admin));
   }
 
   @PostMapping("/profile/character/appearance")
@@ -211,6 +229,22 @@ public class CharacterController {
     }
   }
 
+  @GetMapping("/users/admins")
+  public ResponseEntity<?> getAdmins() {
+    try {
+      List<String> admins = new ArrayList<>();
+      for (User user : userServ.getAllUsers()) {
+        if (user.getRoles() != null
+            && user.getRoles().stream().anyMatch((role) -> "ADMIN".equals(role.getRole()))) {
+          admins.add(user.getLogin());
+        }
+      }
+      return ResponseEntity.status(HttpStatus.OK).body(admins);
+    } catch (Throwable error) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
+    }
+  }
+
   @GetMapping("/users/{login}")
   public ResponseEntity<?> getUser(@PathVariable String login) {
     try {
@@ -330,5 +364,36 @@ public class CharacterController {
       toRet.add(record);
     }
     return ResponseEntity.ok(toRet);
+  }
+
+  @GetMapping("/profile/pvehistory")
+  public ResponseEntity<?> getPveHistory() {
+    var user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
+    var character = user != null ? user.getCharacter() : null;
+    if (character == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of());
+    }
+    ArrayList<PveRecord> toRet = new ArrayList<>();
+    var fights = fightVsAIService.getByFighterId(character);
+    for (AiFightParticipation fight : fights) {
+      var record = new PveRecord();
+      record.setDate(fight.getFight().getFight_date());
+      record.setRival(fight.getFight().getBoss().getName());
+      record.setXpCh(fight.getExperience());
+      record.setResult(toHistoryResult(fight.getResult()));
+      toRet.add(record);
+    }
+    return ResponseEntity.ok(toRet);
+  }
+
+  private String toHistoryResult(AiFightParticipation.Result result) {
+    if (result == null) {
+      return "Unknown";
+    }
+    return switch (result) {
+      case WON -> "Win";
+      case LOST -> "Loss";
+      case DIED -> "Died";
+    };
   }
 }
