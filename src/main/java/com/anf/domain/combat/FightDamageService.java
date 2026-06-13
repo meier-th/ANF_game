@@ -27,8 +27,10 @@ public class FightDamageService {
   }
 
   public int computeChakraCost(Spell spell, SpellKnowledge handling) {
-    return spell.getBaseChakraConsumption()
-        + handling.getSpellLevel() * spell.getChakraConsumptionPerLevel();
+    return Math.max(
+        0,
+        spell.getBaseChakraConsumption()
+            - handling.getSpellLevel() * spell.getChakraConsumptionPerLevel());
   }
 
   public int computeBossAttackDamage(int tails, float targetResistance) {

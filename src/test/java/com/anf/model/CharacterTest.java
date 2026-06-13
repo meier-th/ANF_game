@@ -38,6 +38,7 @@ public class CharacterTest {
     assertEquals(500, stats.getExperience());
     assertEquals(1, stats.getLevel());
     assertEquals(0, stats.getUpgradePoints());
+    assertEquals(0, stats.getSpellPoints());
   }
 
   @Test
@@ -47,6 +48,7 @@ public class CharacterTest {
     assertEquals(1000, stats.getExperience());
     assertEquals(2, stats.getLevel());
     assertEquals(3, stats.getUpgradePoints());
+    assertEquals(1, stats.getSpellPoints());
   }
 
   @Test
@@ -57,6 +59,7 @@ public class CharacterTest {
     assertEquals(1200, stats.getExperience());
     assertEquals(2, stats.getLevel());
     assertEquals(3, stats.getUpgradePoints());
+    assertEquals(1, stats.getSpellPoints());
   }
 
   @Test
@@ -66,6 +69,7 @@ public class CharacterTest {
     assertEquals(3500, stats.getExperience());
     assertEquals(4, stats.getLevel());
     assertEquals(9, stats.getUpgradePoints());
+    assertEquals(3, stats.getSpellPoints());
   }
 
   @Test
@@ -76,6 +80,7 @@ public class CharacterTest {
     assertEquals(1400, stats.getExperience());
     assertEquals(2, stats.getLevel());
     assertEquals(3, stats.getUpgradePoints());
+    assertEquals(1, stats.getSpellPoints());
   }
 
   // --- acceptDamage ---

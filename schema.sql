@@ -27,7 +27,8 @@ CREATE TABLE statistics (
     deaths INT NOT NULL,
     lvl INT NOT NULL,
     experience INT NOT NULL,
-    upgrade_points INT NOT NULL
+    upgrade_points INT NOT NULL,
+    spell_points INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE character_appearances (
@@ -58,6 +59,13 @@ CREATE TABLE spells (
     chakra_consumption_per_level INT NOT NULL,
     req_level INT NOT NULL
 );
+
+INSERT INTO spells (name, base_damage, damage_per_level, base_chakra_consumption, chakra_consumption_per_level, req_level)
+VALUES
+    ('Earth Strike', 12, 3, 7, 3, 1),
+    ('Water Strike', 20, 4, 10, 4, 5),
+    ('Fire Strike', 40, 5, 15, 5, 12),
+    ('Air Strike', 70, 10, 20, 10, 25);
 
 CREATE TABLE users (
     login VARCHAR(30) PRIMARY KEY,

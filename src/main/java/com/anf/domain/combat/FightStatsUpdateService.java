@@ -24,6 +24,7 @@ public class FightStatsUpdateService {
   private final FightVsAIService fightVsAIService;
   private final UserAIFightService userAiFightService;
   private final CharacterService characterService;
+  private final SpellKnowledgeService spellKnowledgeService;
 
   public void finalizePvpFight(FightPVP fight, boolean firstWon) {
     fight.setFirstWon(firstWon);
@@ -150,7 +151,14 @@ public class FightStatsUpdateService {
     stats.setExperience(newXP);
     if (levelsAcquired > 0) {
       stats.setLevel(stats.getLevel() + levelsAcquired);
-      stats.setUpgradePoints(stats.getUpgradePoints() + levelsAcquired * 3);
+      stats.setUpgradePoints(
+          stats.getUpgradePoints()
+              + levelsAcquired * GameplayConstants.CHARACTER_UPGRADE_POINTS_PER_LEVEL);
+      stats.setSpellPoints(
+          stats.getSpellPoints() + levelsAcquired * GameplayConstants.SPELL_POINTS_PER_LEVEL);
+      if (stats.getUser() != null && stats.getUser().getCharacter() != null) {
+        spellKnowledgeService.ensureUnlockedSpellKnowledge(stats.getUser().getCharacter());
+      }
     }
   }
 }

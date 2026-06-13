@@ -61,6 +61,10 @@ public class PveAttackService {
               attacker.getCharacter().getPhysicalDamage(), boss.getResistance());
       chakra = 0;
     }
+    if (attacker.getCharacter().getCurrentChakra() < chakra) {
+      attack.setCode(ErrorCode.FORBIDDEN.getValue());
+      return attack;
+    }
     attack.setDamage(damage);
     attack.setChakra(chakra);
     attacker.getCharacter().spendChakra(chakra);

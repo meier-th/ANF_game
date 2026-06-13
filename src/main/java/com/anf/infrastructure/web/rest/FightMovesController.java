@@ -123,7 +123,9 @@ public class FightMovesController {
     var persistedUser = userService.getUser(runtimeUser.getLogin());
     var persistedCharacter = persistedUser != null ? persistedUser.getCharacter() : null;
     List<SpellKnowledge> knownSpells =
-        persistedCharacter != null ? spellKnowledgeService.getPersonsHandling(persistedCharacter) : List.of();
+        persistedCharacter != null
+            ? spellKnowledgeService.ensureUnlockedSpellKnowledge(persistedCharacter)
+            : List.of();
     var appearance =
         runtimeCharacter.getAppearance() != null
             ? runtimeCharacter.getAppearance()

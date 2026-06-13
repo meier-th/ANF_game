@@ -67,6 +67,10 @@ public class Stats {
   @Column(nullable = false)
   private int upgradePoints;
 
+  /** Number of available spell upgrade points */
+  @Column(nullable = false)
+  private int spellPoints;
+
   public Stats() {}
 
   public Stats(
@@ -78,6 +82,19 @@ public class Stats {
       int experience,
       int level,
       int points) {
+    this(rating, fights, wins, losses, deaths, experience, level, points, 0);
+  }
+
+  public Stats(
+      int rating,
+      int fights,
+      int wins,
+      int losses,
+      int deaths,
+      int experience,
+      int level,
+      int points,
+      int spellPoints) {
     this.deaths = deaths;
     this.fights = fights;
     this.losses = losses;
@@ -86,6 +103,7 @@ public class Stats {
     this.experience = experience;
     this.level = level;
     this.upgradePoints = points;
+    this.spellPoints = spellPoints;
   }
 
   /** Setter {@link Stats#rating} */
@@ -133,6 +151,14 @@ public class Stats {
 
   public void setUpgradePoints(int upgradePoints) {
     this.upgradePoints = upgradePoints;
+  }
+
+  public int getSpellPoints() {
+    return spellPoints;
+  }
+
+  public void setSpellPoints(int spellPoints) {
+    this.spellPoints = spellPoints;
   }
 
   public int getId() {

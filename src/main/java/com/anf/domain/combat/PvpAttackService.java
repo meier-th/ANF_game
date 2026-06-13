@@ -129,6 +129,10 @@ public class PvpAttackService {
     if (SpellName.WATER_STRIKE.matches(spellName)) {
       chakraBurn = damage / GameplayConstants.WATER_STRIKE_CHAKRA_BURN_DIVISOR;
     }
+    if (attacker.getCharacter().getCurrentChakra() < chakra) {
+      attack.setCode(ErrorCode.FORBIDDEN.getValue());
+      return attack;
+    }
     attack.setDamage(damage);
     attack.setChakra(chakra);
     attacker.getCharacter().spendChakra(chakra);

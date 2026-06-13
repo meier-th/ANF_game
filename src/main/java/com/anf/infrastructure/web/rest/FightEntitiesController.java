@@ -65,8 +65,8 @@ public class FightEntitiesController {
       User user =
           userService.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
       GameCharacter ch = user.getCharacter();
-      List<SpellKnowledge> SpellKnowledges = spellHandService.getPersonsHandling(ch);
-      return ResponseEntity.status(HttpStatus.OK).body(SpellKnowledges);
+      List<SpellKnowledge> spellKnowledges = spellHandService.ensureUnlockedSpellKnowledge(ch);
+      return ResponseEntity.status(HttpStatus.OK).body(spellKnowledges);
     } catch (Throwable error) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
     }
@@ -79,6 +79,10 @@ public class FightEntitiesController {
           userService.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
       GameCharacter ch = user.getCharacter();
       Spell spell = spelService.get(spellname);
+      if (spell == null) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Such spell doesn't exist.");
+      }
+      spellHandService.ensureUnlockedSpellKnowledge(ch);
       SpellKnowledge spellHandl = spellHandService.getSpellKnowledge(ch, spell);
       if (spellHandl == null)
         return ResponseEntity.status(HttpStatus.LOCKED).body("User can't handle this spell yet.");
@@ -93,21 +97,23 @@ public class FightEntitiesController {
     try {
       User user =
           userService.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
-      if (user.getStats().getUpgradePoints() == 0)
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User doesn't have upgrade points");
       GameCharacter ch = user.getCharacter();
-      int currLvl = 0;
       Spell spell = spelService.get(spellname);
-      if (spellHandService.getSpellKnowledge(ch, spell) != null) {
-        SpellKnowledge handl = spellHandService.getSpellKnowledge(ch, spell);
-        currLvl = handl.getSpellLevel();
-        handl.setSpellLevel(currLvl + 1);
-        spellHandService.addOrUpdateHandling(handl);
-      } else {
-        spellHandService.addOrUpdateHandling(new SpellKnowledge(currLvl + 1, spell, ch));
+      if (spell == null) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Such spell doesn't exist.");
       }
+      spellHandService.ensureUnlockedSpellKnowledge(ch);
+      SpellKnowledge handl = spellHandService.getSpellKnowledge(ch, spell);
+      if (handl == null) {
+        return ResponseEntity.status(HttpStatus.LOCKED).body("Reach the required level first.");
+      }
+      if (user.getStats().getSpellPoints() == 0) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User doesn't have spell points");
+      }
+      handl.setSpellLevel(handl.getSpellLevel() + 1);
+      spellHandService.addOrUpdateHandling(handl);
       Stats stats = user.getStats();
-      stats.setUpgradePoints(stats.getUpgradePoints() - 1);
+      stats.setSpellPoints(stats.getSpellPoints() - 1);
       statsService.addStats(stats);
       return ResponseEntity.status(HttpStatus.CREATED).body("Spell handling is updated.");
     } catch (Throwable error) {

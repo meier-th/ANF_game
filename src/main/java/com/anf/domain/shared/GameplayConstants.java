@@ -15,6 +15,8 @@ public class GameplayConstants {
   public static final int HP_UPGRADE_INCREMENT = 15;
   public static final int CHAKRA_UPGRADE_INCREMENT = 7;
   public static final int RESISTANCE_GROWTH_DIVISOR = 4;
+  public static final int CHARACTER_UPGRADE_POINTS_PER_LEVEL = 3;
+  public static final int SPELL_POINTS_PER_LEVEL = 1;
 
   public static final float NO_RESISTANCE = 0.0f;
   public static final float FIRE_STRIKE_DOUBLE_DAMAGE_RESISTANCE_CAP = 0.8f;

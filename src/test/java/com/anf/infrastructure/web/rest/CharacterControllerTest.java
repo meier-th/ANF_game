@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import com.anf.model.database.GameCharacter;
 import com.anf.model.database.Stats;
 import com.anf.model.database.User;
+import com.anf.domain.combat.SpellKnowledgeService;
 import com.anf.infrastructure.persistence.repository.RoleRepository;
 import com.anf.domain.user.AppearanceService;
 import com.anf.domain.user.CharacterService;
@@ -51,6 +52,7 @@ public class CharacterControllerTest {
             mock(RoleRepository.class),
             userService,
             statsService,
+            mock(SpellKnowledgeService.class),
             mock(FightVsAIService.class),
             mock(WebSocketsController.class),
             mock(OnlinePresenceStore.class));

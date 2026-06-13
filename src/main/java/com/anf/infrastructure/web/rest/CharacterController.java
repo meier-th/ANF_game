@@ -2,6 +2,7 @@ package com.anf.infrastructure.web.rest;
 
 import com.anf.domain.fight.model.PvpRecord;
 import com.anf.domain.fight.model.PveRecord;
+import com.anf.domain.combat.SpellKnowledgeService;
 import com.anf.domain.shared.ApiField;
 import com.anf.domain.shared.ApiMessage;
 import com.anf.domain.shared.CharacterUpgradeQuality;
@@ -45,6 +46,7 @@ public class CharacterController {
   private final RoleRepository roleRep;
   private final UserService userServ;
   private final StatsService statsServ;
+  private final SpellKnowledgeService spellKnowledgeService;
   private final FightVsAIService fightVsAIService;
   private final WebSocketsController wsController;
   private final OnlinePresenceStore onlinePresenceStore;
@@ -57,10 +59,11 @@ public class CharacterController {
   @GetMapping("/profile")
   public ResponseEntity<String> myAccount() {
     try {
-      String response =
-          userServ
-              .getUser(SecurityContextHolder.getContext().getAuthentication().getName())
-              .toString();
+      User user = userServ.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
+      if (user != null && user.getCharacter() != null) {
+        user.getCharacter().setSpellsKnown(spellKnowledgeService.ensureUnlockedSpellKnowledge(user.getCharacter()));
+      }
+      String response = user.toString();
       return ResponseEntity.status(HttpStatus.OK).body(response);
     } catch (Throwable error) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error.getMessage());

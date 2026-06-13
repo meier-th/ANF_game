@@ -2,6 +2,7 @@ package com.anf.model.database;
 
 import com.anf.domain.fight.model.Creature;
 import com.anf.domain.fight.model.NinjaAnimalRace;
+import com.anf.domain.shared.GameplayConstants;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
@@ -230,17 +231,19 @@ public class GameCharacter extends Creature implements Serializable {
   }
 
   public void spendChakra(int spent) {
-    currentChakra -= spent;
+    currentChakra = Math.max(0, currentChakra - Math.max(0, spent));
   }
 
   public void changeXP(int change) {
     int previousXP = user.getStats().getExperience();
     int newXP = previousXP + change;
     int levelsAcquired = (newXP - newXP % 1000 - (previousXP - previousXP % 1000)) / 1000;
-    int pointsAcquired = levelsAcquired * 3;
+    int pointsAcquired = levelsAcquired * GameplayConstants.CHARACTER_UPGRADE_POINTS_PER_LEVEL;
+    int spellPointsAcquired = levelsAcquired * GameplayConstants.SPELL_POINTS_PER_LEVEL;
     user.getStats().setExperience(newXP);
     user.getStats().setLevel(user.getStats().getLevel() + levelsAcquired);
     user.getStats().setUpgradePoints(user.getStats().getUpgradePoints() + pointsAcquired);
+    user.getStats().setSpellPoints(user.getStats().getSpellPoints() + spellPointsAcquired);
     // statsServ.addStats(user.getStats()); Will be moved to FighController
   }
 

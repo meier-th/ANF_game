@@ -44,7 +44,11 @@ public class FightAttackService {
 
     Attack attack = fight instanceof FightPVP ? pvpAttack.apply(context) : pveAttack.apply(context);
     if (attack.getCode() != 0) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(attack.toString());
+      HttpStatus status =
+          attack.getCode() == ErrorCode.FORBIDDEN.getValue()
+              ? HttpStatus.FORBIDDEN
+              : HttpStatus.BAD_REQUEST;
+      return ResponseEntity.status(status).body(attack.toString());
     }
 
     scheduleNextTurn.run();

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.anf.domain.combat.FightStatsUpdateService;
+import com.anf.domain.combat.SpellKnowledgeService;
 import com.anf.domain.fight.FightVsAIService;
 import com.anf.domain.fight.PVPFightsService;
 import com.anf.domain.fight.UserAIFightService;
@@ -41,7 +42,8 @@ class FightStatsUpdateServiceTest {
             mock(PVPFightsService.class),
             fightVsAIService,
             userAiFightService,
-            characterService);
+            characterService,
+            mock(SpellKnowledgeService.class));
   }
 
   @Test
